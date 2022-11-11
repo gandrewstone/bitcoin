@@ -807,11 +807,6 @@ static UniValue getblock(const UniValue &params, bool fHelp)
             {
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found by block hash");
             }
-            if (!chainActive.Contains(pindex))
-            {
-                throw JSONRPCError(
-                    RPC_INVALID_PARAMETER, strprintf("Block is not in chain %s", Params().NetworkIDString()));
-            }
         }
     }
     else
