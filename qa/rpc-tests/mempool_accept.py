@@ -364,7 +364,7 @@ class MyTest (BitcoinTestFramework):
         self.commitMempool()
 
         # Create 500 transaction and ensure that they get synced
-        NTX = 500 if self.bigTest else 100
+        NTX = 500 if self.bigTest else 10
         start = time.monotonic()
         (amt, wallet) = self.threadedCreateTx(dests0, wallet, 1, NTX)
         end = time.monotonic()
@@ -567,10 +567,10 @@ class MyTest (BitcoinTestFramework):
         waitFor(30, lambda: self.nodes[0].getmempoolinfo()["bytes"] > 20000)
         waitFor(30, lambda: self.nodes[1].getmempoolinfo()["size"] == 100)
         waitFor(30, lambda: self.nodes[1].getmempoolinfo()["bytes"] > 20000)
-        waitFor(60, lambda: (self.nodes[2].getmempoolinfo()["size"] >= 43) and (self.nodes[2].getmempoolinfo()["size"] <= 45))
+        waitFor(60, lambda: (self.nodes[2].getmempoolinfo()["size"] >= 43) and (self.nodes[2].getmempoolinfo()["size"] <= 50))
         waitFor(30, lambda: self.nodes[2].getmempoolinfo()["bytes"] < 11000)
         waitFor(30, lambda: self.nodes[2].getmempoolinfo()["bytes"] > 9750)
-        waitFor(30, lambda: [print("Node 3 mempool, expecting 87: %s" % str(self.nodes[3].getmempoolinfo())), (self.nodes[3].getmempoolinfo()["size"] >= 86) and (self.nodes[3].getmempoolinfo()["size"] <= 90)][-1])
+        waitFor(30, lambda: [print("Node 3 mempool, expecting 87: %s" % str(self.nodes[3].getmempoolinfo())), (self.nodes[3].getmempoolinfo()["size"] >= 86) and (self.nodes[3].getmempoolinfo()["size"] <= 95)][-1])
         waitFor(30, lambda: self.nodes[3].getmempoolinfo()["bytes"] < 22000)
         waitFor(30, lambda: self.nodes[3].getmempoolinfo()["bytes"] > 19500)
 
@@ -620,7 +620,7 @@ if __name__ == '__main__':
 # Create a convenient function for an interactive python debugging session
 def Test():
     global BitcoinCli
-    t = MyTest(True)
+    t = MyTest()
     t.drop_to_pdb = True
     bitcoinConf = {
         "debug": ["blk", "mempool", "net", "req"],

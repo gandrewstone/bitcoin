@@ -402,6 +402,8 @@ libbitcoincash_a_SOURCES = \
   primitives/block.h \
   primitives/transaction.cpp \
   primitives/transaction.h \
+  primitives/token.cpp \
+primitives/token.h \
   pubkey.cpp \
   pubkey.h \
   random.cpp \
