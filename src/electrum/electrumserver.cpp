@@ -61,14 +61,14 @@ ElectrumServer::~ElectrumServer()
 
 //! called when rostrum produces a line in stdout/stderr
 static void callb_logger(const std::string &line) { LOGA("Electrum: %s", line); }
-bool ElectrumServer::Start(int rpcport, const std::string &network)
+bool ElectrumServer::Start(int rpcport, int p2pport, const std::string &network)
 {
     if (!GetBoolArg("-electrum", false))
     {
         LOGA("Electrum: Disabled. Not starting server.");
         return true;
     }
-    return Start(rostrum_path(), rostrum_args(rpcport, network));
+    return Start(rostrum_path(), rostrum_args(rpcport, p2pport, network));
 }
 bool ElectrumServer::Start(const std::string &path, const std::vector<std::string> &args)
 {

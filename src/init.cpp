@@ -717,7 +717,7 @@ bool AppInitServers(int rpcport, const std::string &network)
         return false;
     if (!StartHTTPServer())
         return false;
-    if (!electrum::ElectrumServer::Instance().Start(rpcport, network))
+    if (!electrum::ElectrumServer::Instance().Start(rpcport, GetListenPort(), network))
     {
         return false;
     }

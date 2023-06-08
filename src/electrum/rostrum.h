@@ -16,7 +16,7 @@ class CExtversionMessage;
 namespace electrum {
 
 std::string rostrum_path();
-std::vector<std::string> rostrum_args(int rpcport, const std::string& network);
+std::vector<std::string> rostrum_args(int rpcport, int p2pport, const std::string& network);
 
 std::map<std::string, int64_t> fetch_rostrum_info();
 

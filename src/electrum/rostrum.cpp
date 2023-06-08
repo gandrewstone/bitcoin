@@ -150,7 +150,7 @@ std::string rostrum_path()
 }
 
 //! Arguments to start rostrum server with
-std::vector<std::string> rostrum_args(int rpcport, const std::string &network)
+std::vector<std::string> rostrum_args(int rpcport, int p2pport, const std::string &network)
 {
     std::vector<std::string> args;
 
@@ -165,6 +165,13 @@ std::vector<std::string> rostrum_args(int rpcport, const std::string &network)
         rpcport = GetArg("-rpcport", rpcport);
         std::stringstream ss;
         ss << "--daemon-rpc-addr=" << GetArg("-electrum.daemon.host", "127.0.0.1") << ":" << rpcport;
+        args.push_back(ss.str());
+    }
+    // address to bitcoind p2p interface
+    {
+        p2pport = GetArg("-port", p2pport);
+        std::stringstream ss;
+        ss << "--daemon-p2p-addr=" << GetArg("-electrum.daemon.host", "127.0.0.1") << ":" << p2pport;
         args.push_back(ss.str());
     }
 
