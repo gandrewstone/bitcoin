@@ -88,7 +88,7 @@ script: |
 
   # Build dependencies for each host
   for i in $HOSTS; do
-    make ${MAKEOPTS} -C ${BASEPREFIX} HOST="${i}"
+    make ${MAKEOPTS} -C ${BASEPREFIX} HOST="${i}" NO_RUST=1
   done
 
   # Create the release tarball using (arbitrarily) the first host
