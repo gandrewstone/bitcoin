@@ -50,6 +50,17 @@ static const unsigned int MIN_EXCESSIVE_BLOCK_SIZE = 32000000;
 static const unsigned int MIN_EXCESSIVE_BLOCK_SIZE_REGTEST = 1000;
 
 /**
+ *  Maximum consensus blocks size: 2GB. This is a temporary limit
+ *  to prevent consensus failure between 32-bit and 64-bit platforms,
+ *  until we drop 32-bit platform support altogether, at which point
+ *  this constant should be raised well beyond 32-bit addressing limits.
+ */
+inline constexpr uint64_t MAX_CONSENSUS_BLOCK_SIZE = uint64_t(2000) * ONE_MEGABYTE;
+static_assert(MAX_CONSENSUS_BLOCK_SIZE <= std::numeric_limits<unsigned int>::max(),
+              "MAX_CONSENSUS_BLOCK_SIZE must fit within an unsigned int due to current block file data format");
+
+
+/**
  * The ratio between the maximum allowable block size and the maximum allowable
  * SigChecks (executed signature check operations) in the block. (network rule).
  */
