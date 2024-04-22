@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(TestBlock)
         BOOST_CHECK_MESSAGE(testblock->fExcessive,
             "Block with size " << blockSize << " ought to have been excessive when excessiveBlockSize is "
                                << excessiveBlockSize);
-        excessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE; // set it back to the default that other tests expect
+        excessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE; // set it back to the default that other tests expect
     }
 }
 

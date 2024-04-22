@@ -625,7 +625,7 @@ BOOST_AUTO_TEST_CASE(test_FormatSubVersion)
         std::string("/Test:0.9.99(EB1; AD40; comment1; Comment2; Comment3)/"));
 
     // set EB/AD back to default value
-    excessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
+    excessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
     excessiveAcceptDepth = DEFAULT_EXCESSIVE_ACCEPT_DEPTH;
     fDisplayArchInSubver = true;
 }

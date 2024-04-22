@@ -630,7 +630,7 @@ static void addNodeRelayOptions(AllowedArgs &allowedArgs)
                 DEFAULT_EXCESSIVE_ACCEPT_DEPTH))
         .addArg("excessiveblocksize=<n>", requiredInt,
             strprintf(_("Blocks above this size in bytes are considered excessive.  (default: %u)"),
-                DEFAULT_EXCESSIVE_BLOCK_SIZE))
+                DEFAULT_CONSENSUS_BLOCK_SIZE))
         .addArg("expeditedblock=<host>", requiredStr,
             _("Request expedited blocks from this host whenever we are connected to it"))
         .addArg("maxexpeditedblockrecipients=<n>", requiredInt,

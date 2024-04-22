@@ -166,7 +166,7 @@ public:
         pchCashMessageStart[3] = 0xe8;
         nDefaultPort = DEFAULT_MAINNET_PORT;
         nPruneAfterHeight = 100000;
-        nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
+        nDefaultExcessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
         nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE;
         nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE;
 
@@ -416,7 +416,7 @@ public:
         pchCashMessageStart[3] = 0xf4;
         nDefaultPort = DEFAULT_TESTNET_PORT;
         nPruneAfterHeight = 1000;
-        nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
+        nDefaultExcessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
         nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE;
         nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE;
 
@@ -563,7 +563,7 @@ public:
         pchCashMessageStart[3] = 0xfa;
         nDefaultPort = DEFAULT_REGTESTNET_PORT;
         nPruneAfterHeight = 1000;
-        nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
+        nDefaultExcessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
         nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE_REGTEST;
         nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE;
 
@@ -671,7 +671,7 @@ public:
         pchCashMessageStart[3] = 0xaf;
         nDefaultPort = DEFAULT_TESTNET4_PORT;
         nPruneAfterHeight = 1000;
-        nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE_TESTNET4;
+        nDefaultExcessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE_TESTNET4;
         nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE_REGTEST;
         nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE_TESTNET4;
 
@@ -818,7 +818,7 @@ public:
         pchCashMessageStart[3] = 0xa2;
         nDefaultPort = DEFAULT_SCALENET_PORT;
         nPruneAfterHeight = 10000;
-        nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE_SCALENET;
+        nDefaultExcessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE_SCALENET;
         nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE;
         nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE_SCALENET;
 

@@ -187,7 +187,7 @@ vector<std::string> vAddedNodes;
 set<CNetAddr> setservAddNodeAddresses;
 
 uint64_t maxGeneratedBlock = DEFAULT_BLOCK_MAX_SIZE;
-uint64_t excessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
+uint64_t excessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
 unsigned int excessiveAcceptDepth = DEFAULT_EXCESSIVE_ACCEPT_DEPTH;
 unsigned int maxMessageSizeMultiplier = DEFAULT_MAX_MESSAGE_SIZE_MULTIPLIER;
 int nMaxOutConnections = DEFAULT_MAX_OUTBOUND_CONNECTIONS;

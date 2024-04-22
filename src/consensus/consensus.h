@@ -42,9 +42,9 @@ static const int COINBASE_MATURITY = 100;
  * (github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/may-2018-hardfork.md#summary)
  */
 // defaults for each chain are set in chainparams but defined here
-static const unsigned int DEFAULT_EXCESSIVE_BLOCK_SIZE = 32 * ONE_MEGABYTE;
-static const unsigned int DEFAULT_EXCESSIVE_BLOCK_SIZE_TESTNET4 = 2 * ONE_MEGABYTE;
-static const unsigned int DEFAULT_EXCESSIVE_BLOCK_SIZE_SCALENET = 256 * ONE_MEGABYTE;
+static const unsigned int DEFAULT_CONSENSUS_BLOCK_SIZE = 32 * ONE_MEGABYTE;
+static const unsigned int DEFAULT_CONSENSUS_BLOCK_SIZE_TESTNET4 = 2 * ONE_MEGABYTE;
+static const unsigned int DEFAULT_CONSENSUS_BLOCK_SIZE_SCALENET = 256 * ONE_MEGABYTE;
 
 static const unsigned int MIN_EXCESSIVE_BLOCK_SIZE = 32000000;
 static const unsigned int MIN_EXCESSIVE_BLOCK_SIZE_REGTEST = 1000;
@@ -67,7 +67,7 @@ static_assert(MAX_CONSENSUS_BLOCK_SIZE <= std::numeric_limits<unsigned int>::max
 static const int BLOCK_MAXBYTES_MAXSIGCHECKS_RATIO = 141;
 
 static const unsigned int MAY2020_MAX_BLOCK_SIGCHECK_COUNT =
-    DEFAULT_EXCESSIVE_BLOCK_SIZE / BLOCK_MAXBYTES_MAXSIGCHECKS_RATIO;
+    DEFAULT_CONSENSUS_BLOCK_SIZE / BLOCK_MAXBYTES_MAXSIGCHECKS_RATIO;
 static_assert(MAY2020_MAX_BLOCK_SIGCHECK_COUNT == 226950, "Max block sigcheck value differs from specification");
 
 /** Allowed messages lengths will be this * the excessive block size */
