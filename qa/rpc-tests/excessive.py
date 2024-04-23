@@ -103,7 +103,7 @@ class ExcessiveBlockTest (BitcoinTestFramework):
             assert(0)  # was able to set the mining size below our arbitrary minimum
 
         try:
-            self.nodes[0].setexcessiveblock(1000, 10)
+            self.nodes[0].setexcessiveblock(1000)
         except JSONRPCException as e:
             pass
         else:
@@ -162,9 +162,9 @@ class ExcessiveBlockTest (BitcoinTestFramework):
         self.nodes[2].setminingmaxblock(1000)
         self.nodes[3].setminingmaxblock(1000)
 
-        self.nodes[1].setexcessiveblock(1000, 1)
-        self.nodes[2].setexcessiveblock(1000, 2)
-        self.nodes[3].setexcessiveblock(1000, 3)
+        self.nodes[1].setexcessiveblock(1000)
+        self.nodes[2].setexcessiveblock(1000)
+        self.nodes[3].setexcessiveblock(1000)
 
         logging.info("Test excessively sized block, not propagating until accept depth is exceeded")
         addr = self.nodes[3].getnewaddress()
@@ -248,7 +248,7 @@ class ExcessiveBlockTest (BitcoinTestFramework):
             sync_blocks(self.nodes)
 
             # counts = [ x.getblockcount() for x in self.nodes ]
-            self.nodes[1].setexcessiveblock(100000, 1)  # not sure how big the txns will be but smaller than this
+            self.nodes[1].setexcessiveblock(100000)  # not sure how big the txns will be but smaller than this
             self.nodes[1].setminingmaxblock(100000)  # not sure how big the txns will be but smaller than this
             self.repeatTx(20, self.nodes[0], addr, .001)
             base = self.nodes[0].getblockcount()
@@ -270,9 +270,9 @@ class ExcessiveBlockTest (BitcoinTestFramework):
                 size = random.randint(1, 1000) * 1000
                 try:  # since miningmaxblock must be <= excessiveblock, raising/lowering may need to run these in different order
                     n.setminingmaxblock(size)
-                    n.setexcessiveblock(size, random.randint(0, 10))
+                    n.setexcessiveblock(size)
                 except JSONRPCException:
-                    n.setexcessiveblock(size, random.randint(0, 10))
+                    n.setexcessiveblock(size)
                     n.setminingmaxblock(size)
 
             addrs = [x.getnewaddress() for x in self.nodes]

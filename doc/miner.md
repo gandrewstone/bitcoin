@@ -16,7 +16,7 @@ Bitcoin Unlimited provides 2 additional mining RPC functions that can be used in
 A mining pool uses ***getminingcandidate*** to receive the previously described block information and a tracking identifier.  It then may modify or completely replace the coinbase transaction and many block header fields, to create different candidates for hashing hardware.  It then forwards these candidates to the hashing hardware via Stratum.  When a solution is found, the mining pool can submit the solution back to bitcoind via ***submitminingsolution***.
 
 A few of the benefits when using RPC getminingcandidate and RPC submitminingsolution are:
-* Massively reduced bandwidth and latency, especially for large blocks.  This RPC requires log2(blocksize) data. 
+* Massively reduced bandwidth and latency, especially for large blocks.  This RPC requires log2(blocksize) data.
 * Faster JSON parsing and creation
 * Concise JSON
 
@@ -44,22 +44,22 @@ A python based test of these interfaces is located at qa/rpc-tests/miningtest.py
 {
   # candidate identifier for submitminingsolution (integer):
   "id": 14,
-  
+
   # Hash of the previous block (hex string):
   "prevhash": "0000316517e048ab283a41df3c0ba125345a5c56ef3f76db901b0ede65e2f0e5",
-  
+
   # Coinbase transaction (hex string encoded binary transaction)
   "coinbase": "...00ffffffff10028122000b2f454233322f414431322ffff..."
 
   # Block version (integer):
   "version": 536870912,
-  
+
   # Difficulty (hex string):
   "nBits": "207fffff",
-  
+
   # Block time (integer):
   "time": 1528925409,
-  
+
   # Merkle branch for the block, proving that this coinbase is part of the block (list of hex strings):
   "merkleProof": [
    "ff12771afd8b7c5f11b499897c27454a869a01c2863567e0fc92308f01fd2552",
@@ -80,12 +80,12 @@ A python based test of these interfaces is located at qa/rpc-tests/miningtest.py
   # Miner generated nonce (integer):
   "nonce": 1804358173,
 
-  # Modified Coinbase transaction (hex string encoded binary transaction, optional): 
+  # Modified Coinbase transaction (hex string encoded binary transaction, optional):
   "coinbase": "...00ffffffff10028122000b2fc7237b322f414431322ffff...",
-  
+
   # Block time (integer, optional):
   "time": 1528925410,
-  
+
   # Block version (integer, optional):
   "version": 536870912
 }
@@ -112,39 +112,32 @@ mining.vote=f0,f1
 
 This parameter can be accessed or changed at any time via the "get" and "set" RPC calls.
 
-## Setting your excessive block size and accept depth
+## Setting your excessive block size
 
-Blocks larger than the excessive block size will be ignored until "accept depth" (see next section) blocks are  built upon them.  This allows miners to discourage blocks that they feel are excessively large, but to ultimately accept them if it looks like the majority of the network is accepting this size.  You can learn more about these parameters [here](https://medium.com/@peter_r/the-excessive-block-gate-how-a-bitcoin-unlimited-node-deals-with-large-blocks-22a4a5c322d4#.bhkz538kw), and a miner's opinion on how they should be set [here](https://medium.com/@ViaBTC/miner-guide-how-to-safely-hard-fork-to-bitcoin-unlimited-8ac1570dc1a8#.zdklfb67p).
+Blocks larger than the excessive block size will be rejected. The meaning of this param will change after the  activation of the May 15th 2024 protocol upgrade. After that activation excessive block size would be used as a "floor" value for the new adaptive block size limit algorithm ([ABLA](https://bitcoincashresearch.org/t/chip-2023-04-adaptive-blocksize-limit-algorithm-for-bitcoin-cash/1037)).
 
 To change the largest block that Bitcoin Unlimited will generate, run:
 ```sh
-bitcoin-cli setexcessiveblock blockSize acceptDepth
+bitcoin-cli setexcessiveblock blockSize
 ```
-For example, to set 1MB blocks with an accept depth of 10 blocks use:
+For example, to set 32MB blocks use:
 ```sh
-bitcoin-cli setexcessiveblock 1000000 10
+bitcoin-cli setexcessiveblock 32000000
 ```
 
 
 To change the excessive block size field in bitcoin.conf or on the command line, set the excessiveblocksize config variable to a value in bytes:
  > `excessiveblocksize=<NNN>`
- 
+
 for example, to set 3MB blocks use:
  > excessiveblocksize=3000000
 
-To change the accept depth field in bitcoin.conf or on the command line, set the excessiveacceptdepth config variable to a value (in blocks):
- > `excessiveacceptdepth=<NNN>`
- 
-for example, to wait for 10 blocks before accepting an excessive block, use:
- > excessiveacceptdepth=10
 
-
-To discover these settings in a running bitcoind, use "getexcessiveblock".  For example:
+To discover this setting in a running bitcoind, use "getexcessiveblock".  For example:
 ```sh
 $ bitcoin-cli getexcessiveblock
 {
-  "excessiveBlockSize": 16000000,
-  "excessiveAcceptDepth": 4
+  "excessiveBlockSize": 32000000
 }
 
 ```
@@ -183,7 +176,7 @@ bitcoin-cli setminingmaxblock 2000000
 ```
 To change this field in bitcoin.conf or on the command line, use:
  > `blockmaxsize=<NNN>`
- 
+
 for example, to set 3MB blocks use:
  > blockmaxsize=3000000
 
@@ -192,13 +185,13 @@ You can discover the maximum block size by running:
 bitcoin-cli getminingmaxblock
 ```
  - WARNING: Setting this max block size parameter means that Bitcoin may mine blocks of that size on the NEXT block.  It is expected that any voting or "grace period" (like BIP109 specified) has already occurred.
- 
+
 
 ## Setting your block version
 
 Miners can set the block version flag via CLI/RPC or config file:
 
-From the CLI/RPC, 
+From the CLI/RPC,
 ```sh
 bitcoin-cli setblockversion (version number or string)
 ```
@@ -237,7 +230,7 @@ To change the retry rate, set it in microseconds in your bitcoin.conf:
 
 Transaction retry interval:
  > txretryinterval=2000000
- 
+
  Block retry interval:
  > blkretryinterval=2000000
 

@@ -561,35 +561,31 @@ UniValue getexcessiveblock(const UniValue &params, bool fHelp)
 {
     if (fHelp || params.size() != 0)
         throw runtime_error("getexcessiveblock\n"
-                            "\nReturn the excessive block size and accept depth."
+                            "\nReturn the excessive block size."
                             "\nResult\n"
                             "  excessiveBlockSize (integer) block size in bytes\n"
-                            "  excessiveAcceptDepth (integer) if the chain gets this much deeper than the excessive "
-                            "block, then accept the chain as active (if it has the most work)\n"
                             "\nExamples:\n" +
                             HelpExampleCli("getexcessiveblock", "") + HelpExampleRpc("getexcessiveblock", ""));
 
     UniValue ret(UniValue::VOBJ);
     ret.pushKV("excessiveBlockSize", excessiveBlockSize);
-    ret.pushKV("excessiveAcceptDepth", (uint64_t)0);
     return ret;
 }
 
 UniValue setexcessiveblock(const UniValue &params, bool fHelp)
 {
-    if (fHelp || params.size() < 2 || params.size() >= 3)
-        throw runtime_error("setexcessiveblock blockSize acceptDepth\n"
-                            "\nSet the excessive block size and accept depth.  Excessive blocks will not be used in "
+    if (fHelp || params.size() < 1 || params.size() >= 2)
+        throw runtime_error("setexcessiveblock blockSize\n"
+                            "\nSet the excessive block size in bytes.  Excessive blocks will not be used in "
                             "the active chain or relayed until they are several blocks deep in the blockchain.  This "
                             "discourages the propagation of blocks that you consider excessively large.  However, if "
                             "the mining majority of the network builds upon the block then you will eventually accept "
                             "it, maintaining consensus."
                             "\nResult\n"
                             "  blockSize (integer) excessive block size in bytes\n"
-                            "  acceptDepth (integer) if the chain gets this much deeper than the excessive block, then "
-                            "accept the chain as active (if it has the most work)\n"
                             "\nExamples:\n" +
-                            HelpExampleCli("getexcessiveblock", "") + HelpExampleRpc("getexcessiveblock", ""));
+                            HelpExampleCli("setexcessiveblock", "32000000") +
+                            HelpExampleRpc("setexcessiveblock", "32000000"));
 
     uint64_t ebs = 0;
     if (params[0].isNum())
@@ -606,18 +602,6 @@ UniValue setexcessiveblock(const UniValue &params, bool fHelp)
     if (!estr.empty())
         throw runtime_error(estr);
     ebTweak.Set(ebs);
-
-    int64_t excessiveAcceptDepth = 0;
-
-    if (params[1].isNum())
-        excessiveAcceptDepth = params[1].get_int64();
-    else
-    {
-        string temp = params[1].get_str();
-        if (temp[0] == '-')
-            boost::throw_exception(boost::bad_lexical_cast());
-        excessiveAcceptDepth = boost::lexical_cast<unsigned int>(temp);
-    }
 
     settingsToUserAgentString();
     std::ostringstream ret;
