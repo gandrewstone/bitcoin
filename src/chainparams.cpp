@@ -154,6 +154,8 @@ public:
         consensus.may2022Height = 740237;
         // May 15, 2023 12:00:00 UTC protocol upgrade (this is one less than the upgrade block itself)
         consensus.may2023Height = 792772;
+        // May 15, 2024 12:00:00 UTC protocol upgrade
+        consensus.may2024ActivationTime = MAY2024_ACTIVATION_TIME;
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -329,6 +331,8 @@ public:
         consensus.may2022Height = 0;
         // May 15, 2023 hard fork
         consensus.may2023Height = 0;
+        // May 15, 2024 hard fork
+        consensus.may2024ActivationTime = MAY2024_ACTIVATION_TIME;
 
 
         vFixedSeeds.clear();
@@ -413,6 +417,8 @@ public:
         consensus.may2022Height = 1500205;
         // May 15, 2023 hard fork
         consensus.may2023Height = 1552787;
+        // May 15, 2024 hard fork
+        consensus.may2024ActivationTime = MAY2024_ACTIVATION_TIME;
 
 
         pchMessageStart[0] = 0x0b;
@@ -563,6 +569,8 @@ public:
         consensus.may2022Height = 0;
         // May 15, 2023 hard fork
         consensus.may2023Height = 0;
+        // May 15, 2024 hard fork
+        consensus.may2024ActivationTime = MAY2024_ACTIVATION_TIME;
 
         pchMessageStart[0] = 0xfa;
         pchMessageStart[1] = 0xbf;
@@ -671,6 +679,9 @@ public:
 
         // May 15, 2023 hard fork
         consensus.may2023Height = 148043;
+
+        // May 15, 2024 hard fork
+        consensus.may2024ActivationTime = MAY2024_ACTIVATION_TIME;
 
         pchMessageStart[0] = 0xcd;
         pchMessageStart[1] = 0x22;
@@ -820,6 +831,8 @@ public:
         consensus.may2022Height = 10006;
         // May 15, 2023 hard fork
         consensus.may2023Height = 10006;
+        // May 15, 2024 hard fork
+        consensus.may2024ActivationTime = MAY2024_ACTIVATION_TIME;
 
         pchMessageStart[0] = 0xba;
         pchMessageStart[1] = 0xc2;

@@ -61,4 +61,7 @@ bool IsMay2022Activated(const Consensus::Params &consensusparams, const CBlockIn
 // Check if May 15th 2023 fork has activated using block height
 bool IsMay2023Activated(const Consensus::Params &, const CBlockIndex *pindexTip);
 
+// Check if May 15th 2024 fork has activated using MTP
+bool IsMay2024Activated(const Consensus::Params &, const CBlockIndex* pindexTip);
+
 #endif
