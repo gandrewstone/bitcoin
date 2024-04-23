@@ -23,9 +23,9 @@ class WalletP2SH32Test(BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 2
         # node 0 does not accept non-std txns, node 1 does accept non-std txns
-        self.extra_args = [['-upgrade9activationtime=999999999999', '-acceptnonstdtxn=0',
+        self.extra_args = [['-upgrade9activationheight=999999999', '-acceptnonstdtxn=0',
                             '-whitelist=127.0.0.1', ],
-                           ['-upgrade9activationtime=999999999999', '-acceptnonstdtxn=1',
+                           ['-upgrade9activationheight=999999999', '-acceptnonstdtxn=1',
                             '-whitelist=127.0.0.1', ]]
         self.setup_clean_chain = True
 
@@ -80,12 +80,12 @@ class WalletP2SH32Test(BitcoinTestFramework):
         # Activate Upgrade9
         logging.info("Activating Upgrade9 ...")
 
-        # Get the current MTP time
-        activation_time = self.nodes[0].getblockchaininfo()["mediantime"]
+        # Get the current height
+        activation_height = self.nodes[0].getblockchaininfo()["blocks"]
         for node_num, args in enumerate(self.extra_args):
             args = args.copy()
-            assert_equal(args[0], '-upgrade9activationtime=999999999999')
-            args[0] = f"-upgrade9activationtime={activation_time}"
+            assert_equal(args[0], '-upgrade9activationheight=999999999')
+            args[0] = f"-upgrade9activationheight={activation_height}"
             self.restart_node(node_num, extra_args=args)
         connect_nodes_bi(self.nodes, 0, 1)
         self.sync_all()

@@ -51,8 +51,7 @@ BOOST_AUTO_TEST_CASE(isMay2023Activated) {
     const CChainParams config = Params(CBaseChainParams::REGTEST);
     CBlockIndex prev;
 
-    uint64_t activation = config.GetConsensus().may2023ActivationTime;
-    assert(activation == MAY2023_ACTIVATION_TIME);
+    const auto activation = MAY2023_ACTIVATION_TIME;
 
     std::array<CBlockIndex, 12> blocks;
     for (size_t i = 1; i < blocks.size(); ++i)
@@ -68,22 +67,6 @@ BOOST_AUTO_TEST_CASE(isMay2023Activated) {
 
     SetMTP(blocks, activation + 1);
     BOOST_CHECK(IsMay2023Activated(config.GetConsensus(), &blocks.back()));
-
-    // For functional tests, the activation time can be overridden.
-    activation = 1600000000;
-    SetArg("-upgrade9activationtime", "1600000000");
-
-    SetMTP(blocks, activation - 1);
-    BOOST_CHECK(!IsMay2023Activated(config.GetConsensus(), &blocks.back()));
-
-    SetMTP(blocks, activation);
-    BOOST_CHECK(IsMay2023Activated(config.GetConsensus(), &blocks.back()));
-
-    SetMTP(blocks, activation + 1);
-    BOOST_CHECK(IsMay2023Activated(config.GetConsensus(), &blocks.back()));
-
-    // Cleanup
-    UnsetArg("-upgrade9activationtime");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

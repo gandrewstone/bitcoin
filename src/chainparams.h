@@ -14,12 +14,14 @@
 
 #include <vector>
 
-// November 15, 2021 upgrade activation time in unix epoch styel
+// November 15, 2020 upgrade activation time in unix epoch style
 const uint64_t NOV2020_ACTIVATION_TIME = 1605441600;
 // May 15 12:00:00 UTC 2022 upgrade activation time
 const uint64_t MAY2022_ACTIVATION_TIME = 1652616000;
 // Next protocol upgrade will be activated once MTP >= May 15 12:00:00 UTC 2023
 const uint64_t MAY2023_ACTIVATION_TIME = 1684152000;
+// Next protocol upgrade will be activated once MTP >= May 15 12:00:00 UTC 2024
+const uint64_t MAY2024_ACTIVATION_TIME = 1715774400;
 
 /** Default for -minrelaytxfee, minimum relay fee for transactions */
 static const unsigned int DEFAULT_MIN_RELAY_TX_FEE = 1000;

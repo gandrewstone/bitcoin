@@ -146,10 +146,14 @@ public:
         consensus.nov2020ActivationTime = NOV2020_ACTIVATION_TIME;
         // Nov 15, 2020 hard fork
         consensus.nov2020Height = 661647;
+
+        // May 15, 2021 12:00:00 UTC protocol upgrade was 1621080000, but since this upgrade was for relay rules only,
+        // we do not track this time (since it does not apply at all to the blockchain itself).
+
         // May 15, 2022 hard fork
         consensus.may2022Height = 740237;
-        // May 15, 2023 hard fork
-        consensus.may2023ActivationTime = MAY2023_ACTIVATION_TIME;
+        // May 15, 2023 12:00:00 UTC protocol upgrade (this is one less than the upgrade block itself)
+        consensus.may2023Height = 792772;
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -241,14 +245,19 @@ public:
         checkpoints[688095] = uint256S("0x000000000000000001e7abe99792ab89ed6758167997f115a0cb8001a551c91d");
         // May 15th 2002, (MTP time >= 1652616000) bigger script integers, native introspection op_codes
         checkpoints[740238] = uint256S("0x000000000000000002afc6fbd302f01f8cf4533f4b45207abc61d9f4297bf969");
+        // Upgrade 9; May 15, 2023 (MTP time >= 1684152000), first upgrade block: 792773
+        checkpoints[792773] = uint256S("0x000000000000000002fc0cdadaef1857bbd2936d37ea94f80ba3db4a5e8353e8");
 
         // clang-format on
-        // * UNIX timestamp of last checkpoint block
-        checkpointData.nTimeLastCheckpoint = 1652623301;
-        // * total number of transactions between genesis and last checkpoint
-        checkpointData.nTransactionsLastCheckpoint = 358286852;
-        // * estimated number of transactions per day after checkpoint (~3.5 TPS)
-        checkpointData.fTransactionsPerDay = 280000.0;
+        // Data as of block
+        // 000000000000000002fbeddc14bb8b87eb68a1dd4e5a569cb8938b65ea3cc5a3
+        // (height 768454).
+        // * UNIX timestamp of block 768454
+        checkpointData.nTimeLastCheckpoint = 1669511231;
+        // * total number of transactions between genesis and block 768454
+        checkpointData.nTransactionsLastCheckpoint = 364218597;
+        // * estimated number of transactions per day after checkpoint (~.34 TPS)
+        checkpointData.fTransactionsPerDay = 29376.0;
     }
 };
 
@@ -319,7 +328,7 @@ public:
         // May 15, 2022 hard fork
         consensus.may2022Height = 0;
         // May 15, 2023 hard fork
-        consensus.may2023ActivationTime = MAY2023_ACTIVATION_TIME;
+        consensus.may2023Height = 0;
 
 
         vFixedSeeds.clear();
@@ -403,7 +412,7 @@ public:
         // May 15 2022 hard fork
         consensus.may2022Height = 1500205;
         // May 15, 2023 hard fork
-        consensus.may2023ActivationTime = MAY2023_ACTIVATION_TIME;
+        consensus.may2023Height = 1552787;
 
 
         pchMessageStart[0] = 0x0b;
@@ -483,14 +492,16 @@ public:
         checkpoints[1447365] = uint256S("0x0000000017c3df83326845a5fc349dc50f6b53c2b05a10319a55258dbec95cdc");
         // May 15th 2022 upgrade
         checkpoints[1500206] = uint256S("0x000000000000360769353e933530c40d3f00565a4e7731ff56027e23fa74a8ef");
+        // May 15th, 2023 upgrade
+        checkpoints[1552788] = uint256S("0x000000007bc92323648b95ea8401a2247e977b653b13adb9e40748ce06b30a5e");
 
         // clang-format on
         // Data as of block
-        checkpointData.nTimeLastCheckpoint = 1652619773;
-        // * total number of transactions between genesis and last checkpoint
-        checkpointData.nTransactionsLastCheckpoint = 63920415;
-        // * estimated number of transactions per day after checkpoint (~1.6 TPS)
-        checkpointData.fTransactionsPerDay = 140000;
+        checkpointData.nTimeLastCheckpoint = 1669510532;
+        // * total number of transactions between genesis and block 1528372
+        checkpointData.nTransactionsLastCheckpoint = 63972968;
+        // * estimated number of transactions per day after block 1528372 (~0.0031 TPS)
+        checkpointData.fTransactionsPerDay = 267;
     }
 };
 static CTestNetParams testNetParams;
@@ -551,7 +562,7 @@ public:
         // May, 15 2022 hard fork
         consensus.may2022Height = 0;
         // May 15, 2023 hard fork
-        consensus.may2023ActivationTime = MAY2023_ACTIVATION_TIME;
+        consensus.may2023Height = 0;
 
         pchMessageStart[0] = 0xfa;
         pchMessageStart[1] = 0xbf;
@@ -659,7 +670,7 @@ public:
         consensus.may2022Height = 95464;
 
         // May 15, 2023 hard fork
-        consensus.may2023ActivationTime = MAY2023_ACTIVATION_TIME;
+        consensus.may2023Height = 148043;
 
         pchMessageStart[0] = 0xcd;
         pchMessageStart[1] = 0x22;
@@ -717,6 +728,8 @@ public:
         checkpoints[115252] = uint256S("0x00000000ae25e85d9e22cd6c8d72c2f5d4b0222289d801b7f633aeae3f8c6367");
         checkpoints[121428] = uint256S("0x00000000002cf277337c504f7ce708cce851d5d20cad2936fedf3be95a9ca5eb");
         checkpoints[128070] = uint256S("0x00000000044f34642fa3d91e34678737cc10a821a4696f50c187091c3df480c2");
+        // May 15th 2023 upgrade
+        checkpoints[148044] = uint256S("0x0000000008d96c4423ac92aa200af82819339435251736b08babde1ecaf8a5b6");
         // clang-format on
 
         // Data as of block
@@ -806,7 +819,7 @@ public:
         // May 15, 2022 hard fork
         consensus.may2022Height = 10006;
         // May 15, 2023 hard fork
-        consensus.may2023ActivationTime = MAY2023_ACTIVATION_TIME;
+        consensus.may2023Height = 10006;
 
         pchMessageStart[0] = 0xba;
         pchMessageStart[1] = 0xc2;
@@ -860,10 +873,11 @@ public:
         // clang-format on
 
         // Data as of block
-        // REVISIT: Is below data correct? This is based on what BCHN merged
-        checkpointData.nTimeLastCheckpoint = 0;
-        checkpointData.nTransactionsLastCheckpoint = 0;
-        checkpointData.fTransactionsPerDay = 0;
+        // 00000000a6791274f38bca28465236c4c02873037ec187d61c99b7eaa498033f
+        // (height 36141)
+        checkpointData.nTimeLastCheckpoint = 1660124250;
+        checkpointData.nTransactionsLastCheckpoint = 489847053;
+        checkpointData.fTransactionsPerDay = 144;
     }
 };
 
@@ -940,9 +954,8 @@ public:
         // May 15, 2022 12:00:00 UTC protocol upgrade
         consensus.may2022Height = 95464;
 
-        // November 15, 2022 12:00:00 UTC; protocol upgrade activates 6 months early
-        // On mainnet this is set to MAY2023_ACTIVATION_TIME
-        consensus.may2023ActivationTime = 1668513600;
+        // November 15, 2022 12:00:00 UTC protocol upgrade
+        consensus.may2023Height = 148043;
 
         // Default limit for block size (in bytes) (chipnet is like testnet4 in that it is is smaller at 2MB)
         // consensus.nDefaultExcessiveBlockSize = 2 * ONE_MEGABYTE;
@@ -1014,14 +1027,17 @@ public:
         // Fork block for chipnet
         checkpoints[115252] = uint256S("0x00000000040ba9641ba98a37b2e5ceead38e4e2930ac8f145c8094f94c708727");
         checkpoints[115510] = uint256S("0x000000006ad16ee5ee579bc3712b6f15cdf0a7f25a694e1979616794b73c5122");
+        // Upgrade 9; May 15, 2023 (MTP time >= 1684152000), first upgrade block: 148044
+        checkpoints[148044] = uint256S("0x0000000008d96c4423ac92aa200af82819339435251736b08babde1ecaf8a5b6");
+
         // clang-format on
 
         // Data as of block
-        // 00000000c74929a8b9cb64581b1b9d8294c71ef172a6ce5d27988fc6026ad3d4
-        // (height 115527)
-        checkpointData.nTimeLastCheckpoint = 1664921612;
-        checkpointData.nTransactionsLastCheckpoint = 118258;
-        checkpointData.fTransactionsPerDay = 0.002;
+        // 00000000010532578431caaad666e01ef7f744a90140192c661b285d2eeacfc8
+        // (height 123647)
+        checkpointData.nTimeLastCheckpoint = 1669510845;
+        checkpointData.nTransactionsLastCheckpoint = 126464;
+        checkpointData.fTransactionsPerDay = 144;
     }
 };
 

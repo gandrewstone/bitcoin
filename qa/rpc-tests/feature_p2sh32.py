@@ -61,7 +61,7 @@ class P2SH32Test(BitcoinTestFramework):
         self.num_nodes = 1
         self.setup_clean_chain = True
         self.base_extra_args = ['-acceptnonstdtxn=0', '-whitelist=127.0.0.1', "-debug=mempool"]
-        self.extra_args = [['-upgrade9activationtime=999999999999'] + self.base_extra_args]
+        self.extra_args = [['upgrade9activationheight=999999999'] + self.base_extra_args]
 
     @staticmethod
     def get_rand_bytes(n_bytes: int = 32) -> bytes:
@@ -254,10 +254,10 @@ class P2SH32Test(BitcoinTestFramework):
 
         # Next, activate the upgrade
 
-        # Get the current MTP time
-        activation_time = node.getblockchaininfo()["mediantime"]
+        # Get the current block height
+        activation_height = node.getblockchaininfo()["blocks"]
         # Restart the node, enabling upgrade9
-        self.restart_node(0, extra_args=[f"-upgrade9activationtime={activation_time}"] + self.base_extra_args)
+        self.restart_node(0, extra_args=[f"-upgrade9activationheight={activation_height}"] + self.base_extra_args
         self.reconnect_p2p()
 
         # Now, the txn that spends p2sh32 should be accepted ok as "standard"
