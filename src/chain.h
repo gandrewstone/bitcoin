@@ -8,6 +8,7 @@
 #define BITCOIN_CHAIN_H
 
 #include "arith_uint256.h"
+#include "consensus/abla.h"
 #include "pow.h"
 #include "primitives/block.h"
 #include "sync.h"
@@ -16,6 +17,7 @@
 #include "util.h"
 
 #include <atomic>
+#include <utility>
 #include <vector>
 
 extern CSharedCriticalSection cs_mapBlockIndex;
@@ -151,12 +153,56 @@ enum BlockStatus : uint32_t
     BLOCK_FAILED_MASK = BLOCK_FAILED_VALID | BLOCK_FAILED_CHILD,
 };
 
+/**
+ *  Mixin class that provides guarded, thread-safe access to the property: `ablaStateOpt`.
+ *  Used by CBlockIndex and its subclasses to capture the abla state (if any) of a particular block.
+ */
+class AblaStateMixin
+{
+    mutable CSharedCriticalSection cs_ablaState;
+    std::optional<abla::State> ablaStateOpt GUARDED_BY(cs_ablaState);
+
+public:
+    AblaStateMixin() = default;
+    AblaStateMixin(const AblaStateMixin &o) : ablaStateOpt(o.GetAblaStateOpt()) {}
+
+    AblaStateMixin &operator=(const AblaStateMixin &) = delete;
+
+    std::optional<abla::State> GetAblaStateOpt() const
+    {
+        READLOCK(cs_ablaState);
+        return ablaStateOpt;
+    }
+
+    /// If `ablaStateOpt` is valid, returns `*ablaStateOpt`, otherwise returns the results of invoking `func()`.
+    /// `func()` is only invoked if `!ablaStateOpt`, and it is invoked without any locks held.
+    template <typename Func>
+    abla::State GetAblaStateOr(Func &&func) const
+    {
+        {
+            READLOCK(cs_ablaState);
+            if (ablaStateOpt)
+            {
+                return *ablaStateOpt;
+            }
+        }
+        return func();
+    }
+
+    void SetAblaStateOpt(const std::optional<abla::State> &s)
+    {
+        WRITELOCK(cs_ablaState);
+        ablaStateOpt = s;
+    }
+
+};
+
 /** The block chain is a tree shaped structure starting with the
  * genesis block at the root, with each block potentially having multiple
  * candidates to be the next block. A blockindex may have multiple pprev pointing
  * to it, but at most one of them can be part of the currently active branch.
  */
-class CBlockIndex
+class CBlockIndex : public AblaStateMixin
 {
 public:
     //! pointer to the hash of the block, if any. Memory is owned by this CBlockIndex
