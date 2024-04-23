@@ -494,6 +494,8 @@ policy/fees.cpp
 policy/fees.h
 policy/policy.cpp
 policy/policy.h
+consensus/abla.cpp
+consensus/abla.h
 consensus/consensus.h
 consensus/merkle.cpp
 consensus/merkle.h
