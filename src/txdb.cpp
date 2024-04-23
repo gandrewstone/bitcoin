@@ -469,7 +469,7 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
     }
     return true;
 }
-
+/*
 bool CBlockTreeDB::GetSortedHashIndex(std::vector<std::pair<int, CDiskBlockIndex> > &hashesByHeight)
 {
     std::unique_ptr<CDBIterator> pcursor(NewIterator());
@@ -504,7 +504,7 @@ bool CBlockTreeDB::GetSortedHashIndex(std::vector<std::pair<int, CDiskBlockIndex
     std::sort(hashesByHeight.begin(), hashesByHeight.end());
     return true;
 }
-
+*/
 namespace
 {
 //! Legacy class to deserialize pre-pertxout database entries without reindex.

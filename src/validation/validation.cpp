@@ -462,6 +462,7 @@ bool LoadBlockIndexDB()
     /** This sync method will break on pruned nodes so we cant use if pruned*/
     // Check whether we have ever pruned block & undo files
     pblocktree->ReadFlag("prunedblockfiles", fHavePruned);
+    /*
     if (!fHavePruned)
     {
         // by default we want to sync from disk instead of network if possible
@@ -469,7 +470,7 @@ bool LoadBlockIndexDB()
         // may increase startup time significantly but is faster than network sync
         SyncStorage(chainparams);
     }
-
+    */
     delete pblocktreeother;
     pblocktreeother = nullptr;
     // lock cs_mapBlockIndex after running SyncStorage to avoid an issue with

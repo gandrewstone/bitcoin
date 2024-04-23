@@ -134,7 +134,7 @@ bool DetermineStorageSync(BlockDBMode &_otherMode)
     }
     return true;
 }
-
+/*
 void SyncStorage(const CChainParams &chainparams)
 {
     CDatabaseAbstract *pblockdbsync = nullptr;
@@ -461,6 +461,7 @@ void SyncStorage(const CChainParams &chainparams)
     if (pblockdbsync)
         delete pblockdbsync;
 }
+*/
 
 bool WriteBlockToDisk(const ConstCBlockRef pblock,
     CDiskBlockPos &pos,
