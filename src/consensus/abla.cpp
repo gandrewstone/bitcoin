@@ -59,7 +59,7 @@ void Config::SetMax()
     epsilonMax = maxSafeBlocksizeLimit / (maxElasticBufferRatioNumerator + maxElasticBufferRatioDenominator) * maxElasticBufferRatioDenominator;
     betaMax = maxSafeBlocksizeLimit - epsilonMax;
 
-    LogPrint(BCLog::ABLA, "[ABLA] Auto-configured epsilonMax: %u, betaMax: %u\n", epsilonMax, betaMax);
+    LOG(BLK, "[ABLA] Auto-configured epsilonMax: %u, betaMax: %u\n", epsilonMax, betaMax);
 }
 
 bool Config::IsValid(const char **err) const
@@ -70,7 +70,7 @@ bool Config::IsValid(const char **err) const
         // on function return, print to debug log if there was an error, and/or optionally set `err` out param.
         if (errStr)
         {
-            LogPrint(BCLog::ABLA, "[ABLA] Config::IsValid: %s - %s\n", errStr, ToString());
+            LOG(BLK, "[ABLA] Config::IsValid: %s - %s\n", errStr, ToString());
             if (err)
             {
                 *err = errStr;
@@ -262,7 +262,7 @@ bool State::IsValid(const Config &config, const char **err) const
         // on function return, print to debug log if there was an error, and/or optionally set `err` out param.
         if (errStr)
         {
-            LogPrint(BCLog::ABLA, "[ABLA] State::IsValid: %s - %s\n", errStr, ToString());
+            LOG(BLK, "[ABLA] State::IsValid: %s - %s\n", errStr, ToString());
             if (err)
             {
                 *err = errStr;
