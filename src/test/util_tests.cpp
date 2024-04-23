@@ -594,7 +594,6 @@ BOOST_AUTO_TEST_CASE(test_FormatSubVersion)
         std::string("/Test:0.9.99(comment1; Comment2; .,_?@-; ; " + arch + ")/"));
 
     excessiveBlockSize = 1000000;
-    excessiveAcceptDepth = 40;
     settingsToUserAgentString();
     const char *argv_test[] = {"bitcoind", "-uacomment=comment1", "-uacomment=Comment2", "-uacomment=Comment3"};
     ParseParameters(4, (char **)argv_test, AllowedArgs::Bitcoind());
@@ -626,7 +625,6 @@ BOOST_AUTO_TEST_CASE(test_FormatSubVersion)
 
     // set EB/AD back to default value
     excessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
-    excessiveAcceptDepth = DEFAULT_EXCESSIVE_ACCEPT_DEPTH;
     fDisplayArchInSubver = true;
 }
 

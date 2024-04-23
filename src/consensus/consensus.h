@@ -7,6 +7,8 @@
 #ifndef BITCOIN_CONSENSUS_CONSENSUS_H
 #define BITCOIN_CONSENSUS_CONSENSUS_H
 
+#include <limits>
+
 #include "uint256.h"
 
 /** The maximum allowed size for a serialized block, in bytes (network rule) */

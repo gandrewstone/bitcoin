@@ -188,7 +188,6 @@ set<CNetAddr> setservAddNodeAddresses;
 
 uint64_t maxGeneratedBlock = DEFAULT_BLOCK_MAX_SIZE;
 uint64_t excessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
-unsigned int excessiveAcceptDepth = DEFAULT_EXCESSIVE_ACCEPT_DEPTH;
 unsigned int maxMessageSizeMultiplier = DEFAULT_MAX_MESSAGE_SIZE_MULTIPLIER;
 int nMaxOutConnections = DEFAULT_MAX_OUTBOUND_CONNECTIONS;
 bool fCanonicalTxsOrder = true;
@@ -351,10 +350,7 @@ CTweak<bool> xvalTweak("mining.xval",
 CTweak<unsigned int> maxTxSize("net.excessiveTx",
     strprintf("Largest transaction size in bytes (default: %ld)", DEFAULT_LARGEST_TRANSACTION),
     DEFAULT_LARGEST_TRANSACTION);
-CTweakRef<unsigned int> eadTweak("net.excessiveAcceptDepth",
-    "Excessive block chain acceptance depth in blocks",
-    &excessiveAcceptDepth,
-    &AcceptDepthValidator);
+    
 CTweakRef<int> maxOutConnectionsTweak("net.maxOutboundConnections",
     "Maximum number of outbound connections",
     &nMaxOutConnections,

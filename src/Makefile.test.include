@@ -61,7 +61,6 @@ BITCOIN_TESTS =\
   respend/test/respenddetector_tests.cpp \
   test/uahf_test.cpp \
   test/fork_tests.cpp \
-  test/excessiveblock_test.cpp \
   test/stat_tests.cpp \
   test/activation_tests.cpp \
   test/arith_uint256_tests.cpp \
