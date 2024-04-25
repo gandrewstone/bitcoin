@@ -534,6 +534,7 @@ libbitcoin_common_a_SOURCES = \
   cashaddrenc.cpp \
   chainparams.cpp \
   coins.cpp \
+  consensus/abla.cpp \
   compressor.cpp \
   config.cpp \
   core_read.cpp \
