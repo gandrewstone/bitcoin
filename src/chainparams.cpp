@@ -176,6 +176,13 @@ public:
         nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE;
         nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE;
 
+        // ABLA config -- upgrade 10 adjustable block limit algorithm
+        consensus.ablaConfig = abla::Config::MakeDefault(nDefaultConsensusBlockSize, /* fixedSize = */ false);
+        // Ensure base ABLA state yields same limit as pre-activation.
+        assert(abla::State(consensus.ablaConfig, 0).GetBlockSizeLimit() == nDefaultConsensusBlockSize);
+        // Ensure ABLA is *not* "fixed size" for mainnet
+        assert( ! consensus.ablaConfig.IsFixedSize());
+
         genesis = CreateGenesisBlock(1231006505, 2083236893, 0x1d00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
         assert(consensus.hashGenesisBlock ==
@@ -334,6 +341,13 @@ public:
         // May 15, 2024 hard fork
         consensus.may2024ActivationTime = MAY2024_ACTIVATION_TIME;
 
+        // ABLA config -- upgrade 10 adjustable block limit algorithm
+        consensus.ablaConfig = abla::Config::MakeDefault(nDefaultConsensusBlockSize, /* fixedSize = */ false);
+        // Ensure base ABLA state yields same limit as pre-activation.
+        assert(abla::State(consensus.ablaConfig, 0).GetBlockSizeLimit() == nDefaultConsensusBlockSize);
+        // Ensure ABLA is *not* "fixed size" for mainnet
+        assert( ! consensus.ablaConfig.IsFixedSize());
+
 
         vFixedSeeds.clear();
         vSeeds.clear();
@@ -434,6 +448,13 @@ public:
         nDefaultExcessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
         nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE;
         nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE;
+
+        // ABLA config -- upgrade 10 adjustable block limit algorithm
+        consensus.ablaConfig = abla::Config::MakeDefault(nDefaultConsensusBlockSize, /* fixedSize = */ true);
+        // Ensure base abla state yields same limit as pre-activation.
+        assert(abla::State(consensus.ablaConfig, 0).GetBlockSizeLimit() == nDefaultConsensusBlockSize);
+        // Ensure ABLA *is* "fixed size" for testnet3
+        assert(consensus.ablaConfig.IsFixedSize());
 
         genesis = CreateGenesisBlock(1296688602, 414098458, 0x1d00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
@@ -586,6 +607,13 @@ public:
         nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE_REGTEST;
         nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE;
 
+        // ABLA config -- upgrade 10 adjustable block limit algorithm
+        consensus.ablaConfig = abla::Config::MakeDefault(nDefaultConsensusBlockSize, /* fixedSize = */ false);
+        // Ensure base abla state yields same limit as pre-activation.
+        assert(abla::State(consensus.ablaConfig, 0).GetBlockSizeLimit() == nDefaultConsensusBlockSize);
+        // Ensure ABLA is *not* "fixed size" for regtest
+        assert( ! consensus.ablaConfig.IsFixedSize());
+
         genesis = CreateGenesisBlock(1296688602, 2, 0x207fffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
         assert(consensus.hashGenesisBlock ==
@@ -696,6 +724,13 @@ public:
         nDefaultExcessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE_TESTNET4;
         nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE_REGTEST;
         nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE_TESTNET4;
+
+        // ABLA config -- upgrade 10 adjustable block limit algorithm
+        consensus.ablaConfig = abla::Config::MakeDefault(nDefaultConsensusBlockSize, /* fixedSize = */ true);
+        // Ensure base abla state yields same limit as pre-activation.
+        assert(abla::State(consensus.ablaConfig, 0).GetBlockSizeLimit() == nDefaultConsensusBlockSize);
+        // Ensure ABLA *is* "fixed size" for testnet4
+        assert(consensus.ablaConfig.IsFixedSize());
 
         genesis = CreateGenesisBlock(1597811185, 114152193, 0x1d00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
@@ -847,6 +882,13 @@ public:
         nDefaultExcessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE_SCALENET;
         nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE;
         nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE_SCALENET;
+
+        // ABLA config -- upgrade 10 adjustable block limit algorithm
+        consensus.ablaConfig = abla::Config::MakeDefault(nDefaultConsensusBlockSize, /* fixedSize = */ false);
+        // Ensure base abla state yields same limit as pre-activation.
+        assert(abla::State(consensus.ablaConfig, 0).GetBlockSizeLimit() == nDefaultConsensusBlockSize);
+        // Ensure ABLA is *not* "fixed size" for scalenet
+        assert( ! consensus.ablaConfig.IsFixedSize());
 
         genesis = CreateGenesisBlock(1598282438, -1567304284, 0x1d00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
@@ -1001,6 +1043,13 @@ public:
         nDefaultExcessiveBlockSize = 2 * ONE_MEGABYTE;
         nMinMaxBlockSize = 2 * ONE_MEGABYTE;
         nDefaultMaxBlockMiningSize = 2 * ONE_MEGABYTE;
+
+        // ABLA config -- upgrade 10 adjustable block limit algorithm
+        consensus.ablaConfig = abla::Config::MakeDefault(nDefaultConsensusBlockSize, /* fixedSize = */ false);
+        // Ensure base abla state yields same limit as pre-activation.
+        assert(abla::State(consensus.ablaConfig, 0).GetBlockSizeLimit() == nDefaultConsensusBlockSize);
+        // Ensure ABLA is *not* "fixed size" for chipnet
+        assert( ! consensus.ablaConfig.IsFixedSize());
 
         genesis = CreateGenesisBlock(1597811185, 114152193, 0x1d00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();

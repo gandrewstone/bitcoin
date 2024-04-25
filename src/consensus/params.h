@@ -7,6 +7,7 @@
 #ifndef BITCOIN_CONSENSUS_PARAMS_H
 #define BITCOIN_CONSENSUS_PARAMS_H
 
+#include "abla.h"
 #include "amount.h"
 #include "clientversion.h"
 #include "uint256.h"
@@ -176,6 +177,8 @@ struct Params
     int may2023Height;
     /** May 15, 2024 activation time */
     int may2024ActivationTime;
+    /** ABLA block size config (may 2024 HF) */
+    abla::Config ablaConfig;
     /** Nov 15, 2020 MTP activation time will be 12:00:00 UTC */
     uint64_t nov2020ActivationTime;
     /** Nov 15, 2020 actication height */
