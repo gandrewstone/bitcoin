@@ -35,6 +35,8 @@
 #include <mutex>
 #include <unordered_set>
 
+#define MIN_TRANSACTION_SIZE (::GetSerializeSize(CTransaction(), SER_NETWORK, PROTOCOL_VERSION))
+
 extern CTweak<int> maxReorgDepth;
 void ProcessOrphans(std::vector<uint256> &vWorkQueue);
 static bool FinalizeBlockInternal(CValidationState &state, const CBlockIndex *pindex);
@@ -313,6 +315,52 @@ bool AcceptBlockHeader(const CBlockHeader &block,
 //
 // Blockindex
 //
+
+
+/// Maintain invariants, update ABLA state (if possible).
+/// Called from: LoadGenesisBlock, AcceptBlock, and ConnectBlock.
+/// @pre `pindex` must be the index for `block` and must already be added to `mapBlockIndex`. `pindex` need not
+///      be on any active chain (it may even be ahead of ::ChainActive().Tip()).
+/// @param blockSize - Pass non-zero if the blockSize is known, otherwise it will be calculated on-the-fly.
+static void MaintainAblaState(const Consensus::Params &consensusParams, const CBlock &block, CBlockIndex *pindex,
+                              const char *debugPrefix = nullptr, uint64_t blockSize = 0)
+    EXCLUSIVE_LOCKS_REQUIRED(cs_main)
+{
+    if (IsMay2024Activated(consensusParams, pindex))
+    {
+        std::optional<abla::State> ablaStateOpt;
+        if (!IsMay2024Activated(consensusParams, pindex->pprev))
+        {
+            // activation block, give default state
+            blockSize = blockSize ? blockSize : ::GetSerializeSize(block, PROTOCOL_VERSION);
+            ablaStateOpt.emplace(consensusParams.ablaConfig, blockSize);
+        }
+        else if ((ablaStateOpt = pindex->pprev->GetAblaStateOpt()))
+        {
+            // non-activation block, advance state from previous, based on this block's size
+            blockSize = blockSize ? blockSize : ::GetSerializeSize(block, PROTOCOL_VERSION);
+            ablaStateOpt = ablaStateOpt->NextBlockState(consensusParams.ablaConfig, blockSize);
+        }
+        debugPrefix = debugPrefix ? debugPrefix : __func__;
+        LOG(BLK, "[ABLA] %s: ABLA state for block %d: ", debugPrefix, pindex->nHeight);
+        if (ablaStateOpt)
+        {
+            const char *newstr = " (existing)";
+            if (pindex->GetAblaStateOpt() != ablaStateOpt)
+            {
+                pindex->SetAblaStateOpt(ablaStateOpt);
+                newstr = " ** NEW **";
+                setDirtyBlockIndex.insert(pindex);
+            }
+            LOG(BLK, "[ABLA] %s, nextBlockSizeLimit: %i%s\n", ablaStateOpt->ToString(),
+                     ablaStateOpt->GetNextBlockSizeLimit(consensusParams.ablaConfig), newstr);
+        }
+        else
+        {
+            LOG(BLK, "[ABLA] ??? NOT YET DEFINED ???\n");
+        }
+    }
+}
 
 /** Delete all entries in setBlockIndexCandidates that are worse than the current tip. */
 void PruneBlockIndexCandidates()
@@ -2754,6 +2802,26 @@ bool ConnectBlockCanonicalOrdering(ConstCBlockRef pblock,
 }
 
 
+bool CheckBlockSize(ConstCBlockRef pblock, CValidationState &state, uint64_t nMaxBlockSize, uint64_t *pBlockSize)
+{
+    // Bail early if there is no way this block is of reasonable size.
+    if ((pblock->vtx.size() * MIN_TRANSACTION_SIZE) > nMaxBlockSize)
+    {
+        return state.DoS(100, false, REJECT_INVALID, "bad-blk-length", false, "size limits failed");
+    }
+    const auto currentBlockSize = ::GetSerializeSize(pblock, PROTOCOL_VERSION);
+    if (currentBlockSize > nMaxBlockSize)
+    {
+        return state.DoS(100, false, REJECT_INVALID, "bad-blk-length", false, "size limits failed");
+    }
+    if (pBlockSize)
+    {
+        *pBlockSize = currentBlockSize;
+    }
+    return true;
+}
+
+
 bool ConnectBlock(ConstCBlockRef pblock,
     CValidationState &state,
     CBlockIndex *pindex,
@@ -2765,6 +2833,16 @@ bool ConnectBlock(ConstCBlockRef pblock,
     // pindex should be the header structure for this new block.  Check this by making sure that the nonces are the
     // same.
     assert(pindex->nNonce == pblock->nNonce);
+
+    // Size check (both pre and post upgrade 10 are handled here, after CheckBlock above)
+    const uint64_t nMaxBlockSize = GetNextBlockSizeLimit(pindex->pprev);
+    uint64_t nThisBlockSize = 0;
+    if (!CheckBlockSize(pblock, state, nMaxBlockSize, &nThisBlockSize))
+    {
+        return error("%s: CheckBlockSize: %s", __func__, FormatStateMessage(state));
+    }
+    assert(nThisBlockSize != 0);
+
 
     // Special case for the genesis block, skipping connection of its transactions
     // (its coinbase is unspendable)
@@ -4174,4 +4252,19 @@ const CBlockIndex *ActivationBlockTracker::GetActivationBlock(const CBlockIndex 
 
     assert(pwalk);
     return pwalk;
+}
+
+uint64_t GetNextBlockSizeLimit(const CBlockIndex *pindexPrev)
+{
+    const auto &params = Params().GetConsensus();
+    //const uint64_t confMaxBlockSize = config.GetConfiguredMaxBlockSize();
+    if (!IsMay2024Activated(params, pindexPrev))
+    {
+        return Params().DefaultConsensusBlockSize();
+    }
+    const auto ablaStateOpt = pindexPrev->GetAblaStateOpt();
+    assert(ablaStateOpt);
+    // std::max here to ensure the minimum max block size is what the user overrode from config, if anything
+    //return std::max(confMaxBlockSize, ablaStateOpt->GetNextBlockSizeLimit(params.ablaConfig));
+    return ablaStateOpt->GetNextBlockSizeLimit(params.ablaConfig);
 }
