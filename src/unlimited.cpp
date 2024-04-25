@@ -95,11 +95,11 @@ std::string ExcessiveBlockValidator(const uint64_t &value, uint64_t *item, bool 
                 << ").  This would cause you to orphan your own blocks.";
             return ret.str();
         }
-        if (value < Params().MinMaxBlockSize())
+        if (value < Params().DefaultConsensusBlockSize())
         {
             std::ostringstream ret;
             ret << Params().NetworkIDString() << "Sorry, your proposed excessive block size (" << value
-                << ") is smaller than the minimum EB size (" << Params().MinMaxBlockSize()
+                << ") is smaller than the minimum EB size (" << Params().DefaultConsensusBlockSize()
                 << ").  This would cause you to orphan blocks from the rest of the net.";
             return ret.str();
         }

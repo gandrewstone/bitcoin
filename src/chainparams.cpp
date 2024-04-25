@@ -173,7 +173,6 @@ public:
         nDefaultPort = DEFAULT_MAINNET_PORT;
         nPruneAfterHeight = 100000;
         nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
-        nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE;
         nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE;
 
         // ABLA config -- upgrade 10 adjustable block limit algorithm
@@ -315,7 +314,6 @@ public:
         nDefaultPort = DEFAULT_NOLNET_PORT;
         nPruneAfterHeight = 100000;
         nDefaultConsensusBlockSize = std::numeric_limits<uint64_t>::max();
-        nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE_REGTEST;
         nDefaultMaxBlockMiningSize = std::numeric_limits<uint64_t>::max();
 
         // Aug, 1 2017 hard fork
@@ -446,7 +444,6 @@ public:
         nDefaultPort = DEFAULT_TESTNET_PORT;
         nPruneAfterHeight = 1000;
         nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
-        nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE;
         nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE;
 
         // ABLA config -- upgrade 10 adjustable block limit algorithm
@@ -604,7 +601,6 @@ public:
         nDefaultPort = DEFAULT_REGTESTNET_PORT;
         nPruneAfterHeight = 1000;
         nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
-        nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE_REGTEST;
         nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE;
 
         // ABLA config -- upgrade 10 adjustable block limit algorithm
@@ -722,7 +718,6 @@ public:
         nDefaultPort = DEFAULT_TESTNET4_PORT;
         nPruneAfterHeight = 1000;
         nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE_TESTNET4;
-        nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE_REGTEST;
         nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE_TESTNET4;
 
         // ABLA config -- upgrade 10 adjustable block limit algorithm
@@ -880,7 +875,6 @@ public:
         nDefaultPort = DEFAULT_SCALENET_PORT;
         nPruneAfterHeight = 10000;
         nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE_SCALENET;
-        nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE;
         nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE_SCALENET;
 
         // ABLA config -- upgrade 10 adjustable block limit algorithm
@@ -1041,7 +1035,6 @@ public:
         nDefaultPort = 48333;
         nPruneAfterHeight = 1000;
         nDefaultConsensusBlockSize = 2 * ONE_MEGABYTE;
-        nMinMaxBlockSize = 2 * ONE_MEGABYTE;
         nDefaultMaxBlockMiningSize = 2 * ONE_MEGABYTE;
 
         // ABLA config -- upgrade 10 adjustable block limit algorithm
