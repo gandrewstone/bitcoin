@@ -172,7 +172,7 @@ public:
         pchCashMessageStart[3] = 0xe8;
         nDefaultPort = DEFAULT_MAINNET_PORT;
         nPruneAfterHeight = 100000;
-        nDefaultExcessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
+        nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
         nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE;
         nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE;
 
@@ -314,7 +314,7 @@ public:
         pchMessageStart[3] = 0xe9;
         nDefaultPort = DEFAULT_NOLNET_PORT;
         nPruneAfterHeight = 100000;
-        nDefaultExcessiveBlockSize = std::numeric_limits<uint64_t>::max();
+        nDefaultConsensusBlockSize = std::numeric_limits<uint64_t>::max();
         nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE_REGTEST;
         nDefaultMaxBlockMiningSize = std::numeric_limits<uint64_t>::max();
 
@@ -445,7 +445,7 @@ public:
         pchCashMessageStart[3] = 0xf4;
         nDefaultPort = DEFAULT_TESTNET_PORT;
         nPruneAfterHeight = 1000;
-        nDefaultExcessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
+        nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
         nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE;
         nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE;
 
@@ -603,7 +603,7 @@ public:
         pchCashMessageStart[3] = 0xfa;
         nDefaultPort = DEFAULT_REGTESTNET_PORT;
         nPruneAfterHeight = 1000;
-        nDefaultExcessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
+        nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
         nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE_REGTEST;
         nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE;
 
@@ -721,7 +721,7 @@ public:
         pchCashMessageStart[3] = 0xaf;
         nDefaultPort = DEFAULT_TESTNET4_PORT;
         nPruneAfterHeight = 1000;
-        nDefaultExcessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE_TESTNET4;
+        nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE_TESTNET4;
         nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE_REGTEST;
         nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE_TESTNET4;
 
@@ -879,7 +879,7 @@ public:
         pchCashMessageStart[3] = 0xa2;
         nDefaultPort = DEFAULT_SCALENET_PORT;
         nPruneAfterHeight = 10000;
-        nDefaultExcessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE_SCALENET;
+        nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE_SCALENET;
         nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE;
         nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE_SCALENET;
 
@@ -1013,12 +1013,12 @@ public:
         consensus.may2023Height = 148043;
 
         // Default limit for block size (in bytes) (chipnet is like testnet4 in that it is is smaller at 2MB)
-        // consensus.nDefaultExcessiveBlockSize = 2 * ONE_MEGABYTE;
+        // consensus.nDefaultConsensusBlockSize = 2 * ONE_MEGABYTE;
 
         // Chain-specific default for mining block size (in bytes) (configurable with -blockmaxsize)
         // consensus.nDefaultGeneratedBlockSize = 2 * ONE_MEGABYTE;
 
-        // assert(consensus.nDefaultGeneratedBlockSize <= consensus.nDefaultExcessiveBlockSize);
+        // assert(consensus.nDefaultGeneratedBlockSize <= consensus.nDefaultConsensusBlockSize);
 
         // Anchor params: Note that the block after this height *must* also be checkpointed below.
         // we don't have implementd the adding of achor block data in bchu, *GetASERTAnchorBlock()
@@ -1040,7 +1040,7 @@ public:
         pchCashMessageStart[3] = 0xaf;
         nDefaultPort = 48333;
         nPruneAfterHeight = 1000;
-        nDefaultExcessiveBlockSize = 2 * ONE_MEGABYTE;
+        nDefaultConsensusBlockSize = 2 * ONE_MEGABYTE;
         nMinMaxBlockSize = 2 * ONE_MEGABYTE;
         nDefaultMaxBlockMiningSize = 2 * ONE_MEGABYTE;
 

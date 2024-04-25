@@ -429,7 +429,7 @@ void UnlimitedSetup(void)
     MIN_BLK_REQUEST_RETRY_INTERVAL = GetArg("-blkretryinterval", DEFAULT_MIN_BLK_REQUEST_RETRY_INTERVAL);
     maxGeneratedBlock = GetArg("-blockmaxsize", Params().DefaultMaxBlockMiningSize());
     blockVersion = GetArg("-blockversion", blockVersion);
-    excessiveBlockSize = GetArg("-excessiveblocksize", Params().DefaultExcessiveBlockSize());
+    excessiveBlockSize = GetArg("-excessiveblocksize", Params().DefaultConsensusBlockSize());
     LOG(TWEAKS, "TWEAKS: UnlimitedSetup() set excessiveBlockSize to %u", excessiveBlockSize);
     maxSigChecks = excessiveBlockSize / BLOCK_MAXBYTES_MAXSIGCHECKS_RATIO;
     LoadTweaks(); // The above options are deprecated so the same parameter defined as a tweak will override them
