@@ -37,13 +37,13 @@ BOOST_AUTO_TEST_CASE(isMay2024Activated) {
     }
 
     SetMTP(blocks, activation - 1);
-    BOOST_CHECK(!IsMay2023Activated(config.GetConsensus(), &blocks.back()));
+    BOOST_CHECK(!IsMay2024Activated(config.GetConsensus(), &blocks.back()));
 
     SetMTP(blocks, activation);
-    BOOST_CHECK(IsMay2023Activated(config.GetConsensus(), &blocks.back()));
+    BOOST_CHECK(IsMay2024Activated(config.GetConsensus(), &blocks.back()));
 
     SetMTP(blocks, activation + 1);
-    BOOST_CHECK(IsMay2023Activated(config.GetConsensus(), &blocks.back()));
+    BOOST_CHECK(IsMay2024Activated(config.GetConsensus(), &blocks.back()));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
