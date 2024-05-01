@@ -19,25 +19,25 @@
 namespace {
 
 /// Test fixture that:
-/// - tracks if we set "-upgrade9activationtime", and resets it on test end
+/// - tracks if we set "-upgrade9activationheight", and resets it on test end
 struct TokenTransactionTestingSetup : ChipTestingSetup {
 
     TokenTransactionTestingSetup() {
-        UnsetArg("-upgrade9activationtime");
+        UnsetArg("-upgrade9activationheight");
     }
 
     ~TokenTransactionTestingSetup() override {
-        UnsetArg("-upgrade9activationtime");
+        UnsetArg("-upgrade9activationheight");
     }
 
     /// Activates or deactivates upgrade 9 by setting the activation time in the past or future respectively
     void SetUpgrade9Active(bool active) {
-        const auto currentMTP = []{
+        const auto currentHeight = []{
             LOCK(cs_main);
-            return chainActive.Tip()->GetMedianTimePast();
+            return chainActive.Tip()->nHeight;
         }();
-        auto activationMtp = active ? currentMTP - 1 : currentMTP + 1;
-        SetArg("-upgrade9activationtime", strprintf("%d", activationMtp));
+        auto activationHeight = active ? currentHeight - 1 : currentHeight + 1;
+        SetArg("-upgrade9activationheight", strprintf("%d", activationHeight));
     }
 
 protected:
