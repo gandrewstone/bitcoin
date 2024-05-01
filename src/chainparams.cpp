@@ -313,8 +313,11 @@ public:
         pchMessageStart[3] = 0xe9;
         nDefaultPort = DEFAULT_NOLNET_PORT;
         nPruneAfterHeight = 100000;
-        nDefaultConsensusBlockSize = std::numeric_limits<uint64_t>::max();
-        nDefaultMaxBlockMiningSize = std::numeric_limits<uint64_t>::max();
+        nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
+        nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE;
+        // FIXME decide what to do with NOL, we should retere it imho.
+        //nDefaultConsensusBlockSize = std::numeric_limits<uint64_t>::max();
+        //nDefaultMaxBlockMiningSize = std::numeric_limits<uint64_t>::max();
 
         // Aug, 1 2017 hard fork
         consensus.uahfHeight = 0;
