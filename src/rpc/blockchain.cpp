@@ -76,14 +76,45 @@ double GetDifficulty(const CBlockIndex *blockindex)
     return dDiff;
 }
 
+UniValue ablaStateToJSON(const abla::State &state)
+{
+    UniValue ret(UniValue::VOBJ);
+    ret.pushKV("epsilon", state.GetControlBlockSize());
+    ret.pushKV("beta", state.GetElasticBufferSize());
+    ret.pushKV("blocksize", state.GetBlockSize());
+    // Note that consensus rules are that the max block size is always at least the configured max block size,
+    // or what ABLA says, whichever is greater.
+    //const auto cmbs = config.GetConfiguredMaxBlockSize();
+    ret.pushKV("blocksizelimit", state.GetBlockSizeLimit()); //std::max(cmbs, state.GetBlockSizeLimit()));
+    ret.pushKV("nextblocksizelimit", state.GetNextBlockSizeLimit(Params().GetConsensus().ablaConfig)); // std::max(cmbs, state.GetNextBlockSizeLimit(Params().GetConsensus().ablaConfig)));
+    return ret;
+}
+
+
+static std::string ablaStateHelpCommon(bool trailingComma)
+{
+    return strprintf(
+        "  \"ablastate\" : {        (json object, optional) The block's ABLA state\n"
+        "    \"epsilon\" : n,       (numeric) ABLA state epsilon value\n"
+        "    \"beta\" : n,          (numeric) ABLA state beta value\n"
+        "    \"blocksize\" : n,     (numeric) The size of this block\n"
+        "    \"blocksizelimit\" : n,        (numeric) The size limit for this block\n"
+        "    \"nextblocksizelimit\" : n,    (numeric) The size limit for the next block\n"
+        "  }%s\n", trailingComma ? "," : "");
+}
+
+
 UniValue blockheaderToJSON(const CBlockIndex *blockindex)
 {
     UniValue result(UniValue::VOBJ);
     result.pushKV("hash", blockindex->GetBlockHash().GetHex());
     int confirmations = -1;
+    const auto ablaStateOpt = blockindex->GetAblaStateOpt();
     // Only report confirmations if the block is on the main chain
     if (chainActive.Contains(blockindex))
+    {
         confirmations = chainActive.Height() - blockindex->nHeight + 1;
+    }
     result.pushKV("confirmations", confirmations);
     result.pushKV("height", blockindex->nHeight);
     result.pushKV("version", blockindex->nVersion);
@@ -95,12 +126,19 @@ UniValue blockheaderToJSON(const CBlockIndex *blockindex)
     result.pushKV("bits", strprintf("%08x", blockindex->nBits));
     result.pushKV("difficulty", GetDifficulty(blockindex));
     result.pushKV("chainwork", blockindex->nChainWork.GetHex());
-
     if (blockindex->pprev)
+    {
         result.pushKV("previousblockhash", blockindex->pprev->GetBlockHash().GetHex());
+    }
     CBlockIndex *pnext = chainActive.Next(blockindex);
     if (pnext)
+    {
         result.pushKV("nextblockhash", pnext->GetBlockHash().GetHex());
+    }
+    if (ablaStateOpt)
+    {
+        result.pushKV("ablastate", ablaStateToJSON(*ablaStateOpt));
+    }
     return result;
 }
 
@@ -112,9 +150,12 @@ UniValue blockToJSON(const CBlock &block,
     UniValue result(UniValue::VOBJ);
     result.pushKV("hash", blockindex->GetBlockHash().GetHex());
     int confirmations = -1;
+    const auto ablaStateOpt = blockindex->GetAblaStateOpt();
     // Only report confirmations if the block is on the main chain
     if (chainActive.Contains(blockindex))
+    {
         confirmations = chainActive.Height() - blockindex->nHeight + 1;
+    }
     result.pushKV("confirmations", confirmations);
     result.pushKV("size", (int)::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION));
     result.pushKV("height", blockindex->nHeight);
@@ -150,12 +191,19 @@ UniValue blockToJSON(const CBlock &block,
     result.pushKV("bits", strprintf("%08x", block.nBits));
     result.pushKV("difficulty", GetDifficulty(blockindex));
     result.pushKV("chainwork", blockindex->nChainWork.GetHex());
-
     if (blockindex->pprev)
+    {
         result.pushKV("previousblockhash", blockindex->pprev->GetBlockHash().GetHex());
+    }
     CBlockIndex *pnext = chainActive.Next(blockindex);
     if (pnext)
+    {
         result.pushKV("nextblockhash", pnext->GetBlockHash().GetHex());
+    }
+    if (ablaStateOpt)
+    {
+        result.pushKV("ablastate", ablaStateToJSON(*ablaStateOpt));
+    }
     return result;
 }
 
@@ -595,6 +643,7 @@ UniValue getblockheader(const UniValue &params, bool fHelp)
             "  \"difficulty\" : x.xxx,  (numeric) The difficulty\n"
             "  \"previousblockhash\" : \"hash\",  (string) The hash of the previous block\n"
             "  \"nextblockhash\" : \"hash\",      (string) The hash of the next block\n"
+            + ablaStateHelpCommon(false) +
             "  \"chainwork\" : \"0000...1f3\"     (string) Expected number of hashes required to produce the current "
             "chain (in hex)\n"
             "}\n"
@@ -766,6 +815,7 @@ static UniValue getblock(const UniValue &params, bool fHelp)
             "block (in hex)\n"
             "  \"previousblockhash\" : \"hash\",  (string) The hash of the previous block\n"
             "  \"nextblockhash\" : \"hash\"       (string) The hash of the next block\n"
+            + ablaStateHelpCommon(false) +
             "}\n"
             "\nResult (for verbosity = 2, tx_count = false):\n"
             "{\n"
