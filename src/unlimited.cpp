@@ -506,43 +506,6 @@ UniValue getexcessiveblock(const UniValue &params, bool fHelp)
     return ret;
 }
 
-UniValue setexcessiveblock(const UniValue &params, bool fHelp)
-{
-    if (fHelp || params.size() < 1 || params.size() >= 2)
-        throw runtime_error("setexcessiveblock blockSize\n"
-                            "\nSet the excessive block size in bytes.  Excessive blocks will not be used in "
-                            "the active chain or relayed until they are several blocks deep in the blockchain.  This "
-                            "discourages the propagation of blocks that you consider excessively large.  However, if "
-                            "the mining majority of the network builds upon the block then you will eventually accept "
-                            "it, maintaining consensus."
-                            "\nResult\n"
-                            "  blockSize (integer) excessive block size in bytes\n"
-                            "\nExamples:\n" +
-                            HelpExampleCli("setexcessiveblock", "32000000") +
-                            HelpExampleRpc("setexcessiveblock", "32000000"));
-
-    uint64_t ebs = 0;
-    if (params[0].isNum())
-        ebs = params[0].get_int64();
-    else
-    {
-        string temp = params[0].get_str();
-        if (temp[0] == '-')
-            throw runtime_error("Excessive block size has to be a positive number");
-        ebs = std::stoull(temp);
-    }
-
-    std::string estr = ebTweak.Validate(ebs);
-    if (!estr.empty())
-        throw runtime_error(estr);
-    ebTweak.Set(ebs);
-
-    settingsToUserAgentString();
-    std::ostringstream ret;
-    ret << "Excessive Block set to " << excessiveBlockSize << " bytes.";
-    return UniValue(ret.str());
-}
-
 UniValue getblockversion(const UniValue &params, bool fHelp)
 {
     if (fHelp || params.size() != 0)
@@ -1432,12 +1395,9 @@ static const CRPCCommand commands[] =
     { "network",            "gettrafficshaping",      &gettrafficshaping,      true  },
     { "network",            "pushtx",                 &pushtx,                 true  },
     { "network",            "getexcessiveblock",      &getexcessiveblock,      true  },
-    { "network",            "setexcessiveblock",      &setexcessiveblock,      true  },
     { "network",            "expedited",              &expedited,              true  },
 
     /* Mining */
-    { "mining",             "getminingmaxblock",      &getminingmaxblock,      true  },
-    { "mining",             "setminingmaxblock",      &setminingmaxblock,      true  },
     { "mining",             "getminercomment",        &getminercomment,        true  },
     { "mining",             "setminercomment",        &setminercomment,        true  },
     { "mining",             "getblockversion",        &getblockversion,        true  },

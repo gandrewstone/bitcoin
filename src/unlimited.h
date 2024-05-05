@@ -146,11 +146,7 @@ extern UniValue settrafficshaping(const UniValue &params, bool fHelp);
 extern UniValue gettrafficshaping(const UniValue &params, bool fHelp);
 extern UniValue pushtx(const UniValue &params, bool fHelp);
 
-extern UniValue getminingmaxblock(const UniValue &params, bool fHelp);
-extern UniValue setminingmaxblock(const UniValue &params, bool fHelp);
-
 extern UniValue getexcessiveblock(const UniValue &params, bool fHelp);
-extern UniValue setexcessiveblock(const UniValue &params, bool fHelp);
 
 // Get and set the custom string that miners can place into the coinbase transaction
 extern UniValue getminercomment(const UniValue &params, bool fHelp);
