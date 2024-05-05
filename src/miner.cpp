@@ -79,7 +79,11 @@ BlockAssembler::BlockAssembler(const CChainParams &_chainparams)
       lastFewTxs(0), blockFinished(false)
 {
     // Largest block you're willing to create:
-    nBlockMaxSize = maxGeneratedBlock;
+    //nBlockMaxSize = maxGeneratedBlock;
+
+    nBlockMaxSize = GetNextBlockSizeLimit(chainActive.Tip()) * 0.95;
+    nBlockMinSize = nBlockMaxSize;
+
     // Core:
     // nBlockMaxSize = GetArg("-blockmaxsize", DEFAULT_BLOCK_MAX_SIZE);
     // Limit to between 1K and MAX_BLOCK_SIZE-1K for sanity:
@@ -87,8 +91,8 @@ BlockAssembler::BlockAssembler(const CChainParams &_chainparams)
 
     // Minimum block size you want to create; block will be filled with free transactions
     // until there are no more or the block reaches this size:
-    nBlockMinSize = GetArg("-blockprioritysize", DEFAULT_BLOCK_PRIORITY_SIZE);
-    nBlockMinSize = std::min(nBlockMaxSize, nBlockMinSize);
+    //nBlockMinSize = GetArg("-blockprioritysize", DEFAULT_BLOCK_PRIORITY_SIZE);
+    //nBlockMinSize = std::min(nBlockMaxSize, nBlockMinSize);
 }
 
 void BlockAssembler::resetBlock(const CScript &scriptPubKeyIn, int64_t coinbaseSize)

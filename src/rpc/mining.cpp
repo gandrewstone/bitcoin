@@ -520,7 +520,7 @@ static UniValue MkFullMiningCandidateJson(const std::set<std::string> &setClient
         result.pushKV("sigchecktotal", sigcheckTotal);
     }
 
-    result.pushKV("sizelimit", (int64_t)maxGeneratedBlock);
+    result.pushKV("sizelimit", (int64_t)GetNextBlockSizeLimit(chainActive.Tip()));
     result.pushKV("curtime", pblock->GetBlockTime());
     result.pushKV("bits", strprintf("%08x", pblock->nBits));
     // BU get the height directly from the block because pindexPrev could change if another block has come in.

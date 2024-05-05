@@ -70,7 +70,6 @@ extern CStatusString statusStrings;
 
 extern std::set<CBlockIndex *> setDirtyBlockIndex;
 extern uint32_t blockVersion; // Overrides the mined block version if non-zero
-extern uint64_t maxGeneratedBlock;
 extern uint64_t excessiveBlockSize;
 extern unsigned int maxMessageSizeMultiplier;
 extern bool fCanonicalTxsOrder;
@@ -238,12 +237,9 @@ extern CStatHistory<unsigned int> txAdded;
 extern CStatHistory<uint64_t, MinValMax<uint64_t> > poolSize;
 
 // Configuration variable validators
-bool MiningAndExcessiveBlockValidatorRule(const uint64_t newExcessiveBlockSize, const uint64_t newMiningBlockSize);
-std::string ExcessiveBlockValidator(const uint64_t &value, uint64_t *item, bool validate);
 std::string OutboundConnectionValidator(const int &value, int *item, bool validate);
 std::string MaxDataCarrierValidator(const unsigned int &value, unsigned int *item, bool validate);
 std::string SubverValidator(const std::string &value, std::string *item, bool validate);
-std::string MiningBlockSizeValidator(const uint64_t &value, uint64_t *item, bool validate);
 // validator for the voting tweak
 std::string Bip135VoteValidator(const std::string &value, std::string *item, bool validate);
 // ensure that only 1 fork is active
@@ -251,7 +247,6 @@ std::string ForkTimeValidator(const uint64_t &value, uint64_t *item, bool valida
 
 extern CTweak<unsigned int> maxTxSize;
 extern CTweak<uint64_t> coinbaseReserve;
-extern CTweakRef<uint64_t> miningBlockSize;
 extern CTweakRef<uint64_t> ebTweak;
 extern CTweak<uint64_t> maxMiningCandidates;
 extern CTweak<uint64_t> minMiningCandidateInterval;

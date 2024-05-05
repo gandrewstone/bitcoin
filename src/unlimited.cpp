@@ -76,61 +76,6 @@ UniValue validateblocktemplate(const UniValue &params, bool fHelp);
 UniValue validatechainhistory(const UniValue &params, bool fHelp);
 
 
-bool MiningAndExcessiveBlockValidatorRule(const uint64_t newExcessiveBlockSize, const uint64_t newMiningBlockSize)
-{
-    // The mined block size must be less then or equal too the excessive block size.
-    LOGA("newMiningBlockSize: %d - newExcessiveBlockSize: %d\n", newMiningBlockSize, newExcessiveBlockSize);
-    return (newMiningBlockSize <= newExcessiveBlockSize);
-}
-
-std::string ExcessiveBlockValidator(const uint64_t &value, uint64_t *item, bool validate)
-{
-    if (validate)
-    {
-        if (!MiningAndExcessiveBlockValidatorRule(value, maxGeneratedBlock))
-        {
-            std::ostringstream ret;
-            ret << "Sorry, your maximum mined block (" << maxGeneratedBlock
-                << ") is larger than your proposed excessive size (" << value
-                << ").  This would cause you to orphan your own blocks.";
-            return ret.str();
-        }
-        if (value < Params().DefaultConsensusBlockSize())
-        {
-            std::ostringstream ret;
-            ret << Params().NetworkIDString() << "Sorry, your proposed excessive block size (" << value
-                << ") is smaller than the minimum EB size (" << Params().DefaultConsensusBlockSize()
-                << ").  This would cause you to orphan blocks from the rest of the net.";
-            return ret.str();
-        }
-    }
-    else // Do anything to "take" the new value
-    {
-        settingsToUserAgentString();
-    }
-    return std::string();
-}
-
-std::string MiningBlockSizeValidator(const uint64_t &value, uint64_t *item, bool validate)
-{
-    if (validate)
-    {
-        if (!MiningAndExcessiveBlockValidatorRule(excessiveBlockSize, value))
-        {
-            std::ostringstream ret;
-            ret << "Sorry, your excessive block size (" << excessiveBlockSize
-                << ") is smaller than your proposed mined block size (" << value
-                << ").  This would cause you to orphan your own blocks.";
-            return ret.str();
-        }
-    }
-    else // Do anything to "take" the new value
-    {
-        // nothing needed
-    }
-    return std::string();
-}
-
 std::string OutboundConnectionValidator(const int &value, int *item, bool validate)
 {
     if (validate)
@@ -427,20 +372,9 @@ void UnlimitedSetup(void)
 {
     MIN_TX_REQUEST_RETRY_INTERVAL = GetArg("-txretryinterval", DEFAULT_MIN_TX_REQUEST_RETRY_INTERVAL);
     MIN_BLK_REQUEST_RETRY_INTERVAL = GetArg("-blkretryinterval", DEFAULT_MIN_BLK_REQUEST_RETRY_INTERVAL);
-    maxGeneratedBlock = GetArg("-blockmaxsize", Params().DefaultMaxBlockMiningSize());
     blockVersion = GetArg("-blockversion", blockVersion);
-    excessiveBlockSize = GetArg("-excessiveblocksize", Params().DefaultConsensusBlockSize());
-    LOG(TWEAKS, "TWEAKS: UnlimitedSetup() set excessiveBlockSize to %u", excessiveBlockSize);
     maxSigChecks = excessiveBlockSize / BLOCK_MAXBYTES_MAXSIGCHECKS_RATIO;
     LoadTweaks(); // The above options are deprecated so the same parameter defined as a tweak will override them
-
-    if (maxGeneratedBlock > excessiveBlockSize)
-    {
-        LOGA("Reducing the maximum mined block from the configured %d to your excessive block size %d.  Otherwise "
-             "you would orphan your own blocks.\n",
-            maxGeneratedBlock, excessiveBlockSize);
-        maxGeneratedBlock = excessiveBlockSize;
-    }
 
     settingsToUserAgentString();
     //  Init network shapers
@@ -607,58 +541,6 @@ UniValue setexcessiveblock(const UniValue &params, bool fHelp)
     std::ostringstream ret;
     ret << "Excessive Block set to " << excessiveBlockSize << " bytes.";
     return UniValue(ret.str());
-}
-
-
-UniValue getminingmaxblock(const UniValue &params, bool fHelp)
-{
-    if (fHelp || params.size() != 0)
-        throw runtime_error("getminingmaxblock\n"
-                            "\nReturn the max generated (mined) block size"
-                            "\nResult\n"
-                            "      (integer) maximum generated block size in bytes\n"
-                            "\nExamples:\n" +
-                            HelpExampleCli("getminingmaxblock", "") + HelpExampleRpc("getminingmaxblock", ""));
-
-    return maxGeneratedBlock;
-}
-
-
-UniValue setminingmaxblock(const UniValue &params, bool fHelp)
-{
-    if (fHelp || params.size() != 1)
-        throw runtime_error(
-            "setminingmaxblock blocksize\n"
-            "\nSet the maximum number of bytes to include in a generated (mined) block.  This command does not turn "
-            "generation on/off.\n"
-            "\nArguments:\n"
-            "1. blocksize         (integer, required) the maximum number of bytes to include in a block.\n"
-            "\nExamples:\n"
-            "\nSet the generated block size limit to 8 MB\n" +
-            HelpExampleCli("setminingmaxblock", "8000000") + "\nCheck the setting\n" +
-            HelpExampleCli("getminingmaxblock", ""));
-
-    uint64_t arg = 0;
-    if (params[0].isNum())
-        arg = params[0].get_int64();
-    else
-    {
-        string temp = params[0].get_str();
-        if (temp[0] == '-')
-            boost::throw_exception(boost::bad_lexical_cast());
-        arg = boost::lexical_cast<uint64_t>(temp);
-    }
-
-    // I don't want to waste time testing edge conditions where no txns can fit in a block, so limit the minimum block
-    // size
-    // This also fixes issues user issues where people provide the value as MB
-    if (arg < 100)
-        throw runtime_error("max generated block size must be greater than 100 bytes");
-
-    std::string ret = miningBlockSize.Validate(params[0]);
-    if (!ret.empty())
-        throw runtime_error(ret.c_str());
-    return miningBlockSize.Set(params[0]);
 }
 
 UniValue getblockversion(const UniValue &params, bool fHelp)

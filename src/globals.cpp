@@ -186,7 +186,6 @@ vector<std::string> vUseDNSSeeds;
 vector<std::string> vAddedNodes;
 set<CNetAddr> setservAddNodeAddresses;
 
-uint64_t maxGeneratedBlock = DEFAULT_BLOCK_MAX_SIZE;
 uint64_t excessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
 unsigned int maxMessageSizeMultiplier = DEFAULT_MAX_MESSAGE_SIZE_MULTIPLIER;
 int nMaxOutConnections = DEFAULT_MAX_OUTBOUND_CONNECTIONS;
@@ -316,12 +315,6 @@ CTweak<uint64_t> minMiningCandidateInterval("mining.minCandidateInterval",
 
 CTweakRef<std::string> miningCommentTweak("mining.comment", "Include this text in a block's coinbase.", &minerComment);
 
-CTweakRef<uint64_t> miningBlockSize("mining.blockSize",
-    strprintf("Maximum block size in bytes.  The maximum block size returned from 'getblocktemplate' will be this "
-              "value minus mining.coinbaseReserve (default: %d)",
-        maxGeneratedBlock),
-    &maxGeneratedBlock,
-    &MiningBlockSizeValidator);
 CTweakRef<unsigned int> maxDataCarrierTweak("mining.dataCarrierSize",
     strprintf("Maximum size of OP_RETURN data script in bytes (default: %d)", nMaxDatacarrierBytes),
     &nMaxDatacarrierBytes,
@@ -350,7 +343,7 @@ CTweak<bool> xvalTweak("mining.xval",
 CTweak<unsigned int> maxTxSize("net.excessiveTx",
     strprintf("Largest transaction size in bytes (default: %ld)", DEFAULT_LARGEST_TRANSACTION),
     DEFAULT_LARGEST_TRANSACTION);
-    
+
 CTweakRef<int> maxOutConnectionsTweak("net.maxOutboundConnections",
     "Maximum number of outbound connections",
     &nMaxOutConnections,
