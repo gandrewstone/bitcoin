@@ -31,8 +31,6 @@
 #include <QSettings>
 #include <QStringList>
 
-extern CTweakRef<uint64_t> ebTweak;
-
 UnlimitedModel::UnlimitedModel(QObject *parent) : QAbstractListModel(parent) { Init(); }
 void UnlimitedModel::addOverriddenOption(const std::string &option)
 {

@@ -247,7 +247,6 @@ std::string ForkTimeValidator(const uint64_t &value, uint64_t *item, bool valida
 
 extern CTweak<unsigned int> maxTxSize;
 extern CTweak<uint64_t> coinbaseReserve;
-extern CTweakRef<uint64_t> ebTweak;
 extern CTweak<uint64_t> maxMiningCandidates;
 extern CTweak<uint64_t> minMiningCandidateInterval;
 

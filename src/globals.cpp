@@ -284,10 +284,6 @@ CTweak<uint32_t> randomlyDontInv("net.randomlyDontInv",
     "Skip sending an INV for some percent of transactions (default: 0)",
     0);
 
-CTweakRef<uint64_t> ebTweak("net.excessiveBlock",
-    strprintf("Excessive block size in bytes (default: %d)", excessiveBlockSize),
-    &excessiveBlockSize,
-    &ExcessiveBlockValidator);
 CTweak<bool> ignoreNetTimeouts("net.ignoreTimeouts",
     "ignore inactivity timeouts, used during debugging (default: false)",
     false);
