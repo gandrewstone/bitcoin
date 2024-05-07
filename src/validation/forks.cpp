@@ -162,15 +162,10 @@ bool IsMay2023Activated(const Consensus::Params &consensusparams, const CBlockIn
     {
         return false;
     }
-    if (consensusparams.may2023Height)
-    {
-        // if node's launched with cusotm activation height use that, cause we are presumably
-        // running some functional/unit tests.
-        int32_t height = GetArg("-upgrade9activationheight", consensusparams.may2023Height);
-        return pindexTip->nHeight >= height;
-    }
-    // nolnet and regtest don't have height set.
-    return pindexTip->IsforkActiveOnNextBlock(MAY2023_ACTIVATION_TIME);
+    // if node's launched with cusotm activation height use that, cause we are presumably
+    // running some functional/unit tests.
+    int32_t height = GetArg("-upgrade9activationheight", consensusparams.may2023Height);
+    return pindexTip->nHeight >= height;
 }
 
 // Check if May 15th 2024 fork has activated using MTP
