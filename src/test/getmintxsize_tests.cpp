@@ -15,45 +15,28 @@
 
 BOOST_FIXTURE_TEST_SUITE(getmintxsize_tests, BasicTestingSetup)
 
-static void SetMTP(std::array<CBlockIndex, 12> &blocks, int64_t mtp)
-{
-    size_t len = blocks.size();
-
-    for (size_t i = 0; i < len; ++i)
-    {
-        blocks[i].nTime = mtp + (i - (len / 2));
-    }
-
-    assert(blocks.back().GetMedianTimePast() == mtp);
-}
-
 BOOST_AUTO_TEST_CASE(getmintxsize)
 {
     const CChainParams config = Params(CBaseChainParams::REGTEST);
     CBlockIndex prev;
 
     std::array<CBlockIndex, 12> blocks;
+    blocks[0].nHeight=0;
     for (size_t i = 1; i < blocks.size(); ++i)
     {
         blocks[i].pprev = &blocks[i - 1];
+        blocks[i].nHeight = i;
     }
 
-    // For functional tests, the activation time can be overridden.
-    uint64_t activation = 1600000000;
-    SetArg("-upgrade9activationtime", "1600000000");
-
-    SetMTP(blocks, activation - 1);
+    SetArg("-upgrade9activationheight", strprintf("%d", 12));
     // Check if GetMinimumTxSize returns the correct value
     BOOST_CHECK_EQUAL(GetMinimumTxSize(config.GetConsensus(), &blocks.back()), MIN_TX_SIZE_MAGNETIC_ANOMALY);
 
-    SetMTP(blocks, activation);
-    BOOST_CHECK_EQUAL(GetMinimumTxSize(config.GetConsensus(), &blocks.back()), MIN_TX_SIZE_UPGRADE9);
-
-    SetMTP(blocks, activation + 1);
+    SetArg("-upgrade9activationheight", strprintf("%d", 10));
     BOOST_CHECK_EQUAL(GetMinimumTxSize(config.GetConsensus(), &blocks.back()), MIN_TX_SIZE_UPGRADE9);
 
     // Cleanup
-    UnsetArg("-upgrade9activationtime");
+    UnsetArg("-upgrade9activationheight");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
