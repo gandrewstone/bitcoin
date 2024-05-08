@@ -774,8 +774,9 @@ BOOST_AUTO_TEST_CASE(asert_activation_anchor_test)
     // blocks in this test.
     std::vector<CBlockIndex*> blocks(10000);
     int bidx = 1;
-
+    
     // Genesis block.
+    blocks[0] = new CBlockIndex();
     blocks[0]->nHeight = 0;
     blocks[0]->nTime = 1269211443;
     blocks[0]->nBits = initialBits;
