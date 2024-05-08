@@ -8,6 +8,24 @@
 #include "univalue.h"
 #include "univalue_escapes.h"
 
+/* static */
+void UniValue::jsonEscape(Stream & ss, std::string_view inS)
+{
+    for (const auto ch : inS)
+    {
+        const char * const escStr = escapes[uint8_t(ch)];
+
+        if (escStr)
+        {
+            ss << escStr;
+        }
+        else
+        {
+            ss.put(ch);
+        }
+    }
+}
+
 static std::string json_escape(const std::string& inS)
 {
     std::string outS;
@@ -118,4 +136,41 @@ void UniValue::writeObject(unsigned int prettyIndent, unsigned int indentLevel, 
     if (prettyIndent)
         indentStr(prettyIndent, indentLevel - 1, s);
     s += "}";
+}
+
+/* static */
+void UniValue::stringify(Stream& ss, const UniValue& value, const unsigned int prettyIndent, const unsigned int indentLevel)
+{
+    std::string s;
+    switch (value.typ) {
+    case VNULL:
+        ss << "null";
+        break;
+    case VBOOL:
+        s += (value.val == "1" ? "true" : "false");
+        ss << s;
+        break;
+    case VOBJ:
+        value.writeObject(prettyIndent, indentLevel, s);
+        ss << s;
+        break;
+    case VARR:
+        value.writeArray(prettyIndent, indentLevel, s);
+        ss << s;
+        break;
+    case VNUM:
+        ss << value.val;
+        break;
+    case VSTR:
+        stringify(ss, std::string_view(value.get_str()), prettyIndent, indentLevel);
+        break;
+    }
+}
+
+/* static */
+void UniValue::stringify(Stream& ss, std::string_view string, const unsigned int prettyIndent, const unsigned int indentLevel)
+{
+    ss.put('"');
+    jsonEscape(ss, string);
+    ss.put('"');
 }

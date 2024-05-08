@@ -9,7 +9,7 @@
 // we have changed the keys from a vector to a std::map making insertions log(n)
 // instead of N^2. Other methods were adjusted accordingly to the change in keys
 // data structure. This is not the exact fix Calin had remedied for this issue
-// but it is heavily based on and influenced by his solution. 
+// but it is heavily based on and influenced by his solution.
 
 #ifndef __UNIVALUE_H__
 #define __UNIVALUE_H__
@@ -18,6 +18,7 @@
 #include <string.h>
 
 #include <string>
+#include <string_view>
 #include <vector>
 #include <map>
 #include <cassert>
@@ -159,6 +160,27 @@ public:
     std::string write(unsigned int prettyIndent = 0,
                       unsigned int indentLevel = 0) const;
 
+    /**
+     * Returns the JSON string representation of the provided value.
+     *
+     * The type of value can be the generic UniValue,
+     * or a more specific type: UniValue::Object, UniValue::Array, or std::string.
+     *
+     * The optional argument indicates the number of spaces for indentation in pretty formatting.
+     * Use 0 (default) to disable pretty formatting and use compact formatting instead.
+     * Note that pretty formatting only affects arrays and objects.
+     *
+     * This is a Bitcoin Cash Node extension of the UniValue API.
+     */
+    template<typename Value>
+    static std::string stringify(const Value& value, unsigned int prettyIndent = 0) {
+        std::string s; // we do it this way for RVO to work on all compilers
+        Stream ss{s};
+        s.reserve(1024);
+        stringify(ss, value, prettyIndent, 0);
+        return s;
+    }
+
     bool read(const char *raw, size_t len);
     bool read(const char *raw) { return read(raw, strlen(raw)); }
     bool read(const std::string& rawStr) {
@@ -173,6 +195,17 @@ private:
 
     void writeArray(unsigned int prettyIndent, unsigned int indentLevel, std::string& s) const;
     void writeObject(unsigned int prettyIndent, unsigned int indentLevel, std::string& s) const;
+
+    // Opaque type used for writing. This can be further optimized later.
+    struct Stream {
+        std::string & str; // this is a reference for RVO to always work in UniValue::stringify()
+        void put(char c) { str.push_back(c); }
+        void put(char c, size_t nFill) { str.append(nFill, c); }
+        Stream & operator<<(std::string_view s) { str.append(s); return *this; }
+    };
+    static void jsonEscape(Stream & stream, std::string_view inString);
+    static void stringify(Stream & stream, const UniValue& value, unsigned int prettyIndent, unsigned int indentLevel);
+    static void stringify(Stream & stream, std::string_view value, unsigned int prettyIndent, unsigned int indentLevel);
 
 public:
     // Strict type-specific getters, these throw std::runtime_error if the

@@ -1,0 +1,30 @@
+{
+  "ABLAConfig": {
+    "epsilon0": "16000000",
+    "beta0": "16000000",
+    "n0": 100000,
+    "zeta": 192,
+    "gammaReciprocal": 37938,
+    "delta": 10,
+    "thetaReciprocal": 37938,
+    "options": "-disable2GBLimit"
+  },
+  "testDescription": "Test vector for the lookahead function; using a sequence of 100% full blocks; using proposed configuration with the exception of n0 which will be determined from MTP activation.",
+  "ABLAStateInitial": {
+    "n": 99950,
+    "epsilon": "16000000",
+    "beta": "16000000"
+  },
+  "blocksizeLimitInitial": "32000000",
+  "testVector": [
+    {
+      "lookahead": "100",
+      "ABLAStateForLookaheadBlock": {
+        "n": 100050,
+        "epsilon": "16010503",
+        "beta": "16083915"
+      },
+      "blocksizeLimitForLookaheadBlock": "32094418"
+    }
+  ]
+}

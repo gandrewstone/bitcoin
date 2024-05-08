@@ -2,12 +2,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <consensus/abla.h>
-#include <test/data/abla_test_vectors.json.h>
-#include <test/jsonutil.h>
-#include <test/setup_common.h>
+#include "consensus/abla.h"
+#include "data/abla_test_vectors.json.h"
+#include "jsonutil.h"
+#include "test_bitcoin.h"
 #include <univalue.h>
-#include <util/strencodings.h>
+#include "utilstrencodings.h"
 
 #include <boost/test/unit_test.hpp>
 
@@ -15,10 +15,10 @@
 
 BOOST_FIXTURE_TEST_SUITE(abla_test_vectors, BasicTestingSetup)
 
-static uint64_t Parse64(const UniValue::Object &o, std::string_view key)
+static uint64_t Parse64(const UniValue &o, std::string_view key)
 {
     uint64_t ret;
-    BOOST_REQUIRE(ParseUInt64(o.at(key).getValStr(), &ret));
+    BOOST_REQUIRE(ParseUInt64(o[std::string(key)].getValStr(), &ret));
     return ret;
 }
 
@@ -29,9 +29,9 @@ struct TestAblaState
     uint64_t beta{};
 
     TestAblaState() = default;
-    TestAblaState(const UniValue::Object &o) { *this = o; }
+    TestAblaState(const UniValue &o) { *this = o; }
 
-    TestAblaState &operator=(const UniValue::Object &o)
+    TestAblaState &operator=(const UniValue &o)
     {
         n = Parse64(o, "n");
         epsilon = Parse64(o, "epsilon");
@@ -40,25 +40,33 @@ struct TestAblaState
     }
 };
 
-static void RunTest(size_t testNum, const UniValue::Object &test)
+static void RunTest(size_t testNum, const UniValue &test)
 {
     auto msg = strprintf("Running test #%i", testNum);
-    if (const UniValue *uv; (uv = test.locate("testName")) && uv->isStr())
+    if (test.exists("testName"))
     {
-        msg += strprintf("\n    Name: %s", uv->get_str());
+        UniValue value = test["testName"];
+        if (value.isStr())
+        {
+            msg += strprintf("\n    Name: %s", value.get_str());
+        }
     }
-    if (const UniValue *uv; (uv = test.locate("testDescription")) && uv->isStr())
+    if (test.exists("testDescription"))
     {
-        msg += strprintf("\n    Description: %s", uv->get_str());
+        UniValue value = test["testDescription"];
+        if (value.isStr())
+        {
+            msg += strprintf("\n    Description: %s", value.get_str());
+        }
     }
     BOOST_TEST_MESSAGE(msg);
 
     // Load config
     auto dump_msg = strprintf("    Top-level params:");
-    const auto &conf_obj = test.at("ABLAConfig").get_obj();
+    const auto &conf_obj = test["ABLAConfig"].get_obj();
     dump_msg += strprintf("\n        ABLAConfig: %s", UniValue::stringify(conf_obj));
-    dump_msg += strprintf("\n        ABLAStateInitial: %s", UniValue::stringify(test.at("ABLAStateInitial")));
-    dump_msg += strprintf("\n        blocksizeLimitInitial: %s", UniValue::stringify(test.at("blocksizeLimitInitial")));
+    dump_msg += strprintf("\n        ABLAStateInitial: %s", UniValue::stringify(test["ABLAStateInitial"]));
+    dump_msg += strprintf("\n        blocksizeLimitInitial: %s", UniValue::stringify(test["blocksizeLimitInitial"]));
     BOOST_TEST_MESSAGE(dump_msg);
     abla::Config config;
     config.epsilon0 = Parse64(conf_obj, "epsilon0");
@@ -74,32 +82,32 @@ static void RunTest(size_t testNum, const UniValue::Object &test)
     const uint64_t n0 = Parse64(conf_obj, "n0");
     // Parse disable2GBLimit flag
     bool disable2GBLimit = false;
-    if (const UniValue *uv; (uv = conf_obj.locate("options")) && uv->isStr())
+    if (conf_obj.exists("options"))
     {
-        disable2GBLimit = uv->get_str().find("-disable2GBLimit") != std::string::npos;
+        disable2GBLimit = conf_obj["options"].get_str().find("-disable2GBLimit") != std::string::npos;
     }
 
     // Set up initial state
-    const TestAblaState initial_tstate = test.at("ABLAStateInitial").get_obj();
+    const TestAblaState initial_tstate = test["ABLAStateInitial"].get_obj();
     abla::State state = abla::State::FromTuple({0, initial_tstate.epsilon, initial_tstate.beta});
     BOOST_REQUIRE(state.IsValid(config));
     const uint64_t initial_bsLimit = Parse64(test, "blocksizeLimitInitial");
     uint64_t bsLimit = initial_bsLimit, blockSize{}, bsLimitNext{};
     uint64_t n = initial_tstate.n;
     TestAblaState tstate = initial_tstate;
-    const UniValue::Array &tv_array = test.at("testVector").get_array();
+    const UniValue &tv_array = test["testVector"].get_array();
 
-    if (tv_array.size() == 1 && tv_array.at(0).isObject() && tv_array.at(0).locate("lookahead"))
+    if (tv_array.size() == 1 && tv_array[0].isObject() && tv_array[0].exists("lookahead"))
     {
         // "lookahead" test; only 1 item and it describes where the algo activates and how far to look ahead
 
-        const UniValue::Object &o = tv_array.at(0).get_obj();
+        const UniValue &o = tv_array[0].get_obj();
         const uint64_t lookahead = Parse64(o, "lookahead");
         BOOST_REQUIRE(lookahead > 0);
         BOOST_REQUIRE_EQUAL(bsLimit, tstate.epsilon + tstate.beta);
         BOOST_REQUIRE_EQUAL(state.GetBlockSizeLimit(disable2GBLimit), bsLimit);
         const uint64_t final_bsLimit = Parse64(o, "blocksizeLimitForLookaheadBlock");
-        const TestAblaState final_tstate = o.at("ABLAStateForLookaheadBlock").get_obj();
+        const TestAblaState final_tstate = o["ABLAStateForLookaheadBlock"].get_obj();
         BOOST_REQUIRE_EQUAL(final_bsLimit, final_tstate.epsilon + final_tstate.beta);
         BOOST_REQUIRE_EQUAL(tstate.n + lookahead, final_tstate.n);
 
@@ -147,15 +155,16 @@ static void RunTest(size_t testNum, const UniValue::Object &test)
             BOOST_CHECK(state.IsValid(config));
         };
 
-        for (const UniValue &uv : tv_array)
+        const std::vector<UniValue>& values = tv_array.getValues();
+        for (const UniValue &uv : values)
         {
             auto tst_msg = strprintf("N: %i", n);
-            const UniValue::Object &o = uv.get_obj();
+            const UniValue &o = uv.get_obj();
             tst_msg += strprintf(" Testing: %s", UniValue::stringify(o));
             BOOST_TEST_MESSAGE(tst_msg);
             blockSize = Parse64(o, "blocksize");
             bsLimitNext = Parse64(o, "blocksizeLimitForNextBlock");
-            const TestAblaState nextState = o.at("ABLAStateForNextBlock").get_obj();
+            const TestAblaState nextState = o["ABLAStateForNextBlock"].get_obj();
             do_checks_and_advance();
             tstate = nextState;
             bsLimit = bsLimitNext;
@@ -168,9 +177,10 @@ static void RunTest(size_t testNum, const UniValue::Object &test)
 BOOST_AUTO_TEST_CASE(test_all)
 {
     const char * const content = reinterpret_cast<const char *>(json_tests::abla_test_vectors);
-    const UniValue::Array tests = read_json({content, std::size(json_tests::abla_test_vectors)});
+    const UniValue tests = read_json({content, std::size(json_tests::abla_test_vectors)});
     size_t testNum = 1;
-    for (const auto &test : tests)
+    const std::vector<UniValue>& vtests = tests.getValues();
+    for (const auto &test : vtests)
     {
         BOOST_REQUIRE(test.isObject());
         RunTest(testNum++, test.get_obj());

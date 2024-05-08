@@ -1,0 +1,912 @@
+{
+  "ABLAConfig": {
+    "epsilon0": "16000000",
+    "beta0": "16000000",
+    "n0": 100000,
+    "zeta": 192,
+    "gammaReciprocal": 37938,
+    "delta": 10,
+    "thetaReciprocal": 37938,
+    "options": "-disable2GBLimit"
+  },
+  "testDescription": "Test against a random sampling in the 0 to 128 MB range; using proposed configuration with the exception of n0 which will be determined from MTP activation.",
+  "ABLAStateInitial": {
+    "n": 840000,
+    "epsilon": "54727681",
+    "beta": "86060355"
+  },
+  "blocksizeLimitInitial": "140788036",
+  "testVector": [
+    {
+      "blocksize": "55795604",
+      "ABLAStateForNextBlock": {
+        "n": 840001,
+        "epsilon": "54727814",
+        "beta": "86059417"
+      },
+      "blocksizeLimitForNextBlock": "140787231"
+    },
+    {
+      "blocksize": "30624801",
+      "ABLAStateForNextBlock": {
+        "n": 840002,
+        "epsilon": "54727583",
+        "beta": "86057149"
+      },
+      "blocksizeLimitForNextBlock": "140784732"
+    },
+    {
+      "blocksize": "56675893",
+      "ABLAStateForNextBlock": {
+        "n": 840003,
+        "epsilon": "54727722",
+        "beta": "86056271"
+      },
+      "blocksizeLimitForNextBlock": "140783993"
+    },
+    {
+      "blocksize": "48340839",
+      "ABLAStateForNextBlock": {
+        "n": 840004,
+        "epsilon": "54727803",
+        "beta": "86054813"
+      },
+      "blocksizeLimitForNextBlock": "140782616"
+    },
+    {
+      "blocksize": "65942496",
+      "ABLAStateForNextBlock": {
+        "n": 840005,
+        "epsilon": "54728006",
+        "beta": "86054575"
+      },
+      "blocksizeLimitForNextBlock": "140782581"
+    },
+    {
+      "blocksize": "89755216",
+      "ABLAStateForNextBlock": {
+        "n": 840006,
+        "epsilon": "54728374",
+        "beta": "86055987"
+      },
+      "blocksizeLimitForNextBlock": "140784361"
+    },
+    {
+      "blocksize": "104216651",
+      "ABLAStateForNextBlock": {
+        "n": 840007,
+        "epsilon": "54728842",
+        "beta": "86058399"
+      },
+      "blocksizeLimitForNextBlock": "140787241"
+    },
+    {
+      "blocksize": "5293425",
+      "ABLAStateForNextBlock": {
+        "n": 840008,
+        "epsilon": "54727609",
+        "beta": "86056131"
+      },
+      "blocksizeLimitForNextBlock": "140783740"
+    },
+    {
+      "blocksize": "21357303",
+      "ABLAStateForNextBlock": {
+        "n": 840009,
+        "epsilon": "54727011",
+        "beta": "86053863"
+      },
+      "blocksizeLimitForNextBlock": "140780874"
+    },
+    {
+      "blocksize": "94419731",
+      "ABLAStateForNextBlock": {
+        "n": 840010,
+        "epsilon": "54727411",
+        "beta": "86055595"
+      },
+      "blocksizeLimitForNextBlock": "140783006"
+    },
+    {
+      "blocksize": "56284121",
+      "ABLAStateForNextBlock": {
+        "n": 840011,
+        "epsilon": "54727547",
+        "beta": "86054687"
+      },
+      "blocksizeLimitForNextBlock": "140782234"
+    },
+    {
+      "blocksize": "64028830",
+      "ABLAStateForNextBlock": {
+        "n": 840012,
+        "epsilon": "54727737",
+        "beta": "86054319"
+      },
+      "blocksizeLimitForNextBlock": "140782056"
+    },
+    {
+      "blocksize": "24542943",
+      "ABLAStateForNextBlock": {
+        "n": 840013,
+        "epsilon": "54727265",
+        "beta": "86052051"
+      },
+      "blocksizeLimitForNextBlock": "140779316"
+    },
+    {
+      "blocksize": "114218677",
+      "ABLAStateForNextBlock": {
+        "n": 840014,
+        "epsilon": "54727802",
+        "beta": "86055153"
+      },
+      "blocksizeLimitForNextBlock": "140782955"
+    },
+    {
+      "blocksize": "78847654",
+      "ABLAStateForNextBlock": {
+        "n": 840015,
+        "epsilon": "54728094",
+        "beta": "86055805"
+      },
+      "blocksizeLimitForNextBlock": "140783899"
+    },
+    {
+      "blocksize": "30028470",
+      "ABLAStateForNextBlock": {
+        "n": 840016,
+        "epsilon": "54727839",
+        "beta": "86053537"
+      },
+      "blocksizeLimitForNextBlock": "140781376"
+    },
+    {
+      "blocksize": "10585917",
+      "ABLAStateForNextBlock": {
+        "n": 840017,
+        "epsilon": "54726815",
+        "beta": "86051269"
+      },
+      "blocksizeLimitForNextBlock": "140778084"
+    },
+    {
+      "blocksize": "36111469",
+      "ABLAStateForNextBlock": {
+        "n": 840018,
+        "epsilon": "54726801",
+        "beta": "86049001"
+      },
+      "blocksizeLimitForNextBlock": "140775802"
+    },
+    {
+      "blocksize": "13555632",
+      "ABLAStateForNextBlock": {
+        "n": 840019,
+        "epsilon": "54725895",
+        "beta": "86046733"
+      },
+      "blocksizeLimitForNextBlock": "140772628"
+    },
+    {
+      "blocksize": "118757224",
+      "ABLAStateForNextBlock": {
+        "n": 840020,
+        "epsilon": "54726463",
+        "beta": "86050145"
+      },
+      "blocksizeLimitForNextBlock": "140776608"
+    },
+    {
+      "blocksize": "35129171",
+      "ABLAStateForNextBlock": {
+        "n": 840021,
+        "epsilon": "54726410",
+        "beta": "86047877"
+      },
+      "blocksizeLimitForNextBlock": "140774287"
+    },
+    {
+      "blocksize": "91480975",
+      "ABLAStateForNextBlock": {
+        "n": 840022,
+        "epsilon": "54726790",
+        "beta": "86049409"
+      },
+      "blocksizeLimitForNextBlock": "140776199"
+    },
+    {
+      "blocksize": "58720569",
+      "ABLAStateForNextBlock": {
+        "n": 840023,
+        "epsilon": "54726943",
+        "beta": "86048671"
+      },
+      "blocksizeLimitForNextBlock": "140775614"
+    },
+    {
+      "blocksize": "74372530",
+      "ABLAStateForNextBlock": {
+        "n": 840024,
+        "epsilon": "54727205",
+        "beta": "86049023"
+      },
+      "blocksizeLimitForNextBlock": "140776228"
+    },
+    {
+      "blocksize": "113790564",
+      "ABLAStateForNextBlock": {
+        "n": 840025,
+        "epsilon": "54727739",
+        "beta": "86052095"
+      },
+      "blocksizeLimitForNextBlock": "140779834"
+    },
+    {
+      "blocksize": "87252744",
+      "ABLAStateForNextBlock": {
+        "n": 840026,
+        "epsilon": "54728090",
+        "beta": "86053337"
+      },
+      "blocksizeLimitForNextBlock": "140781427"
+    },
+    {
+      "blocksize": "117188337",
+      "ABLAStateForNextBlock": {
+        "n": 840027,
+        "epsilon": "54728648",
+        "beta": "86056649"
+      },
+      "blocksizeLimitForNextBlock": "140785297"
+    },
+    {
+      "blocksize": "8505560",
+      "ABLAStateForNextBlock": {
+        "n": 840028,
+        "epsilon": "54727542",
+        "beta": "86054381"
+      },
+      "blocksizeLimitForNextBlock": "140781923"
+    },
+    {
+      "blocksize": "29275845",
+      "ABLAStateForNextBlock": {
+        "n": 840029,
+        "epsilon": "54727257",
+        "beta": "86052113"
+      },
+      "blocksizeLimitForNextBlock": "140779370"
+    },
+    {
+      "blocksize": "108688310",
+      "ABLAStateForNextBlock": {
+        "n": 840030,
+        "epsilon": "54727756",
+        "beta": "86054835"
+      },
+      "blocksizeLimitForNextBlock": "140782591"
+    },
+    {
+      "blocksize": "2117375",
+      "ABLAStateForNextBlock": {
+        "n": 840031,
+        "epsilon": "54726398",
+        "beta": "86052567"
+      },
+      "blocksizeLimitForNextBlock": "140778965"
+    },
+    {
+      "blocksize": "26167099",
+      "ABLAStateForNextBlock": {
+        "n": 840032,
+        "epsilon": "54725991",
+        "beta": "86050299"
+      },
+      "blocksizeLimitForNextBlock": "140776290"
+    },
+    {
+      "blocksize": "56009959",
+      "ABLAStateForNextBlock": {
+        "n": 840033,
+        "epsilon": "54726126",
+        "beta": "86049381"
+      },
+      "blocksizeLimitForNextBlock": "140775507"
+    },
+    {
+      "blocksize": "19798659",
+      "ABLAStateForNextBlock": {
+        "n": 840034,
+        "epsilon": "54725467",
+        "beta": "86047113"
+      },
+      "blocksizeLimitForNextBlock": "140772580"
+    },
+    {
+      "blocksize": "30274010",
+      "ABLAStateForNextBlock": {
+        "n": 840035,
+        "epsilon": "54725222",
+        "beta": "86044845"
+      },
+      "blocksizeLimitForNextBlock": "140770067"
+    },
+    {
+      "blocksize": "96869168",
+      "ABLAStateForNextBlock": {
+        "n": 840036,
+        "epsilon": "54725639",
+        "beta": "86046747"
+      },
+      "blocksizeLimitForNextBlock": "140772386"
+    },
+    {
+      "blocksize": "53143138",
+      "ABLAStateForNextBlock": {
+        "n": 840037,
+        "epsilon": "54725754",
+        "beta": "86045629"
+      },
+      "blocksizeLimitForNextBlock": "140771383"
+    },
+    {
+      "blocksize": "64048526",
+      "ABLAStateForNextBlock": {
+        "n": 840038,
+        "epsilon": "54725944",
+        "beta": "86045261"
+      },
+      "blocksizeLimitForNextBlock": "140771205"
+    },
+    {
+      "blocksize": "12951249",
+      "ABLAStateForNextBlock": {
+        "n": 840039,
+        "epsilon": "54725014",
+        "beta": "86042993"
+      },
+      "blocksizeLimitForNextBlock": "140768007"
+    },
+    {
+      "blocksize": "104309236",
+      "ABLAStateForNextBlock": {
+        "n": 840040,
+        "epsilon": "54725483",
+        "beta": "86045416"
+      },
+      "blocksizeLimitForNextBlock": "140770899"
+    },
+    {
+      "blocksize": "12909789",
+      "ABLAStateForNextBlock": {
+        "n": 840041,
+        "epsilon": "54724551",
+        "beta": "86043148"
+      },
+      "blocksizeLimitForNextBlock": "140767699"
+    },
+    {
+      "blocksize": "123292322",
+      "ABLAStateForNextBlock": {
+        "n": 840042,
+        "epsilon": "54725151",
+        "beta": "86046881"
+      },
+      "blocksizeLimitForNextBlock": "140772032"
+    },
+    {
+      "blocksize": "115289173",
+      "ABLAStateForNextBlock": {
+        "n": 840043,
+        "epsilon": "54725696",
+        "beta": "86050063"
+      },
+      "blocksizeLimitForNextBlock": "140775759"
+    },
+    {
+      "blocksize": "7484821",
+      "ABLAStateForNextBlock": {
+        "n": 840044,
+        "epsilon": "54724550",
+        "beta": "86047795"
+      },
+      "blocksizeLimitForNextBlock": "140772345"
+    },
+    {
+      "blocksize": "30182093",
+      "ABLAStateForNextBlock": {
+        "n": 840045,
+        "epsilon": "54724301",
+        "beta": "86045527"
+      },
+      "blocksizeLimitForNextBlock": "140769828"
+    },
+    {
+      "blocksize": "84368730",
+      "ABLAStateForNextBlock": {
+        "n": 840046,
+        "epsilon": "54724632",
+        "beta": "86046569"
+      },
+      "blocksizeLimitForNextBlock": "140771201"
+    },
+    {
+      "blocksize": "85671810",
+      "ABLAStateForNextBlock": {
+        "n": 840047,
+        "epsilon": "54724972",
+        "beta": "86047701"
+      },
+      "blocksizeLimitForNextBlock": "140772673"
+    },
+    {
+      "blocksize": "123519360",
+      "ABLAStateForNextBlock": {
+        "n": 840048,
+        "epsilon": "54725573",
+        "beta": "86051443"
+      },
+      "blocksizeLimitForNextBlock": "140777016"
+    },
+    {
+      "blocksize": "23177045",
+      "ABLAStateForNextBlock": {
+        "n": 840049,
+        "epsilon": "54725047",
+        "beta": "86049175"
+      },
+      "blocksizeLimitForNextBlock": "140774222"
+    },
+    {
+      "blocksize": "112170964",
+      "ABLAStateForNextBlock": {
+        "n": 840050,
+        "epsilon": "54725570",
+        "beta": "86052137"
+      },
+      "blocksizeLimitForNextBlock": "140777707"
+    },
+    {
+      "blocksize": "3591368",
+      "ABLAStateForNextBlock": {
+        "n": 840051,
+        "epsilon": "54724270",
+        "beta": "86049869"
+      },
+      "blocksizeLimitForNextBlock": "140774139"
+    },
+    {
+      "blocksize": "95250794",
+      "ABLAStateForNextBlock": {
+        "n": 840052,
+        "epsilon": "54724676",
+        "beta": "86051661"
+      },
+      "blocksizeLimitForNextBlock": "140776337"
+    },
+    {
+      "blocksize": "76048022",
+      "ABLAStateForNextBlock": {
+        "n": 840053,
+        "epsilon": "54724949",
+        "beta": "86052123"
+      },
+      "blocksizeLimitForNextBlock": "140777072"
+    },
+    {
+      "blocksize": "7947341",
+      "ABLAStateForNextBlock": {
+        "n": 840054,
+        "epsilon": "54723821",
+        "beta": "86049855"
+      },
+      "blocksizeLimitForNextBlock": "140773676"
+    },
+    {
+      "blocksize": "72173579",
+      "ABLAStateForNextBlock": {
+        "n": 840055,
+        "epsilon": "54724067",
+        "beta": "86050047"
+      },
+      "blocksizeLimitForNextBlock": "140774114"
+    },
+    {
+      "blocksize": "5512563",
+      "ABLAStateForNextBlock": {
+        "n": 840056,
+        "epsilon": "54722843",
+        "beta": "86047779"
+      },
+      "blocksizeLimitForNextBlock": "140770622"
+    },
+    {
+      "blocksize": "99122623",
+      "ABLAStateForNextBlock": {
+        "n": 840057,
+        "epsilon": "54723276",
+        "beta": "86049841"
+      },
+      "blocksizeLimitForNextBlock": "140773117"
+    },
+    {
+      "blocksize": "64659169",
+      "ABLAStateForNextBlock": {
+        "n": 840058,
+        "epsilon": "54723470",
+        "beta": "86049513"
+      },
+      "blocksizeLimitForNextBlock": "140772983"
+    },
+    {
+      "blocksize": "47695465",
+      "ABLAStateForNextBlock": {
+        "n": 840059,
+        "epsilon": "54723547",
+        "beta": "86048015"
+      },
+      "blocksizeLimitForNextBlock": "140771562"
+    },
+    {
+      "blocksize": "104222241",
+      "ABLAStateForNextBlock": {
+        "n": 840060,
+        "epsilon": "54724015",
+        "beta": "86050427"
+      },
+      "blocksizeLimitForNextBlock": "140774442"
+    },
+    {
+      "blocksize": "6816712",
+      "ABLAStateForNextBlock": {
+        "n": 840061,
+        "epsilon": "54722843",
+        "beta": "86048159"
+      },
+      "blocksizeLimitForNextBlock": "140771002"
+    },
+    {
+      "blocksize": "67220176",
+      "ABLAStateForNextBlock": {
+        "n": 840062,
+        "epsilon": "54723055",
+        "beta": "86048011"
+      },
+      "blocksizeLimitForNextBlock": "140771066"
+    },
+    {
+      "blocksize": "27971850",
+      "ABLAStateForNextBlock": {
+        "n": 840063,
+        "epsilon": "54722719",
+        "beta": "86045743"
+      },
+      "blocksizeLimitForNextBlock": "140768462"
+    },
+    {
+      "blocksize": "98256524",
+      "ABLAStateForNextBlock": {
+        "n": 840064,
+        "epsilon": "54723146",
+        "beta": "86047745"
+      },
+      "blocksizeLimitForNextBlock": "140770891"
+    },
+    {
+      "blocksize": "120477864",
+      "ABLAStateForNextBlock": {
+        "n": 840065,
+        "epsilon": "54723726",
+        "beta": "86051277"
+      },
+      "blocksizeLimitForNextBlock": "140775003"
+    },
+    {
+      "blocksize": "125329903",
+      "ABLAStateForNextBlock": {
+        "n": 840066,
+        "epsilon": "54724340",
+        "beta": "86055149"
+      },
+      "blocksizeLimitForNextBlock": "140779489"
+    },
+    {
+      "blocksize": "23401990",
+      "ABLAStateForNextBlock": {
+        "n": 840067,
+        "epsilon": "54723823",
+        "beta": "86052881"
+      },
+      "blocksizeLimitForNextBlock": "140776704"
+    },
+    {
+      "blocksize": "32327313",
+      "ABLAStateForNextBlock": {
+        "n": 840068,
+        "epsilon": "54723659",
+        "beta": "86050613"
+      },
+      "blocksizeLimitForNextBlock": "140774272"
+    },
+    {
+      "blocksize": "110688645",
+      "ABLAStateForNextBlock": {
+        "n": 840069,
+        "epsilon": "54724172",
+        "beta": "86053475"
+      },
+      "blocksizeLimitForNextBlock": "140777647"
+    },
+    {
+      "blocksize": "46788364",
+      "ABLAStateForNextBlock": {
+        "n": 840070,
+        "epsilon": "54724243",
+        "beta": "86051917"
+      },
+      "blocksizeLimitForNextBlock": "140776160"
+    },
+    {
+      "blocksize": "101289101",
+      "ABLAStateForNextBlock": {
+        "n": 840071,
+        "epsilon": "54724691",
+        "beta": "86054129"
+      },
+      "blocksizeLimitForNextBlock": "140778820"
+    },
+    {
+      "blocksize": "93394160",
+      "ABLAStateForNextBlock": {
+        "n": 840072,
+        "epsilon": "54725084",
+        "beta": "86055791"
+      },
+      "blocksizeLimitForNextBlock": "140780875"
+    },
+    {
+      "blocksize": "82897544",
+      "ABLAStateForNextBlock": {
+        "n": 840073,
+        "epsilon": "54725404",
+        "beta": "86056723"
+      },
+      "blocksizeLimitForNextBlock": "140782127"
+    },
+    {
+      "blocksize": "58503168",
+      "ABLAStateForNextBlock": {
+        "n": 840074,
+        "epsilon": "54725556",
+        "beta": "86055975"
+      },
+      "blocksizeLimitForNextBlock": "140781531"
+    },
+    {
+      "blocksize": "93550976",
+      "ABLAStateForNextBlock": {
+        "n": 840075,
+        "epsilon": "54725950",
+        "beta": "86057647"
+      },
+      "blocksizeLimitForNextBlock": "140783597"
+    },
+    {
+      "blocksize": "115935045",
+      "ABLAStateForNextBlock": {
+        "n": 840076,
+        "epsilon": "54726499",
+        "beta": "86060869"
+      },
+      "blocksizeLimitForNextBlock": "140787368"
+    },
+    {
+      "blocksize": "31849051",
+      "ABLAStateForNextBlock": {
+        "n": 840077,
+        "epsilon": "54726316",
+        "beta": "86058601"
+      },
+      "blocksizeLimitForNextBlock": "140784917"
+    },
+    {
+      "blocksize": "36304485",
+      "ABLAStateForNextBlock": {
+        "n": 840078,
+        "epsilon": "54726309",
+        "beta": "86056333"
+      },
+      "blocksizeLimitForNextBlock": "140782642"
+    },
+    {
+      "blocksize": "72061567",
+      "ABLAStateForNextBlock": {
+        "n": 840079,
+        "epsilon": "54726555",
+        "beta": "86056525"
+      },
+      "blocksizeLimitForNextBlock": "140783080"
+    },
+    {
+      "blocksize": "30023015",
+      "ABLAStateForNextBlock": {
+        "n": 840080,
+        "epsilon": "54726300",
+        "beta": "86054257"
+      },
+      "blocksizeLimitForNextBlock": "140780557"
+    },
+    {
+      "blocksize": "97397985",
+      "ABLAStateForNextBlock": {
+        "n": 840081,
+        "epsilon": "54726721",
+        "beta": "86056199"
+      },
+      "blocksizeLimitForNextBlock": "140782920"
+    },
+    {
+      "blocksize": "13232837",
+      "ABLAStateForNextBlock": {
+        "n": 840082,
+        "epsilon": "54725802",
+        "beta": "86053931"
+      },
+      "blocksizeLimitForNextBlock": "140779733"
+    },
+    {
+      "blocksize": "83011378",
+      "ABLAStateForNextBlock": {
+        "n": 840083,
+        "epsilon": "54726123",
+        "beta": "86054873"
+      },
+      "blocksizeLimitForNextBlock": "140780996"
+    },
+    {
+      "blocksize": "94178243",
+      "ABLAStateForNextBlock": {
+        "n": 840084,
+        "epsilon": "54726521",
+        "beta": "86056585"
+      },
+      "blocksizeLimitForNextBlock": "140783106"
+    },
+    {
+      "blocksize": "100078306",
+      "ABLAStateForNextBlock": {
+        "n": 840085,
+        "epsilon": "54726960",
+        "beta": "86058707"
+      },
+      "blocksizeLimitForNextBlock": "140785667"
+    },
+    {
+      "blocksize": "74448346",
+      "ABLAStateForNextBlock": {
+        "n": 840086,
+        "epsilon": "54727222",
+        "beta": "86059059"
+      },
+      "blocksizeLimitForNextBlock": "140786281"
+    },
+    {
+      "blocksize": "15107068",
+      "ABLAStateForNextBlock": {
+        "n": 840087,
+        "epsilon": "54726377",
+        "beta": "86056791"
+      },
+      "blocksizeLimitForNextBlock": "140783168"
+    },
+    {
+      "blocksize": "85497551",
+      "ABLAStateForNextBlock": {
+        "n": 840088,
+        "epsilon": "54726715",
+        "beta": "86057903"
+      },
+      "blocksizeLimitForNextBlock": "140784618"
+    },
+    {
+      "blocksize": "44773090",
+      "ABLAStateForNextBlock": {
+        "n": 840089,
+        "epsilon": "54726772",
+        "beta": "86056205"
+      },
+      "blocksizeLimitForNextBlock": "140782977"
+    },
+    {
+      "blocksize": "75842943",
+      "ABLAStateForNextBlock": {
+        "n": 840090,
+        "epsilon": "54727044",
+        "beta": "86056657"
+      },
+      "blocksizeLimitForNextBlock": "140783701"
+    },
+    {
+      "blocksize": "13475211",
+      "ABLAStateForNextBlock": {
+        "n": 840091,
+        "epsilon": "54726135",
+        "beta": "86054389"
+      },
+      "blocksizeLimitForNextBlock": "140780524"
+    },
+    {
+      "blocksize": "64781110",
+      "ABLAStateForNextBlock": {
+        "n": 840092,
+        "epsilon": "54726330",
+        "beta": "86054071"
+      },
+      "blocksizeLimitForNextBlock": "140780401"
+    },
+    {
+      "blocksize": "239370",
+      "ABLAStateForNextBlock": {
+        "n": 840093,
+        "epsilon": "54724897",
+        "beta": "86051803"
+      },
+      "blocksizeLimitForNextBlock": "140776700"
+    },
+    {
+      "blocksize": "119415632",
+      "ABLAStateForNextBlock": {
+        "n": 840094,
+        "epsilon": "54725470",
+        "beta": "86055265"
+      },
+      "blocksizeLimitForNextBlock": "140780735"
+    },
+    {
+      "blocksize": "42574393",
+      "ABLAStateForNextBlock": {
+        "n": 840095,
+        "epsilon": "54725512",
+        "beta": "86053417"
+      },
+      "blocksizeLimitForNextBlock": "140778929"
+    },
+    {
+      "blocksize": "96761853",
+      "ABLAStateForNextBlock": {
+        "n": 840096,
+        "epsilon": "54725928",
+        "beta": "86055309"
+      },
+      "blocksizeLimitForNextBlock": "140781237"
+    },
+    {
+      "blocksize": "64276187",
+      "ABLAStateForNextBlock": {
+        "n": 840097,
+        "epsilon": "54726120",
+        "beta": "86054961"
+      },
+      "blocksizeLimitForNextBlock": "140781081"
+    },
+    {
+      "blocksize": "3446315",
+      "ABLAStateForNextBlock": {
+        "n": 840098,
+        "epsilon": "54724814",
+        "beta": "86052693"
+      },
+      "blocksizeLimitForNextBlock": "140777507"
+    },
+    {
+      "blocksize": "114489845",
+      "ABLAStateForNextBlock": {
+        "n": 840099,
+        "epsilon": "54725353",
+        "beta": "86055815"
+      },
+      "blocksizeLimitForNextBlock": "140781168"
+    }
+  ]
+}

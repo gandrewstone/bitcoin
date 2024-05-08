@@ -2,12 +2,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <consensus/abla.h>
+#include "consensus/abla.h"
 
-#include <random.h>
-#include <serialize.h>
-#include <streams.h>
-#include <test/setup_common.h>
+#include "random.h"
+#include "serialize.h"
+#include "streams.h"
+#include "test_bitcoin.h"
 
 #include <boost/test/unit_test.hpp>
 
