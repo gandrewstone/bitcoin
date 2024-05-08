@@ -1095,14 +1095,15 @@ static CBlockRef MakeBlock(const CChainParams &params, bool replaceCoinbase = tr
 /// Activates or deactivates upgrade 9 by setting the activation time in the past or future respectively
 [[nodiscard]]
 static Defer<std::function<void()>> SetUpgrade9Active(bool active) {
-    const auto currentMTP = []{
-        return chainActive.Tip()->GetMedianTimePast();
+    const auto currentHeight = []{
+        LOCK(cs_main);
+        return chainActive.Tip()->nHeight;
     }();
-    const auto activationMtp = active ? currentMTP - 1 : currentMTP + 1;
-    SetArg("-upgrade9activationtime", strprintf("%d", activationMtp));
+    const auto activationHeight = active ? currentHeight - 1 : currentHeight + 1;
+    SetArg("-upgrade9activationheight", strprintf("%d", activationHeight));
     return Defer(std::function<void()>{
         [] {
-            UnsetArg("-upgrade9activationtime");
+            UnsetArg("-upgrade9activationheight");
         }
     });
 }
@@ -1714,10 +1715,17 @@ BOOST_FIXTURE_TEST_CASE(sighash_utxos_test, TestChain100Setup) {
         LOCK(cs_main);
         if (isUpgrade9Active) {
             // Upgrade9 active: Mining success
+            BOOST_TEST_MESSAGE(strprintf("1 Tip Best block hash:  %s", chainActive.Tip()->GetBlockHash()));
+            BOOST_TEST_MESSAGE(strprintf("1 Coin Best block hash: %s", pcoinsTip->GetBestBlock()));
+            BOOST_TEST_MESSAGE(strprintf("1 block hash:           %s", block.GetHash()));
             BOOST_CHECK(chainActive.Tip()->GetBlockHash() == block.GetHash());
             BOOST_CHECK(pcoinsTip->GetBestBlock() == block.GetHash());
         } else {
             // Upgrade9 inactive: Mining failure (SIGHASH_UTXOS not enabled yet so signature is invalid/unknown/etc)
+            SetUpgrade9Active(false);
+            BOOST_TEST_MESSAGE(strprintf("2 Tip Best block hash:  %s", chainActive.Tip()->GetBlockHash()));
+            BOOST_TEST_MESSAGE(strprintf("2 Coin Best block hash: %s", pcoinsTip->GetBestBlock()));
+            BOOST_TEST_MESSAGE(strprintf("2 block hash:           %s", block.GetHash()));
             BOOST_CHECK(chainActive.Tip()->GetBlockHash() != block.GetHash());
             BOOST_CHECK(pcoinsTip->GetBestBlock() != block.GetHash());
         }
