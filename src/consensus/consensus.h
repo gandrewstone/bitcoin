@@ -59,7 +59,7 @@ static const unsigned int MIN_EXCESSIVE_BLOCK_SIZE_REGTEST = 1000;
  */
 inline constexpr uint64_t MAX_CONSENSUS_BLOCK_SIZE = uint64_t(2000) * ONE_MEGABYTE;
 static_assert(MAX_CONSENSUS_BLOCK_SIZE <= std::numeric_limits<unsigned int>::max(),
-              "MAX_CONSENSUS_BLOCK_SIZE must fit within an unsigned int due to current block file data format");
+    "MAX_CONSENSUS_BLOCK_SIZE must fit within an unsigned int due to current block file data format");
 
 
 /**

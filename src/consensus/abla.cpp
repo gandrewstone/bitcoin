@@ -8,12 +8,16 @@
 
 // BU does not have INT128 but we might one day, leave this in
 #if HAVE_INT128
-namespace { using u128 = unsigned __int128; }
+namespace
+{
+using u128 = unsigned __int128;
+}
 #else
 // On arm32 or other platforms lacking the __int128 type we emulate this type using our codebase's arith_uint256
 // type. This is slow-ish but it works.
 #include <arith_uint256.h>
-namespace {
+namespace
+{
 struct u128 : arith_uint256
 {
     using arith_uint256::arith_uint256;
@@ -32,9 +36,11 @@ struct u128 : arith_uint256
 #include <cassert>
 #include <limits>
 
-namespace abla {
+namespace abla
+{
 
-namespace {
+namespace
+{
 
 /// Utility function for fixed-point math. Multiplies x by y as uint128's, then divides by z, returning the result.
 /// Precondition: z must not be 0; the expression x * y / z must not exceed the 2^64 - 1.
@@ -56,7 +62,8 @@ void Config::SetMax()
     const uint64_t maxElasticBufferRatioNumerator = delta * ((zeta_xB7 - B7) * thetaReciprocal / gammaReciprocal);
     const uint64_t maxElasticBufferRatioDenominator = (zeta_xB7 - B7) * thetaReciprocal / gammaReciprocal + B7;
 
-    epsilonMax = maxSafeBlocksizeLimit / (maxElasticBufferRatioNumerator + maxElasticBufferRatioDenominator) * maxElasticBufferRatioDenominator;
+    epsilonMax = maxSafeBlocksizeLimit / (maxElasticBufferRatioNumerator + maxElasticBufferRatioDenominator) *
+                 maxElasticBufferRatioDenominator;
     betaMax = maxSafeBlocksizeLimit - epsilonMax;
 
     LOG(BLK, "[ABLA] Auto-configured epsilonMax: %u, betaMax: %u\n", epsilonMax, betaMax);
@@ -65,22 +72,23 @@ void Config::SetMax()
 bool Config::IsValid(const char **err) const
 {
     const char *errStr = nullptr;
-    Defer d([this, &errStr, &err]
-    {
-        // on function return, print to debug log if there was an error, and/or optionally set `err` out param.
-        if (errStr)
+    Defer d(
+        [this, &errStr, &err]
         {
-            LOG(BLK, "[ABLA] Config::IsValid: %s - %s\n", errStr, ToString());
-            if (err)
+            // on function return, print to debug log if there was an error, and/or optionally set `err` out param.
+            if (errStr)
             {
-                *err = errStr;
+                LOG(BLK, "[ABLA] Config::IsValid: %s - %s\n", errStr, ToString());
+                if (err)
+                {
+                    *err = errStr;
+                }
             }
-        }
-        else if (err)
-        {
-            *err = "";
-        }
-    });
+            else if (err)
+            {
+                *err = "";
+            }
+        });
     if (epsilon0 > epsilonMax)
     {
         errStr = "Error, initial control block size limit sanity check failed (epsilonMax)";
@@ -122,17 +130,14 @@ bool Config::IsValid(const char **err) const
     return true;
 }
 
-bool Config::IsFixedSize() const
-{
-    return epsilon0 == epsilonMax && beta0 == betaMax;
-}
+bool Config::IsFixedSize() const { return epsilon0 == epsilonMax && beta0 == betaMax; }
 
 
 std::string Config::ToString() const
 {
     return strprintf("abla::Config(epsilon0=%u, beta0=%u, gammaReciprocal=%u, zeta_xB7=%u, thetaReciprocal=%u"
                      ", delta=%u, epsilonMax=%u, betaMax=%u)",
-                     epsilon0, beta0, gammaReciprocal, zeta_xB7, thetaReciprocal, delta, epsilonMax, betaMax);
+        epsilon0, beta0, gammaReciprocal, zeta_xB7, thetaReciprocal, delta, epsilonMax, betaMax);
 }
 
 /* static */
@@ -145,7 +150,7 @@ Config Config::MakeDefault(uint64_t defaultBlockSize, bool fixedSize)
     ret.zeta_xB7 = 192;
     ret.thetaReciprocal = 37938;
     ret.delta = 10;
-    if ( ! fixedSize)
+    if (!fixedSize)
     {
         // Auto-set epsilonMax and betaMax to huge, 64-bit safe values
         ret.SetMax();
@@ -183,16 +188,18 @@ State State::NextBlockState(const Config &config, const uint64_t nextBlockSize) 
         const uint64_t bytesToAdd = amplifiedCurrentBlockSize - this->controlBlockSize;
 
         // zeta * y_{n-1}
-        const uint64_t amplifiedBlockSizeLimit = muldiv(config.zeta_xB7, this->controlBlockSize + this->elasticBufferSize, B7);
+        const uint64_t amplifiedBlockSizeLimit =
+            muldiv(config.zeta_xB7, this->controlBlockSize + this->elasticBufferSize, B7);
 
         // zeta * y_{n-1} - epsilon_{n-1}
         const uint64_t bytesMax = amplifiedBlockSizeLimit - this->controlBlockSize;
 
         // zeta * beta_{n-1} * (zeta * x_{n-1} - epsilon_{n-1}) / (zeta * y_{n-1} - epsilon_{n-1})
-        const uint64_t scalingOffset = muldiv(muldiv(config.zeta_xB7, this->elasticBufferSize, B7),
-                                              bytesToAdd, bytesMax);
+        const uint64_t scalingOffset =
+            muldiv(muldiv(config.zeta_xB7, this->elasticBufferSize, B7), bytesToAdd, bytesMax);
 
-        // epsilon_n = epsilon_{n-1} + gamma * (zeta * x_{n-1} - epsilon_{n-1} - zeta * beta_{n-1} * (zeta * x_{n-1} - epsilon_{n-1}) / (zeta * y_{n-1} - epsilon_{n-1}))
+        // epsilon_n = epsilon_{n-1} + gamma * (zeta * x_{n-1} - epsilon_{n-1} - zeta * beta_{n-1} * (zeta * x_{n-1} -
+        // epsilon_{n-1}) / (zeta * y_{n-1} - epsilon_{n-1}))
         ret.controlBlockSize = this->controlBlockSize + (bytesToAdd - scalingOffset) / config.gammaReciprocal;
     }
     // if zeta * x_{n-1} <= epsilon_{n-1} then decrease or no change
@@ -230,8 +237,8 @@ State State::NextBlockState(const Config &config, const uint64_t nextBlockSize) 
         // beta_{n-1} - beta_{n-1} * theta
         ret.elasticBufferSize = this->elasticBufferSize - bufferDecay;
     }
-    // max(beta_{n-1} - beta_{n-1} * theta + (epsilon_{n} - epsilon_{n-1}) * delta, beta_0) , if zeta * x_{n-1} > epsilon_{n-1}
-    // max(beta_{n-1} - beta_{n-1} * theta, beta_0) , if zeta * x_{n-1} <= epsilon_{n-1}
+    // max(beta_{n-1} - beta_{n-1} * theta + (epsilon_{n} - epsilon_{n-1}) * delta, beta_0) , if zeta * x_{n-1} >
+    // epsilon_{n-1} max(beta_{n-1} - beta_{n-1} * theta, beta_0) , if zeta * x_{n-1} <= epsilon_{n-1}
     ret.elasticBufferSize = std::max(ret.elasticBufferSize, config.beta0);
 
     // clip controlBlockSize to epsilonMax to avoid integer overflow for extreme sizes
@@ -257,22 +264,23 @@ uint64_t State::CalcLookaheadBlockSizeLimit(const Config &config, size_t count, 
 bool State::IsValid(const Config &config, const char **err) const
 {
     const char *errStr = nullptr;
-    Defer d([this, &errStr, &err]
-    {
-        // on function return, print to debug log if there was an error, and/or optionally set `err` out param.
-        if (errStr)
+    Defer d(
+        [this, &errStr, &err]
         {
-            LOG(BLK, "[ABLA] State::IsValid: %s - %s\n", errStr, ToString());
-            if (err)
+            // on function return, print to debug log if there was an error, and/or optionally set `err` out param.
+            if (errStr)
             {
-                *err = errStr;
+                LOG(BLK, "[ABLA] State::IsValid: %s - %s\n", errStr, ToString());
+                if (err)
+                {
+                    *err = errStr;
+                }
             }
-        }
-        else if (err)
-        {
-            *err = "";
-        }
-    });
+            else if (err)
+            {
+                *err = "";
+            }
+        });
     if (controlBlockSize < config.epsilon0 || controlBlockSize > config.epsilonMax)
     {
         errStr = "Error, invalid controlBlockSize state. Can't be below initialization value nor above epsilonMax.";
@@ -288,8 +296,8 @@ bool State::IsValid(const Config &config, const char **err) const
 
 std::string State::ToString() const
 {
-    return strprintf("abla::State(blockSize=%u, controlBlockSize=%u, elasticBufferSize=%u)",
-                     blockSize, controlBlockSize, elasticBufferSize);
+    return strprintf("abla::State(blockSize=%u, controlBlockSize=%u, elasticBufferSize=%u)", blockSize,
+        controlBlockSize, elasticBufferSize);
 }
 
 } // namespace abla

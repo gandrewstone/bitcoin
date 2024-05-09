@@ -14,7 +14,10 @@
 class CBlock;
 class CBlockIndex;
 class UniValue;
-namespace abla { class State; }
+namespace abla
+{
+class State;
+}
 
 static constexpr int NUM_GETBLOCKSTATS_PERCENTILES = 5;
 

@@ -99,9 +99,9 @@ BOOST_AUTO_TEST_CASE(GetBlockProofEquivalentTime_test)
     }
 }
 
-static CBlockIndex* GetBlockIndex(CBlockIndex *pindexPrev, int64_t nTimeInterval, uint32_t nBits)
+static CBlockIndex *GetBlockIndex(CBlockIndex *pindexPrev, int64_t nTimeInterval, uint32_t nBits)
 {
-    CBlockIndex* block = new CBlockIndex();
+    CBlockIndex *block = new CBlockIndex();
     block->pprev = pindexPrev;
     block->nHeight = pindexPrev->nHeight + 1;
     block->nTime = pindexPrev->nTime + nTimeInterval;
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(retargeting_test)
     SelectParams(CBaseChainParams::MAIN);
     const Consensus::Params &params = Params().GetConsensus();
 
-    std::vector<CBlockIndex*> blocks(115);
+    std::vector<CBlockIndex *> blocks(115);
 
     const arith_uint256 powLimit = UintToArith256(params.powLimit);
     arith_uint256 currentPow = powLimit >> 1;
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE(cash_difficulty_test)
     SelectParams(CBaseChainParams::MAIN);
     const Consensus::Params &params = Params().GetConsensus();
 
-    std::vector<CBlockIndex*> blocks(3000);
+    std::vector<CBlockIndex *> blocks(3000);
 
     const arith_uint256 powLimit = UintToArith256(params.powLimit);
     uint32_t powLimitBits = powLimit.GetCompact();

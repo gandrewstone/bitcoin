@@ -620,8 +620,8 @@ BOOST_AUTO_TEST_CASE(test_FormatSubVersion)
     settingsToUserAgentString();
     const char *argv_test3[] = {"bitcoind", "-uacomment=comment1", "-uacomment=Comment2", "-uacomment=Comment3"};
     ParseParameters(4, (char **)argv_test3, AllowedArgs::Bitcoind());
-    BOOST_CHECK_EQUAL(FormatSubVersion("Test", 99900, BUComments),
-        std::string("/Test:0.9.99(EB1; comment1; Comment2; Comment3)/"));
+    BOOST_CHECK_EQUAL(
+        FormatSubVersion("Test", 99900, BUComments), std::string("/Test:0.9.99(EB1; comment1; Comment2; Comment3)/"));
 
     // set EB/AD back to default value
     excessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;

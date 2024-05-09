@@ -79,7 +79,7 @@ BlockAssembler::BlockAssembler(const CChainParams &_chainparams)
       lastFewTxs(0), blockFinished(false)
 {
     // Largest block you're willing to create:
-    //nBlockMaxSize = maxGeneratedBlock;
+    // nBlockMaxSize = maxGeneratedBlock;
 
     nBlockMaxSize = GetNextBlockSizeLimit(chainActive.Tip()) * 0.95;
 
@@ -217,7 +217,6 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript &sc
         // return 32MB, after a value determined by the ABLA algo
         maxSigOpsAllowed = GetMaxBlockSigChecksCount(nMaxBlockSize);
     }
-
 
 
     {

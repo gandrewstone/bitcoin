@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(getmintxsize)
     CBlockIndex prev;
 
     std::array<CBlockIndex, 12> blocks;
-    blocks[0].nHeight=0;
+    blocks[0].nHeight = 0;
     for (size_t i = 1; i < blocks.size(); ++i)
     {
         blocks[i].pprev = &blocks[i - 1];

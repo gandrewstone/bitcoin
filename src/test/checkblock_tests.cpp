@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(TestBlock)
         BOOST_CHECK_MESSAGE(LockAndContextualCheckBlock(testblock, state), "Contextual CheckBlock failed");
         // comment this test out because fExcessive is now a "nop" flag always false, see ContextualCheckBlock()
         // modification in commit 04b3f089824efbdcbe8c1f05f6a9db60a1572da3
-        //BOOST_CHECK_MESSAGE(testblock->fExcessive,
+        // BOOST_CHECK_MESSAGE(testblock->fExcessive,
         //    "Block with size " << blockSize << " ought to have been excessive when excessiveBlockSize is "
         //                       << excessiveBlockSize);
         excessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE; // set it back to the default that other tests expect

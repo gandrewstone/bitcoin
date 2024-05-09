@@ -84,23 +84,24 @@ UniValue ablaStateToJSON(const abla::State &state)
     ret.pushKV("blocksize", state.GetBlockSize());
     // Note that consensus rules are that the max block size is always at least the configured max block size,
     // or what ABLA says, whichever is greater.
-    //const auto cmbs = config.GetConfiguredMaxBlockSize();
-    ret.pushKV("blocksizelimit", state.GetBlockSizeLimit()); //std::max(cmbs, state.GetBlockSizeLimit()));
-    ret.pushKV("nextblocksizelimit", state.GetNextBlockSizeLimit(Params().GetConsensus().ablaConfig)); // std::max(cmbs, state.GetNextBlockSizeLimit(Params().GetConsensus().ablaConfig)));
+    // const auto cmbs = config.GetConfiguredMaxBlockSize();
+    ret.pushKV("blocksizelimit", state.GetBlockSizeLimit()); // std::max(cmbs, state.GetBlockSizeLimit()));
+    // std::max(cmbs, state.GetNextBlockSizeLimit(Params().GetConsensus().ablaConfig)));
+    ret.pushKV("nextblocksizelimit", state.GetNextBlockSizeLimit(Params().GetConsensus().ablaConfig));
     return ret;
 }
 
 
 static std::string ablaStateHelpCommon(bool trailingComma)
 {
-    return strprintf(
-        "  \"ablastate\" : {        (json object, optional) The block's ABLA state\n"
-        "    \"epsilon\" : n,       (numeric) ABLA state epsilon value\n"
-        "    \"beta\" : n,          (numeric) ABLA state beta value\n"
-        "    \"blocksize\" : n,     (numeric) The size of this block\n"
-        "    \"blocksizelimit\" : n,        (numeric) The size limit for this block\n"
-        "    \"nextblocksizelimit\" : n,    (numeric) The size limit for the next block\n"
-        "  }%s\n", trailingComma ? "," : "");
+    return strprintf("  \"ablastate\" : {        (json object, optional) The block's ABLA state\n"
+                     "    \"epsilon\" : n,       (numeric) ABLA state epsilon value\n"
+                     "    \"beta\" : n,          (numeric) ABLA state beta value\n"
+                     "    \"blocksize\" : n,     (numeric) The size of this block\n"
+                     "    \"blocksizelimit\" : n,        (numeric) The size limit for this block\n"
+                     "    \"nextblocksizelimit\" : n,    (numeric) The size limit for the next block\n"
+                     "  }%s\n",
+        trailingComma ? "," : "");
 }
 
 
@@ -642,8 +643,8 @@ UniValue getblockheader(const UniValue &params, bool fHelp)
             "  \"bits\" : \"1d00ffff\", (string) The bits\n"
             "  \"difficulty\" : x.xxx,  (numeric) The difficulty\n"
             "  \"previousblockhash\" : \"hash\",  (string) The hash of the previous block\n"
-            "  \"nextblockhash\" : \"hash\",      (string) The hash of the next block\n"
-            + ablaStateHelpCommon(false) +
+            "  \"nextblockhash\" : \"hash\",      (string) The hash of the next block\n" +
+            ablaStateHelpCommon(false) +
             "  \"chainwork\" : \"0000...1f3\"     (string) Expected number of hashes required to produce the current "
             "chain (in hex)\n"
             "}\n"
@@ -814,8 +815,8 @@ static UniValue getblock(const UniValue &params, bool fHelp)
             "  \"chainwork\" : \"xxxx\",  (string) Expected number of hashes required to produce the chain up to this "
             "block (in hex)\n"
             "  \"previousblockhash\" : \"hash\",  (string) The hash of the previous block\n"
-            "  \"nextblockhash\" : \"hash\"       (string) The hash of the next block\n"
-            + ablaStateHelpCommon(false) +
+            "  \"nextblockhash\" : \"hash\"       (string) The hash of the next block\n" +
+            ablaStateHelpCommon(false) +
             "}\n"
             "\nResult (for verbosity = 2, tx_count = false):\n"
             "{\n"

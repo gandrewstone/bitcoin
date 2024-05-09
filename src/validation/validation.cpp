@@ -322,9 +322,11 @@ bool AcceptBlockHeader(const CBlockHeader &block,
 /// @pre `pindex` must be the index for `block` and must already be added to `mapBlockIndex`. `pindex` need not
 ///      be on any active chain (it may even be ahead of ::ChainActive().Tip()).
 /// @param blockSize - Pass non-zero if the blockSize is known, otherwise it will be calculated on-the-fly.
-static void MaintainAblaState(const Consensus::Params &consensusParams, ConstCBlockRef block, CBlockIndex *pindex,
-                              const char *debugPrefix = nullptr, uint64_t blockSize = 0)
-    EXCLUSIVE_LOCKS_REQUIRED(cs_main)
+static void MaintainAblaState(const Consensus::Params &consensusParams,
+    ConstCBlockRef block,
+    CBlockIndex *pindex,
+    const char *debugPrefix = nullptr,
+    uint64_t blockSize = 0) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
 {
     if (IsMay2024Activated(consensusParams, pindex))
     {
@@ -353,7 +355,7 @@ static void MaintainAblaState(const Consensus::Params &consensusParams, ConstCBl
                 setDirtyBlockIndex.insert(pindex);
             }
             LOG(BLK, "[ABLA] %s, nextBlockSizeLimit: %i%s\n", ablaStateOpt->ToString(),
-                     ablaStateOpt->GetNextBlockSizeLimit(consensusParams.ablaConfig), newstr);
+                ablaStateOpt->GetNextBlockSizeLimit(consensusParams.ablaConfig), newstr);
         }
         else
         {
@@ -484,8 +486,7 @@ static bool VerifyAblaStateForChain(CChain &chain) EXCLUSIVE_LOCKS_REQUIRED(cs_m
         pbase = pbase->pprev;
     }
     assert(pbase != nullptr);
-    LOGA("%s: Verifying %i block headers have correct ABLA state ...\n",
-              __func__, ptip->nHeight - pbase->nHeight + 1);
+    LOGA("%s: Verifying %i block headers have correct ABLA state ...\n", __func__, ptip->nHeight - pbase->nHeight + 1);
     const abla::Config &ablaConfig = consensus.ablaConfig;
     std::optional<abla::State> prevState;
     bool rebuilding = false;
@@ -503,8 +504,8 @@ static bool VerifyAblaStateForChain(CChain &chain) EXCLUSIVE_LOCKS_REQUIRED(cs_m
                 err = err && *err ? err : "missing";
                 rebuilding = true;
             }
-            else if ((optSize = ReadBlockSizeFromDisk(pcur, consensus)).value_or(curAblaStateOpt->GetBlockSize())
-                       != curAblaStateOpt->GetBlockSize())
+            else if ((optSize = ReadBlockSizeFromDisk(pcur, consensus)).value_or(curAblaStateOpt->GetBlockSize()) !=
+                     curAblaStateOpt->GetBlockSize())
             {
                 err = "bad block size";
                 rebuilding = true;
@@ -521,7 +522,7 @@ static bool VerifyAblaStateForChain(CChain &chain) EXCLUSIVE_LOCKS_REQUIRED(cs_m
             else
             {
                 LOGA("%s: Bad ABLA data starting at height=%d (%s), will rebuild ABLA state for %d blocks ...\n",
-                          __func__, ht, err, ptip->nHeight - pcur->nHeight + 1);
+                    __func__, ht, err, ptip->nHeight - pcur->nHeight + 1);
             }
         }
         if (rebuilding)
@@ -529,8 +530,8 @@ static bool VerifyAblaStateForChain(CChain &chain) EXCLUSIVE_LOCKS_REQUIRED(cs_m
             const auto optBlockSize = ReadBlockSizeFromDisk(pcur, consensus);
             if (!optBlockSize)
             {
-                return error("%s: Unable to restore ABLA state, unable to read block file for block %d\n",
-                             __func__, pcur->nHeight);
+                return error("%s: Unable to restore ABLA state, unable to read block file for block %d\n", __func__,
+                    pcur->nHeight);
             }
             abla::State state;
             if (pcur == pbase)
@@ -4379,7 +4380,7 @@ const CBlockIndex *ActivationBlockTracker::GetActivationBlock(const CBlockIndex 
 uint64_t GetNextBlockSizeLimit(const CBlockIndex *pindexPrev)
 {
     const auto &params = Params().GetConsensus();
-    //const uint64_t confMaxBlockSize = config.GetConfiguredMaxBlockSize();
+    // const uint64_t confMaxBlockSize = config.GetConfiguredMaxBlockSize();
     if (!IsMay2024Activated(params, pindexPrev))
     {
         return Params().DefaultConsensusBlockSize();
@@ -4387,6 +4388,6 @@ uint64_t GetNextBlockSizeLimit(const CBlockIndex *pindexPrev)
     const auto ablaStateOpt = pindexPrev->GetAblaStateOpt();
     assert(ablaStateOpt);
     // std::max here to ensure the minimum max block size is what the user overrode from config, if anything
-    //return std::max(confMaxBlockSize, ablaStateOpt->GetNextBlockSizeLimit(params.ablaConfig));
+    // return std::max(confMaxBlockSize, ablaStateOpt->GetNextBlockSizeLimit(params.ablaConfig));
     return ablaStateOpt->GetNextBlockSizeLimit(params.ablaConfig);
 }

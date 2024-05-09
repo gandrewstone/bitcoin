@@ -337,7 +337,7 @@ void GenerateBlocks(const CChainParams &chainparams,
         nBlockCount++;
         nTotalExpectedBlockSize += i;
 
-        //maxGeneratedBlock = i;
+        // maxGeneratedBlock = i;
         uint64_t nStartMine = GetStopwatchMicros();
         pblocktemplate = BlockAssembler(chainparams).CreateNewBlock(scriptPubKey);
         nTotalBlockSize += pblocktemplate->block->GetBlockSize();
@@ -372,7 +372,7 @@ void PerformanceTest_PackageSelection(const CChainParams &chainparams,
     CScript scriptPubKey,
     std::vector<CTransactionRef> &txFirst)
 {
-    //maxGeneratedBlock = 10000000;
+    // maxGeneratedBlock = 10000000;
     excessiveBlockSize = 10000000;
     dMinLimiterTxFee.Set(1.0);
     dMaxLimiterTxFee.Set(1.0);

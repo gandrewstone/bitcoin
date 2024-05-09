@@ -194,7 +194,6 @@ public:
         WRITELOCK(cs_ablaState);
         ablaStateOpt = s;
     }
-
 };
 
 /** The block chain is a tree shaped structure starting with the

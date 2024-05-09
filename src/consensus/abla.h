@@ -55,12 +55,12 @@ struct Config
     /// Used for debug purposes -- print all of this instance's variables to a string.
     std::string ToString() const;
 
-    /// Returns a default configuration for mainnet, etc as suggested in the ABLA spec: https://gitlab.com/0353F40E/ebaa
+    // gitlab.com/0353F40E/ebaa
+    /// Returns a default configuration for mainnet, etc as suggested in the ABLA spec: https:
     /// @param fixedSize - if `true`, set `epsilonMax = epsilon0`, `betaMax = beta0`, thus making the ABLA algorithm
     ///        a no-op that always returns `defaultBlockSize` as the static max block size. This is normally set to
     ///        `true` for testnet3 and testnet4 (where we do not want the max block size to grow over time).
-    static Config MakeDefault(uint64_t defaultBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE,
-                              bool fixedSize = false);
+    static Config MakeDefault(uint64_t defaultBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE, bool fixedSize = false);
 };
 
 /// Algorithm's internal state
@@ -83,7 +83,9 @@ public:
 
     /// Construct a state using defaults from Config (suitable for all blocks before ABLA activation)
     State(const Config &config, uint64_t blkSize)
-        : blockSize(blkSize), controlBlockSize(config.epsilon0), elasticBufferSize(config.beta0) {}
+        : blockSize(blkSize), controlBlockSize(config.epsilon0), elasticBufferSize(config.beta0)
+    {
+    }
 
     /// Get the block size limit for this block -- note this is capped at MAX_CONSENSUS_BLOCK_SIZE == 2GB unless
     /// `disable2GBCap` is set to true.
