@@ -178,3 +178,14 @@ bool IsMay2024Activated(const Consensus::Params& params, const CBlockIndex* pind
     uint64_t activationTime = GetArg("-upgrade10activationtime", params.may2024ActivationTime);
     return pindexTip->IsforkActiveOnNextBlock(activationTime);
 }
+
+bool IsMay2024Active(const Consensus::Params& params, const CBlockIndex* pindex)
+{
+    if (pindex == nullptr)
+    {
+        return false;
+    }
+    assert(params.may2024ActivationTime);
+    uint64_t activationTime = GetArg("-upgrade10activationtime", params.may2024ActivationTime);
+    return pindex->forkActivateNow(activationTime);
+}

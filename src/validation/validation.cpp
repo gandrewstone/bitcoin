@@ -322,7 +322,7 @@ bool AcceptBlockHeader(const CBlockHeader &block,
 /// @pre `pindex` must be the index for `block` and must already be added to `mapBlockIndex`. `pindex` need not
 ///      be on any active chain (it may even be ahead of ::ChainActive().Tip()).
 /// @param blockSize - Pass non-zero if the blockSize is known, otherwise it will be calculated on-the-fly.
-static void MaintainAblaState(const Consensus::Params &consensusParams, const CBlock &block, CBlockIndex *pindex,
+static void MaintainAblaState(const Consensus::Params &consensusParams, ConstCBlockRef block, CBlockIndex *pindex,
                               const char *debugPrefix = nullptr, uint64_t blockSize = 0)
     EXCLUSIVE_LOCKS_REQUIRED(cs_main)
 {
@@ -461,6 +461,103 @@ CBlockIndex *InsertBlockIndex(const uint256 &hash)
     pindexNew->phashBlock = &((*mi).first);
 
     return pindexNew;
+}
+
+// Verifies that the ABLA state for the active chain `chain` is valid, and if not, attempts to rebuild it.
+// An ABLA state can become invalid as a corner-case if the user switched to an older BCHN version for the same
+// data dir, then switched back. Note that in the case of pruning nodes, it may not always be possible to rebuild the
+// state if ABLA activated long ago and the lost state info included some pruned blocks.  In that case the user
+// will get an error message at startup telling them to -reindex.
+static bool VerifyAblaStateForChain(CChain &chain) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
+{
+    const auto &params = Params();
+    const auto &consensus = params.GetConsensus();
+    CBlockIndex *ptip = chain.Tip();
+    if (!IsMay2024Activated(consensus, ptip))
+    {
+        return true;
+    }
+    // this is not efficient at all, we should replace it with a constant height when one is available
+    CBlockIndex *pbase = ptip;
+    while (IsMay2024Active(consensus, pbase))
+    {
+        pbase = pbase->pprev;
+    }
+    assert(pbase != nullptr);
+    LOGA("%s: Verifying %i block headers have correct ABLA state ...\n",
+              __func__, ptip->nHeight - pbase->nHeight + 1);
+    const abla::Config &ablaConfig = consensus.ablaConfig;
+    std::optional<abla::State> prevState;
+    bool rebuilding = false;
+    for (int ht = pbase->nHeight; ht <= ptip->nHeight; ++ht)
+    {
+        CBlockIndex *pcur = chain[ht];
+        assert(pcur);
+        const char *err{};
+        if (!rebuilding)
+        {
+            std::optional<uint64_t> optSize;
+            const auto curAblaStateOpt = pcur->GetAblaStateOpt();
+            if (!curAblaStateOpt || !curAblaStateOpt->IsValid(ablaConfig, &err))
+            {
+                err = err && *err ? err : "missing";
+                rebuilding = true;
+            }
+            else if ((optSize = ReadBlockSizeFromDisk(pcur, consensus)).value_or(curAblaStateOpt->GetBlockSize())
+                       != curAblaStateOpt->GetBlockSize())
+            {
+                err = "bad block size";
+                rebuilding = true;
+            }
+            else if (optSize && prevState && prevState->NextBlockState(ablaConfig, *optSize) != *curAblaStateOpt)
+            {
+                err = "bad state";
+                rebuilding = true;
+            }
+            if (!rebuilding)
+            {
+                prevState = curAblaStateOpt;
+            }
+            else
+            {
+                LOGA("%s: Bad ABLA data starting at height=%d (%s), will rebuild ABLA state for %d blocks ...\n",
+                          __func__, ht, err, ptip->nHeight - pcur->nHeight + 1);
+            }
+        }
+        if (rebuilding)
+        {
+            const auto optBlockSize = ReadBlockSizeFromDisk(pcur, consensus);
+            if (!optBlockSize)
+            {
+                return error("%s: Unable to restore ABLA state, unable to read block file for block %d\n",
+                             __func__, pcur->nHeight);
+            }
+            abla::State state;
+            if (pcur == pbase)
+            {
+                // Activation block, give it base state
+                state = abla::State(ablaConfig, *optBlockSize);
+            }
+            else
+            {
+                // Else, this block's state is based on its size + the previous block's state
+                assert(pcur->pprev);
+                prevState = pcur->pprev->GetAblaStateOpt();
+                assert(prevState);
+                state = prevState->NextBlockState(ablaConfig, *optBlockSize);
+            }
+            assert(state.IsValid(ablaConfig));
+            pcur->SetAblaStateOpt(state);
+            setDirtyBlockIndex.insert(pcur); // mark for re-save to disk
+        }
+    }
+    if (!setDirtyBlockIndex.empty())
+    {
+        // Save changes to block indices to the DB
+        FlushStateToDisk();
+    }
+    LOGA("%s: Verified ABLA state for chain \n", __func__);
+    return true;
 }
 
 bool LoadBlockIndexDB()
@@ -670,6 +767,12 @@ bool LoadBlockIndexDB()
     }
     chainActive.SetTip(it->second);
 
+    // Verify that the ABLA state is valid for this chain
+    if (!VerifyAblaStateForChain(chainActive))
+    {
+        return false;
+    }
+
     PruneBlockIndexCandidates();
 
     LOGA("%s: hashBestChain=%s height=%d date=%s progress=%f\n", __func__, chainActive.Tip()->GetBlockHash().ToString(),
@@ -776,6 +879,7 @@ bool InitBlockIndex(const CChainParams &chainparams)
         {
             return error("LoadBlockIndex(): genesis block not accepted");
         }
+        MaintainAblaState(chainparams.GetConsensus(), pblock, pindex, __func__);
         if (!ActivateBestChain(state, chainparams, pblock, false))
         {
             return error("LoadBlockIndex(): genesis block cannot be activated");
@@ -1695,6 +1799,25 @@ bool ContextualCheckBlock(ConstCBlockRef pblock, CValidationState &state, CBlock
     return true;
 }
 
+bool CheckBlockSize(ConstCBlockRef pblock, CValidationState &state, uint64_t nMaxBlockSize, uint64_t *pBlockSize)
+{
+    // Bail early if there is no way this block is of reasonable size.
+    if ((pblock->vtx.size() * MIN_TRANSACTION_SIZE) > nMaxBlockSize)
+    {
+        return state.DoS(100, false, REJECT_INVALID, "bad-blk-length", false, "size limits failed");
+    }
+    const auto currentBlockSize = ::GetSerializeSize(pblock, PROTOCOL_VERSION);
+    if (currentBlockSize > nMaxBlockSize)
+    {
+        return state.DoS(100, false, REJECT_INVALID, "bad-blk-length", false, "size limits failed");
+    }
+    if (pBlockSize)
+    {
+        *pBlockSize = currentBlockSize;
+    }
+    return true;
+}
+
 bool CheckBlock(ConstCBlockRef pblock, CValidationState &state, bool fCheckPOW, bool fCheckMerkleRoot)
 {
     // These are checks that are independent of context.
@@ -1736,6 +1859,12 @@ bool CheckBlock(ConstCBlockRef pblock, CValidationState &state, bool fCheckPOW, 
     if (pblock->vtx.empty())
     {
         return state.DoS(100, error("CheckBlock(): size limits failed"), REJECT_INVALID, "bad-blk-length");
+    }
+
+    // Size limits (context-less, so we check against the consensus 2GB limit).
+    if (!CheckBlockSize(pblock, state, MAX_CONSENSUS_BLOCK_SIZE))
+    {
+        return false; // state set by CheckBlockSize()
     }
 
     // First transaction must be coinbase, the rest must not be
@@ -1926,6 +2055,7 @@ bool AcceptBlock(ConstCBlockRef pblock,
         {
             return error("AcceptBlock(): ReceivedBlockTransactions failed");
         }
+        MaintainAblaState(chainparams.GetConsensus(), pblock, pindex, __func__);
     }
     catch (const std::runtime_error &e)
     {
@@ -2802,26 +2932,6 @@ bool ConnectBlockCanonicalOrdering(ConstCBlockRef pblock,
 }
 
 
-bool CheckBlockSize(ConstCBlockRef pblock, CValidationState &state, uint64_t nMaxBlockSize, uint64_t *pBlockSize)
-{
-    // Bail early if there is no way this block is of reasonable size.
-    if ((pblock->vtx.size() * MIN_TRANSACTION_SIZE) > nMaxBlockSize)
-    {
-        return state.DoS(100, false, REJECT_INVALID, "bad-blk-length", false, "size limits failed");
-    }
-    const auto currentBlockSize = ::GetSerializeSize(pblock, PROTOCOL_VERSION);
-    if (currentBlockSize > nMaxBlockSize)
-    {
-        return state.DoS(100, false, REJECT_INVALID, "bad-blk-length", false, "size limits failed");
-    }
-    if (pBlockSize)
-    {
-        *pBlockSize = currentBlockSize;
-    }
-    return true;
-}
-
-
 bool ConnectBlock(ConstCBlockRef pblock,
     CValidationState &state,
     CBlockIndex *pindex,
@@ -2851,6 +2961,7 @@ bool ConnectBlock(ConstCBlockRef pblock,
         if (!fJustCheck)
         {
             view.SetBestBlock(pindex->GetBlockHash());
+            MaintainAblaState(chainparams.GetConsensus(), pblock, pindex, __func__, nThisBlockSize);
         }
         return true;
     }
@@ -2956,10 +3067,17 @@ bool ConnectBlock(ConstCBlockRef pblock,
                 CDiskBlockPos _pos;
                 if (!FindUndoPos(
                         state, pindex->nFile, _pos, ::GetSerializeSize(blockundo, SER_DISK, CLIENT_VERSION) + 40))
+                {
                     return error("ConnectBlock(): FindUndoPos failed");
+                }
+
+                // Upgrade10: Update ABLA state upon connection
+                MaintainAblaState(chainparams.GetConsensus(), pblock, pindex, __func__, nThisBlockSize);
 
                 if (!WriteUndoToDisk(blockundo, _pos, pindex->pprev, chainparams.MessageStart()))
+                {
                     return AbortNode(state, "Failed to write undo data");
+                }
 
                 // update nUndoPos in block index
                 //

@@ -520,6 +520,16 @@ ConstCBlockRef ReadBlockFromDisk(const CBlockIndex *pindex, const Consensus::Par
     return pblockRef;
 }
 
+std::optional<uint64_t> ReadBlockSizeFromDisk(const CBlockIndex *pindex, const Consensus::Params &consensusParams)
+{
+    ConstCBlockRef pblock = ReadBlockFromDisk(pindex, consensusParams);
+    if (pblock == nullptr)
+    {
+        return std::nullopt;
+    }
+    return pblock->GetBlockSize();
+}
+
 bool WriteUndoToDisk(const CBlockUndo &blockundo,
     CDiskBlockPos &pos,
     const CBlockIndex *pindex,
