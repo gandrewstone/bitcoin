@@ -221,7 +221,7 @@ testScripts = [ RpcTest(t) for t in [
     'wallet',
     'wallet-hd',
     'wallet-dump',
-    'excessive',
+    Disabled('excessive','excessive block size and accept depth were removed when ABLA was added'),
     Disabled('uahf', 'temporary disable while waiting, to use as a template for future tests'),
     'listtransactions',
     'receivedby',
