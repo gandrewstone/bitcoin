@@ -196,6 +196,7 @@ testScripts = [ RpcTest(t) for t in [
     'wallet_send_token_cashaddr',
     'feature_p2sh32',
     'wallet_p2sh32',
+    'feature_abla',
     'feature_tx_version',
     'feature_min_tx_size',
     Disabled('sigchecks_inputstandardness_activation', 'Already activated, and mempool bad sigcheck mempool cleanup removed so test will fail'),
