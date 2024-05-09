@@ -207,11 +207,17 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript &sc
     assert(pindexPrev); // can't make a new block if we don't even have the genesis block
 
     may2020Enabled = IsMay2020Activated(Params().GetConsensus(), pindexPrev);
+    // Size check (both pre and post upgrade 10 are handled here, after CheckBlock above)
+    const uint64_t nMaxBlockSize = GetNextBlockSizeLimit(pindexPrev);
 
     if (may2020Enabled)
     {
-        maxSigOpsAllowed = maxSigChecks.Value();
+        // May 2024 activation is already takne care of bevause nMaxBlockSize
+        // is computed by GetNextBlockSizeLimit() which before May 2024 activation
+        // return 32MB, after a value determined by the ABLA algo
+        maxSigOpsAllowed = GetMaxBlockSigChecksCount(nMaxBlockSize);
     }
+
 
 
     {

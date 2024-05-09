@@ -373,7 +373,6 @@ void UnlimitedSetup(void)
     MIN_TX_REQUEST_RETRY_INTERVAL = GetArg("-txretryinterval", DEFAULT_MIN_TX_REQUEST_RETRY_INTERVAL);
     MIN_BLK_REQUEST_RETRY_INTERVAL = GetArg("-blkretryinterval", DEFAULT_MIN_BLK_REQUEST_RETRY_INTERVAL);
     blockVersion = GetArg("-blockversion", blockVersion);
-    maxSigChecks = excessiveBlockSize / BLOCK_MAXBYTES_MAXSIGCHECKS_RATIO;
     LoadTweaks(); // The above options are deprecated so the same parameter defined as a tweak will override them
 
     settingsToUserAgentString();

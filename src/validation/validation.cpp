@@ -2649,6 +2649,9 @@ bool ConnectBlockCanonicalOrdering(ConstCBlockRef pblock,
     int64_t nTime2 = GetStopwatchMicros();
     LOG(BLK, "Canonical ordering for %s MTP: %d\n", pblock->GetHash().ToString(), pindex->GetMedianTimePast());
 
+    // Size check (both pre and post upgrade 10 are handled here, after CheckBlock above)
+    const uint64_t nMaxBlockSize = GetNextBlockSizeLimit(pindex->pprev);
+
     // Start enforcing BIP68 (sequence locks) and BIP112 (CHECKSEQUENCEVERIFY)
     int nLockTimeFlags = 0;
     if (pindex->nHeight >= chainparams.GetConsensus().BIP68Height)
@@ -2902,9 +2905,10 @@ bool ConnectBlockCanonicalOrdering(ConstCBlockRef pblock,
 
             LOG(BENCH, "Number of SigChecks performed: %d\n", blockSigChecks);
 
-            // May 2020 block consensus rule
-            uint64_t maxSigChecksAllowed = maxSigChecks.Value();
-            if (blockSigChecks > maxSigChecksAllowed)
+            // May 2024 activation is already takne care of bevause nMaxBlockSize
+            // is computed by GetNextBlockSizeLimit() which before May 2024 activation
+            // return 32MB, after a value determined by the ABLA algo
+            if (blockSigChecks > GetMaxBlockSigChecksCount(nMaxBlockSize))
             {
                 return state.DoS(
                     100, false, REJECT_INVALID, "bad-blk-sigchecks", false, "block sigcheck limit exceeded");

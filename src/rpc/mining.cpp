@@ -516,7 +516,6 @@ static UniValue MkFullMiningCandidateJson(const std::set<std::string> &setClient
     result.pushKV("sigoplimit", (int64_t)MAX_BLOCK_SIGOPS_PER_MB);
     if (may2020Enabled)
     {
-        result.pushKV("sigchecklimit", maxSigChecks.Value());
         result.pushKV("sigchecktotal", sigcheckTotal);
     }
 

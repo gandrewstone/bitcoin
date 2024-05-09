@@ -68,10 +68,6 @@ static_assert(MAX_CONSENSUS_BLOCK_SIZE <= std::numeric_limits<unsigned int>::max
  */
 static const int BLOCK_MAXBYTES_MAXSIGCHECKS_RATIO = 141;
 
-static const unsigned int MAY2020_MAX_BLOCK_SIGCHECK_COUNT =
-    DEFAULT_CONSENSUS_BLOCK_SIZE / BLOCK_MAXBYTES_MAXSIGCHECKS_RATIO;
-static_assert(MAY2020_MAX_BLOCK_SIGCHECK_COUNT == 226950, "Max block sigcheck value differs from specification");
-
 /** Allowed messages lengths will be this * the excessive block size */
 static const unsigned int DEFAULT_MAX_MESSAGE_SIZE_MULTIPLIER = 2;
 

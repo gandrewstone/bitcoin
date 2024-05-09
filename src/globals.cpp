@@ -321,12 +321,6 @@ CTweak<uint64_t> maxScriptOps("consensus.maxScriptOps",
         MAX_OPS_PER_SCRIPT),
     MAX_OPS_PER_SCRIPT);
 
-CTweak<uint64_t> maxSigChecks("consensus.maxBlockSigChecks",
-    strprintf("Consensus parameter specifying the maximum sigchecks in a block.  Use for testing only! (default for "
-              "mainnet: %ld)",
-        MAY2020_MAX_BLOCK_SIGCHECK_COUNT),
-    MAY2020_MAX_BLOCK_SIGCHECK_COUNT);
-
 CTweak<bool> unsafeGetBlockTemplate("mining.unsafeGetBlockTemplate",
     "Allow getblocktemplate to succeed even if the chain tip is old or this node is not connected to other nodes "
     "(default: false)",
