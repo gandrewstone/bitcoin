@@ -674,8 +674,6 @@ static void addNodeRelayOptions(AllowedArgs &allowedArgs)
 static void addBlockCreationOptions(AllowedArgs &allowedArgs)
 {
     allowedArgs.addHeader(_("Block creation options:"))
-        .addArg("blockmaxsize=<n>", requiredInt,
-            strprintf("Set maximum block size in bytes (default: %d)", DEFAULT_BLOCK_MAX_SIZE))
         .addArg("blockprioritysize=<n>", requiredInt,
             strprintf(_("Set maximum size of high-priority/low-fee transactions in bytes (default: %d)"),
                 DEFAULT_BLOCK_PRIORITY_SIZE))

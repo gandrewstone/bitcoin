@@ -84,7 +84,6 @@ BlockAssembler::BlockAssembler(const CChainParams &_chainparams)
     nBlockMaxSize = GetNextBlockSizeLimit(chainActive.Tip()) * 0.95;
 
     // Core:
-    // nBlockMaxSize = GetArg("-blockmaxsize", DEFAULT_BLOCK_MAX_SIZE);
     // Limit to between 1K and MAX_BLOCK_SIZE-1K for sanity:
     // nBlockMaxSize = std::max((unsigned int)1000, std::min((unsigned int)(MAX_BLOCK_SIZE-1000), nBlockMaxSize));
 
