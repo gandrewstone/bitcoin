@@ -23,8 +23,7 @@ class MempoolSyncTest(BitcoinTestFramework):
             "-net.syncMempoolWithPeers=1",
             "-net.randomlyDontInv=100",
             "-excessiveblocksize=6000000",
-            "-blockprioritysize=6000000",
-            "-blockmaxsize=6000000"]
+            "-blockprioritysize=6000000"]
 
         self.nodes = [
             start_node(0, self.options.tmpdir, node_opts),
