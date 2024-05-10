@@ -10,7 +10,7 @@ from test_framework.util import *
 
 
 class GrapheneOptimizedTest(GrapheneBlockTest):
-    
+
     def setup_network(self, split=False):
         standard_node_opts = [
             "-rpcservertimeout=0",
@@ -20,8 +20,7 @@ class GrapheneOptimizedTest(GrapheneBlockTest):
             "-use-compactblocks=0",
             "-net.grapheneFastFilterCompatibility=2",
             "-excessiveblocksize=6000000",
-            "-blockprioritysize=6000000",
-            "-blockmaxsize=6000000"]
+            "-blockprioritysize=6000000"]
 
         optimized_node_opts = [
             "-rpcservertimeout=0",
@@ -31,8 +30,7 @@ class GrapheneOptimizedTest(GrapheneBlockTest):
             "-use-compactblocks=0",
             "-net.grapheneFastFilterCompatibility=0",
             "-excessiveblocksize=6000000",
-            "-blockprioritysize=6000000",
-            "-blockmaxsize=6000000"]
+            "-blockprioritysize=6000000"]
 
         self.nodes = [
             start_node(0, self.options.tmpdir, optimized_node_opts),

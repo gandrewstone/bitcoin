@@ -28,7 +28,6 @@ class ThinBlockTest(BitcoinTestFramework):
             "-use-compactblocks=1",
             "-excessiveblocksize=6000000",
             "-blockprioritysize=6000000",
-            "-blockmaxsize=6000000",
             "-peerbloomfilters=1"]
 
         # These options have peerbloomfiters turned off.  Xthin's should still work with this option turned off.

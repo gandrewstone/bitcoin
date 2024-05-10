@@ -123,7 +123,7 @@ class ZMQTest (BitcoinTestFramework):
         # notify coinbase
         zmqNotif2 = self.hashtx.receive().hex()
         zmqNotif2r = self.rawtx.receive()
-        assert b"/EB32/AD12" in zmqNotif2r
+        assert b"/EB32/" in zmqNotif2r
         # notify tx 1 again
         zmqNotif = self.hashtx.receive().hex()
         assert fundTx == zmqNotif

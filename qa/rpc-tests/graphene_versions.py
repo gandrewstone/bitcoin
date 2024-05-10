@@ -10,7 +10,7 @@ from test_framework.util import *
 
 
 class GrapheneOptimizedTest(GrapheneBlockTest):
-   
+
     def __init__(self, vL1, vH1, vL2, vH2, test_assertion):
         self.vL1 = vL1
         self.vH1 = vH1
@@ -30,8 +30,7 @@ class GrapheneOptimizedTest(GrapheneBlockTest):
             "-net.grapheneMaxVersionSupported=" + self.vH1,
             "-net.grapheneFastFilterCompatibility=0",
             "-excessiveblocksize=6000000",
-            "-blockprioritysize=6000000",
-            "-blockmaxsize=6000000"]
+            "-blockprioritysize=6000000"]
 
         type2_opts = [
             "-rpcservertimeout=0",
@@ -43,8 +42,7 @@ class GrapheneOptimizedTest(GrapheneBlockTest):
             "-net.grapheneMaxVersionSupported=" + self.vH2,
             "-net.grapheneFastFilterCompatibility=0",
             "-excessiveblocksize=6000000",
-            "-blockprioritysize=6000000",
-            "-blockmaxsize=6000000"]
+            "-blockprioritysize=6000000"]
 
         self.nodes = [
             start_node(0, self.options.tmpdir, type1_opts),
