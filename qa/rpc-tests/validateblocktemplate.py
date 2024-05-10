@@ -297,53 +297,56 @@ class ValidateblocktemplateTest(BitcoinTestFramework):
         for n in self.nodes:
             n.validateblocktemplate(hexblk)
 
-        logging.info("excessive")
-        self.nodes[0].setminingmaxblock(1000)
-        self.nodes[0].setexcessiveblock(1000)
-        expectException(lambda: self.nodes[0].validateblocktemplate(hexblk),
-                        JSONRPCException, "invalid block: excessive")
+        # FIXME setiningblock and setexecessiveblock rpc cmds have been removed
+        #logging.info("excessive")
+        #self.nodes[0].setminingmaxblock(1000) #FIXME
+        #self.nodes[0].setexcessiveblock(1000)
+        #expectException(lambda: self.nodes[0].validateblocktemplate(hexblk),
+        #               JSONRPCException, "invalid block: excessive")
 
-        logging.info("EB min value")
-        self.nodes[0].setminingmaxblock(1000)
-        expectException(lambda: self.nodes[0].setexcessiveblock(999),
-                        JSONRPCException, "Sorry, your maximum mined block (1000) is larger than your proposed excessive size (999).  This would cause you to orphan your own blocks.")
+        # FIXME setiningblock and setexecessiveblock rpc cmds have been removed
+        #logging.info("EB min value")
+        #self.nodes[0].setminingmaxblock(1000)
+        #expectException(lambda: self.nodes[0].setexcessiveblock(999),
+        #                JSONRPCException, "Sorry, your maximum mined block (1000) is larger than your proposed excessive size (999).  This would cause you to orphan your own blocks.")
 
-        self.nodes[0].setexcessiveblock(16 * 1000 * 1000)
-        self.nodes[0].setminingmaxblock(1000 * 1000)
+        # FIXME seminingblock is not possible anymore
+        #self.nodes[0].setexcessiveblock(16 * 1000 * 1000)
+        #self.nodes[0].setminingmaxblock(1000 * 1000)
 
-        for it in range(0, 100):
-            h2 = hexblk
-            pos = random.randint(0, len(hexblk))
-            val = random.randint(0, 15)
-            h3 = h2[:pos] + ('%x' % val) + h2[pos + 1:]
-            try:
-                self.nodes[0].validateblocktemplate(h3)
-            except JSONRPCException as e:
-                if not (e.error["code"] == -1 or e.error["code"] == -22):
-                    print(str(e))
-                # its ok we expect garbage
+        #for it in range(0, 100):
+        #    h2 = hexblk
+        #    pos = random.randint(0, len(hexblk))
+        #    val = random.randint(0, 15)
+        #    h3 = h2[:pos] + ('%x' % val) + h2[pos + 1:]
+        #    try:
+        #        self.nodes[0].validateblocktemplate(h3)
+        #    except JSONRPCException as e:
+        #        if not (e.error["code"] == -1 or e.error["code"] == -22):
+        #            print(str(e))
+        #        # its ok we expect garbage
 
-        self.nodes[1].submitblock(hexblk)
-        self.sync_all()
+        #self.nodes[1].submitblock(hexblk)
+        #self.sync_all()
 
-        height = self.nodes[0].getblockcount()
-        tip = int(self.nodes[0].getblockhash(height), 16)
-        coinbase = create_coinbase(height + 1)
-        next_time = next_time + 600
-        prev_block = block
-        txl = []
-        for tx in prev_block.vtx:
-            for outp in range(0, len(tx.vout)):
-                ov = tx.vout[outp].nValue
-                txl.append(create_transaction(tx, outp, CScript([OP_CHECKSIG] * 100), [int(ov / 2)] * 2))
-        block = create_block(tip, coinbase, next_time, txl)
-        block.nVersion = 0x20000000
-        block.rehash()
-        block.solve()
-        hexblk = ToHex(block)
-        for n in self.nodes:
-            expectException(lambda: n.validateblocktemplate(hexblk), JSONRPCException,
-                            "-1: invalid block: bad-txns-premature-spend-of-coinbase")
+        #height = self.nodes[0].getblockcount()
+        #tip = int(self.nodes[0].getblockhash(height), 16)
+        #coinbase = create_coinbase(height + 1)
+        #next_time = next_time + 600
+        #prev_block = block
+        #txl = []
+        #for tx in prev_block.vtx:
+        #    for outp in range(0, len(tx.vout)):
+        #        ov = tx.vout[outp].nValue
+        #        txl.append(create_transaction(tx, outp, CScript([OP_CHECKSIG] * 100), [int(ov / 2)] * 2))
+        #block = create_block(tip, coinbase, next_time, txl)
+        #block.nVersion = 0x20000000
+        #block.rehash()
+        #block.solve()
+        #hexblk = ToHex(block)
+        #for n in self.nodes:
+        #    expectException(lambda: n.validateblocktemplate(hexblk), JSONRPCException,
+        #                    "-1: invalid block: bad-txns-premature-spend-of-coinbase")
 
 def Test():
     t = ValidateblocktemplateTest()
