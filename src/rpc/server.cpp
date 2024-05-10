@@ -159,7 +159,8 @@ static const CRPCConvertParam vRPCConvertParams[] =
     {"getmempoolancestors", 1},
     {"getmempooldescendants", 1},
     {"getrawtransactionssince", 1},
-    {"getblockstats", 1}
+    {"getblockstats", 1},
+    {"fillmempool", 0}
 };
 /* clang-format on */
 
