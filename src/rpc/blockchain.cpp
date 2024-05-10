@@ -30,8 +30,8 @@
 #include "ui_interface.h"
 #include "undo.h"
 #include "util.h"
-#include "utilstrencodings.h"
 #include "util/defer.h"
+#include "utilstrencodings.h"
 #include "validation/validation.h"
 #include "validation/verifydb.h"
 
@@ -2414,16 +2414,15 @@ static UniValue fillmempool(const UniValue &params, bool fHelp)
             "  \"redeemscript_hex\" : \"...\", (string) The hex string of the redeem script for the transactions.\n"
             "}\n"
             "\nExamples:\n" +
-            HelpExampleCli("fillmempool","10") + HelpExampleRpc("fillmempool","320")
-        );
+            HelpExampleCli("fillmempool", "10") + HelpExampleRpc("fillmempool", "320"));
     }
 
     // Ensure we are on regtest
     const auto &consensusParams = Params().GetConsensus();
     if (!consensusParams.fPowNoRetargeting)
     {
-        throw JSONRPCError(RPC_INVALID_REQUEST,
-                           "fillmempool is not supported on this chain. Switch to regtest to use fillmempool.");
+        throw JSONRPCError(
+            RPC_INVALID_REQUEST, "fillmempool is not supported on this chain. Switch to regtest to use fillmempool.");
     }
 
     // Check not already running in another thread
@@ -2436,14 +2435,15 @@ static UniValue fillmempool(const UniValue &params, bool fHelp)
 
     // Temporarily disable the regtest mempool sanity checking since it will slow the below operation down
     const auto orig_check_freq = mempool.getSanityCheck();
-    Defer restore_sanity_check([&orig_check_freq]
+    Defer restore_sanity_check(
+        [&orig_check_freq]
         {
             // restore the original setting on scope end
             mempool.setSanityCheck(orig_check_freq);
         });
     mempool.setSanityCheck(0.0);
 
-    //Tic t0;
+    // Tic t0;
     const int arg = params[0].get_int();
     if (arg <= 0)
     {
@@ -2453,8 +2453,8 @@ static UniValue fillmempool(const UniValue &params, bool fHelp)
     const size_t nMaxMempoolSize = GetArg("-maxmempool", DEFAULT_MAX_MEMPOOL_SIZE) * 1000000;
     if (target_size > nMaxMempoolSize)
     {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("Max mempool size is %i which is less than the requested %i",
-                                                            nMaxMempoolSize, target_size));
+        throw JSONRPCError(RPC_INVALID_PARAMETER,
+            strprintf("Max mempool size is %i which is less than the requested %i", nMaxMempoolSize, target_size));
     }
     const CScript redeem_script = CScript() << OP_DROP << OP_TRUE;
     const CTxDestination destination = ScriptID{redeem_script, /* is32 = */ false};
@@ -2466,7 +2466,7 @@ static UniValue fillmempool(const UniValue &params, bool fHelp)
     // Mine over 100 blocks to get `nCB` valid coinbases we can spend using our "anyone can spend" p2sh
     {
         const auto reward = GetBlockSubsidy(chainActive.Height() + 1, consensusParams);
-        assert( reward > 0);
+        assert(reward > 0);
         const size_t nCB = std::max<size_t>(1, (50 * COIN) / reward); // scale nCB to block reward size
         auto reserve_script = boost::shared_ptr<CReserveScript>();
         reserve_script->reserveScript = destination_spk;
@@ -2496,7 +2496,7 @@ static UniValue fillmempool(const UniValue &params, bool fHelp)
     CFeeRate last_fee_rate;
     size_t max_size_seen = 0u, min_size_seen = 0xffffffffu;
 
-    auto SpendToMempool = [&] (const size_t tx_num, const UTXO &txoIn, const size_t fanoutSize) -> UTXOList
+    auto SpendToMempool = [&](const size_t tx_num, const UTXO &txoIn, const size_t fanoutSize) -> UTXOList
     {
         UTXOList ret;
         assert(fanoutSize > 0);
@@ -2515,14 +2515,10 @@ static UniValue fillmempool(const UniValue &params, bool fHelp)
 
         tx.SortBip69();
 
-        auto IsUnspendable = [](const CTxOut &out)
-        {
-            return out.nValue == 0 || out.scriptPubKey.IsUnspendable();
-        };
+        auto IsUnspendable = [](const CTxOut &out) { return out.nValue == 0 || out.scriptPubKey.IsUnspendable(); };
 
         // Adjust for fees
         const auto tx_size = ::GetSerializeSize(tx, PROTOCOL_VERSION);
-        const auto mp_max_size = nMaxMempoolSize;
         const auto fee_rate = ::minRelayTxFee;
         const auto fee = fee_rate.GetFee(tx_size);
         const CAmount fee_per_output = int64_t(std::ceil(fee / double(tx.vout.size() - n_op_returns)));
@@ -2549,8 +2545,8 @@ static UniValue fillmempool(const UniValue &params, bool fHelp)
             last_fee_rate = fee_rate;
             max_size_seen = std::max(tx_size, max_size_seen);
             min_size_seen = std::min(tx_size, min_size_seen);
-            LOG(MEMPOOL, "fillmempool: tx_num: %i, size: %i, fee: %i, fee_rate: %s\n",
-                     tx_num, tx_size, tx_fee, ::minRelayTxFee.ToString());
+            LOG(MEMPOOL, "fillmempool: tx_num: %i, size: %i, fee: %i, fee_rate: %s\n", tx_num, tx_size, tx_fee,
+                ::minRelayTxFee.ToString());
         }
         const auto &txId = rtx->GetHash();
         unsigned outN = 0;
@@ -2561,9 +2557,9 @@ static UniValue fillmempool(const UniValue &params, bool fHelp)
             const bool ok = AcceptToMemoryPool(mempool, vstate, rtx, false, &missingInputs, 0);
             if (!ok || !vstate.IsValid())
             {
-                throw JSONRPCError(RPC_INTERNAL_ERROR,
-                                   strprintf("Unable to accept txn to mempool: %s",
-                                             missingInputs ? "missing inputs" : vstate.GetRejectReason()));
+                throw JSONRPCError(
+                    RPC_INTERNAL_ERROR, strprintf("Unable to accept txn to mempool: %s",
+                                            missingInputs ? "missing inputs" : vstate.GetRejectReason()));
             }
         }
 
@@ -2598,7 +2594,7 @@ static UniValue fillmempool(const UniValue &params, bool fHelp)
     ret.pushKV("mempool_txns", (int64_t)mempool.size());
     ret.pushKV("mempool_bytes", mempool.GetTotalTxSize());
     ret.pushKV("mempool_dynamic_usage", (int64_t)mp_dynusage);
-    //ret.pushKV("elapsed_msec", t0.msec<double>());
+    // ret.pushKV("elapsed_msec", t0.msec<double>());
     ret.pushKV("address", EncodeDestination(destination));
     ret.pushKV("redeemscript_hex", HexStr(redeem_script));
     return ret;
