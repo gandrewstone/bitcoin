@@ -170,7 +170,7 @@ class TxVersionTest(BitcoinTestFramework):
         assert_equal(node.getbestblockhash(), blocks[-1].sha256.to_bytes(length=32, byteorder="big").hex())
         # Ensure upgrade9 activated
         assert_greater_than_or_equal(node.getblockchaininfo()["blocks"], activation_height)
-        self.log.info(f"Upgrade9 is now activated for the next block!")
+        logging.info(f"Upgrade9 is now activated for the next block!")
         # Post-Upgrade9 Test: The below function call creates 2 txns that have nVersion=1 and nVersion=2, sends them to
         # the mempool -- they should be accepted ok and mined ok.  It also creates 3 txns that have nVersion out of
         # range, sends them to mempool -- they should be still be rejected non-standard (can removed from standardness after upgrade9).
