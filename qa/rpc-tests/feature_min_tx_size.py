@@ -131,7 +131,7 @@ class MinTxSizeTest(BitcoinTestFramework):
         assert_equal(node.getbestblockhash(), blocks[-1].sha256.to_bytes(length=32, byteorder="big").hex())
         # Ensure upgrade9 activated
         assert_greater_than_or_equal(node.getblockchaininfo()["blocks"], activation_height)
-        self.log.info(f"Upgrade9 is now activated for the next block!")
+        logging.info(f"Upgrade9 is now activated for the next block!")
 
         logging.info("Ensure smaller tx size (65 bytes) works ok")
         b2 = self.create_block(blocks[-1], spend=blocks[spend_index].vtx[0],
