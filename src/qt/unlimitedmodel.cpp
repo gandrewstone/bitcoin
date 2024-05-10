@@ -45,8 +45,6 @@ void UnlimitedModel::Init()
     // Ensure restart flag is unset on client startup
     setRestartRequired(false);
 
-    uint64_t tmpExcessiveBlockSize = excessiveBlockSize;
-
     bool inUse = settings.value("fUseReceiveShaping").toBool();
     int64_t burstKB = settings.value("nReceiveBurst").toLongLong();
     int64_t aveKB = settings.value("nReceiveAve").toLongLong();

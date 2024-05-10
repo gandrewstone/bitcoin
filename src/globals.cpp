@@ -186,7 +186,7 @@ vector<std::string> vUseDNSSeeds;
 vector<std::string> vAddedNodes;
 set<CNetAddr> setservAddNodeAddresses;
 
-uint64_t excessiveBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
+std::atomic<uint64_t> consensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
 unsigned int maxMessageSizeMultiplier = DEFAULT_MAX_MESSAGE_SIZE_MULTIPLIER;
 int nMaxOutConnections = DEFAULT_MAX_OUTBOUND_CONNECTIONS;
 bool fCanonicalTxsOrder = true;

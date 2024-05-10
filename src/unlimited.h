@@ -70,7 +70,7 @@ extern CStatusString statusStrings;
 
 extern std::set<CBlockIndex *> setDirtyBlockIndex;
 extern uint32_t blockVersion; // Overrides the mined block version if non-zero
-extern uint64_t excessiveBlockSize;
+extern std::atomic<uint64_t> consensusBlockSize;
 extern unsigned int maxMessageSizeMultiplier;
 extern bool fCanonicalTxsOrder;
 

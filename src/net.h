@@ -77,7 +77,7 @@ static const unsigned int MAX_ADDR_TO_SEND = 1000;
 /** The maximum # of bytes to receive at once */
 static const int64_t MAX_RECV_CHUNK = 256 * 1024;
 /** Maximum length of incoming protocol messages (no message over 2 MiB is currently acceptable). */
-// BU: currently allowing DEFAULT_MAX_MESSAGE_SIZE_MULTIPLIER*excessiveBlockSize as the max message.
+// BU: currently allowing DEFAULT_MAX_MESSAGE_SIZE_MULTIPLIER*consensusBlockSize as the max message.
 // static const unsigned int MAX_PROTOCOL_MESSAGE_LENGTH = 2 * 1024 * 1024;
 /** -listen default */
 static const bool DEFAULT_LISTEN = true;

@@ -33,7 +33,6 @@ public:
 
     enum UOptionID
     {
-        ExcessiveBlockSize,
         UseReceiveShaping, // bool
         UseSendShaping, // bool
         ReceiveBurst, // int

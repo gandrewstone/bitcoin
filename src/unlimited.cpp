@@ -357,7 +357,7 @@ void settingsToUserAgentString()
     std::string flavor;
 
     std::stringstream ebss;
-    ebss << (excessiveBlockSize / 100000);
+    ebss << (consensusBlockSize.load() / 100000);
     std::string eb = ebss.str();
     eb.insert(eb.size() - 1, ".", 1);
     if (eb.substr(0, 1) == ".")
@@ -494,14 +494,14 @@ UniValue getexcessiveblock(const UniValue &params, bool fHelp)
 {
     if (fHelp || params.size() != 0)
         throw runtime_error("getexcessiveblock\n"
-                            "\nReturn the excessive block size."
+                            "\nReturn the excessive block size (also called the consensus block size)."
                             "\nResult\n"
                             "  excessiveBlockSize (integer) block size in bytes\n"
                             "\nExamples:\n" +
                             HelpExampleCli("getexcessiveblock", "") + HelpExampleRpc("getexcessiveblock", ""));
 
     UniValue ret(UniValue::VOBJ);
-    ret.pushKV("excessiveBlockSize", excessiveBlockSize);
+    ret.pushKV("excessiveBlockSize", consensusBlockSize.load());
     return ret;
 }
 
