@@ -2594,10 +2594,10 @@ static UniValue fillmempool(const UniValue &params, bool fHelp)
     }
 
     UniValue ret(UniValue::VOBJ);
-    ret.pushKV("txns_generated", ngen);
-    ret.pushKV("mempool_txns", mempool.size());
+    ret.pushKV("txns_generated", (int64_t)ngen);
+    ret.pushKV("mempool_txns", (int64_t)mempool.size());
     ret.pushKV("mempool_bytes", mempool.GetTotalTxSize());
-    ret.pushKV("mempool_dynamic_usage", mp_dynusage);
+    ret.pushKV("mempool_dynamic_usage", (int64_t)mp_dynusage);
     //ret.pushKV("elapsed_msec", t0.msec<double>());
     ret.pushKV("address", EncodeDestination(destination));
     ret.pushKV("redeemscript_hex", HexStr(redeem_script));
