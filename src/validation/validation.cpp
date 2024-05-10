@@ -4376,18 +4376,3 @@ const CBlockIndex *ActivationBlockTracker::GetActivationBlock(const CBlockIndex 
     assert(pwalk);
     return pwalk;
 }
-
-uint64_t GetNextBlockSizeLimit(const CBlockIndex *pindexPrev)
-{
-    const auto &params = Params().GetConsensus();
-    // const uint64_t confMaxBlockSize = config.GetConfiguredMaxBlockSize();
-    if (!IsMay2024Activated(params, pindexPrev))
-    {
-        return Params().DefaultConsensusBlockSize();
-    }
-    const auto ablaStateOpt = pindexPrev->GetAblaStateOpt();
-    assert(ablaStateOpt);
-    // std::max here to ensure the minimum max block size is what the user overrode from config, if anything
-    // return std::max(confMaxBlockSize, ablaStateOpt->GetNextBlockSizeLimit(params.ablaConfig));
-    return ablaStateOpt->GetNextBlockSizeLimit(params.ablaConfig);
-}

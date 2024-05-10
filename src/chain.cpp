@@ -6,8 +6,9 @@
 
 #include "chain.h"
 #include "main.h"
+#include "validation/validation.h"
 
-using namespace std;
+std::atomic<uint64_t> consensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
 
 /**
  * CChain implementation
@@ -28,6 +29,7 @@ void CChain::SetTip(CBlockIndex *pindex)
         vChain[pindex->nHeight] = pindex;
         pindex = pindex->pprev;
     }
+    consensusBlockSize.store(GetNextBlockSizeLimit(pindex));
 }
 
 CBlockLocator CChain::GetLocator(const CBlockIndex *pindex) const
@@ -233,4 +235,19 @@ bool AreOnTheSameFork(const CBlockIndex *pa, const CBlockIndex *pb)
     // is a child of pb).
     const CBlockIndex *pindexCommon = LastCommonAncestor(pa, pb);
     return pindexCommon == pa || pindexCommon == pb;
+}
+
+uint64_t GetNextBlockSizeLimit(const CBlockIndex *pindexPrev)
+{
+    const auto &params = Params().GetConsensus();
+    // const uint64_t confMaxBlockSize = config.GetConfiguredMaxBlockSize();
+    if (!IsMay2024Activated(params, pindexPrev))
+    {
+        return Params().DefaultConsensusBlockSize();
+    }
+    const auto ablaStateOpt = pindexPrev->GetAblaStateOpt();
+    assert(ablaStateOpt);
+    // std::max here to ensure the minimum max block size is what the user overrode from config, if anything
+    // return std::max(confMaxBlockSize, ablaStateOpt->GetNextBlockSizeLimit(params.ablaConfig));
+    return ablaStateOpt->GetNextBlockSizeLimit(params.ablaConfig);
 }

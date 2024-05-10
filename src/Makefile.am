@@ -549,6 +549,7 @@ libbitcoin_common_a_SOURCES = \
   script/standard.cpp \
   versionbits.cpp \
   chain.cpp \
+  validation/forks.cpp \
   $(BITCOIN_CORE_H)
 
 
