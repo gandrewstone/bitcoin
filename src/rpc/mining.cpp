@@ -516,12 +516,14 @@ static UniValue MkFullMiningCandidateJson(const std::set<std::string> &setClient
 
     // Deprecated after may 2020 but leave it in in case miners are using it in their code.
     result.pushKV("sigoplimit", (int64_t)MAX_BLOCK_SIGOPS_PER_MB);
+    uint64_t next_block_size_limit = GetNextBlockSizeLimit(chainActive.Tip());
+    result.pushKV("sigchecklimit", (uint64_t)GetMaxBlockSigChecksCount(next_block_size_limit));
     if (may2020Enabled)
     {
         result.pushKV("sigchecktotal", sigcheckTotal);
     }
 
-    result.pushKV("sizelimit", (int64_t)GetNextBlockSizeLimit(chainActive.Tip()));
+    result.pushKV("sizelimit", (int64_t)next_block_size_limit);
     result.pushKV("curtime", pblock->GetBlockTime());
     result.pushKV("bits", strprintf("%08x", pblock->nBits));
     // BU get the height directly from the block because pindexPrev could change if another block has come in.
