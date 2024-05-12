@@ -14,6 +14,9 @@ from test_framework.util import (
     connect_nodes,
     disconnect_nodes,
 )
+from test_framework.loginit import logging
+from test_framework.abla import *
+from decimal import Decimal
 
 # The minimum number of max_block_size bytes required per executed signature
 # check operation in a block. I.e. maximum_block_sigchecks = maximum_block_size
@@ -27,10 +30,6 @@ class AblaTest(BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 2
         self.setup_clean_chain = True
-        self.base_extra_args = ['-expire=0', '-checkmempool=0', '-allowunconnectedmining=1']
-        #self.extra_args = [['-upgrade10activationtime=2000000000', '-percentblockmaxsize=100']
-        #                   + self.base_extra_args,
-        #                   ['-upgrade10activationtime=0']]
         self.extra_args = [['-upgrade10activationtime=2000000000'], ['-upgrade10activationtime=0']]
         # We need a long rpc timeout here so that the sanitizer-undefined CI job may pass
         self.rpc_timeout = 600
@@ -63,11 +62,10 @@ class AblaTest(BitcoinTestFramework):
     def run_test(self):
         node = self.nodes[0]
         addr = node.getnewaddress()
-
+        node.set("mining.unsafeGetBlockTemplate=true")
         # We operate on node 0 disconnected from 1, and connect them at the end to verify that node1 was able to IBD
         # to node 0 correctly.
         disconnect_nodes(self.nodes[0], 1)
-
         # Start off 120 MB mempool (~= about 50MB serialized size)
         node.fillmempool(120)
         assert_greater_than(node.getmempoolinfo()['bytes'], DEFAULT_CONSENSUS_BLOCK_SIZE)
@@ -76,15 +74,16 @@ class AblaTest(BitcoinTestFramework):
         # Ensure no ABLA state in headers
         assert 'ablastate' not in self.get_header()
 
+        node.set("mining.unsafeGetBlockTemplate=true")
         # Check that blocksize limit is at the consensus default
-        assert_equal(node.getblocktemplatelight({})['sizelimit'], DEFAULT_CONSENSUS_BLOCK_SIZE)
+        assert_equal(node.getblocktemplate({})['sizelimit'], DEFAULT_CONSENSUS_BLOCK_SIZE)
 
         mtp = self.get_mtp()
 
         # Now, enable the upgrade
-        self.restart_node(0, extra_args=self.base_extra_args + [f'-upgrade10activationtime={mtp + 1}',
-                                                                '-percentblockmaxsize=100'])
+        self.restart_node(0, extra_args=['-upgrade10activationtime='+str(mtp+1)])
 
+        node.set("mining.unsafeGetBlockTemplate=true")
         # No ABLA yet
         assert_equal(self.get_abla_activation_height(), None)
 
@@ -105,7 +104,7 @@ class AblaTest(BitcoinTestFramework):
         abla = AblaState.FromRpcDict(self.get_header())  # Get tip's abla state
         new_block_hash = node.generatetoaddress(1, addr)[0]  # Mine a full block
         new_block_size = node.getblock(new_block_hash, 1)['size']
-        self.log.info(f"Mined block size: {new_block_size}")
+        logging.info("Mined block size: " + str(new_block_size))
         assert_greater_than(new_block_size, abla.GetNextBlockSizeLimit() * 0.90)  # Ensure block was indeed full-ish
 
         new_abla_state = abla.NextBlockState(new_block_size)  # Advance abla state
@@ -118,52 +117,61 @@ class AblaTest(BitcoinTestFramework):
         assert_greater_than(next_block_size_limit, abla.GetNextBlockSizeLimit())
 
         # Ensure mining (using percentmaxblocksize=100.0) reports correct value
-        mining_limit = next_block_size_limit
-        gbtl = node.getblocktemplatelight({})
+        # mining_limit = next_block_size_limit
+        mining_limit = next_block_size_limit * 0.95 # client is hardcoded to 95%
+        mining_limit = round(mining_limit, 1)
+        gbtl = node.getblocktemplate({})
         mi = node.getmininginfo()
         assert_greater_than(gbtl['sizelimit'], DEFAULT_CONSENSUS_BLOCK_SIZE)
-        assert_equal(mi['miningblocksizelimit'], mining_limit)
+        assert_equal(str(mi['miningblocksizelimit']), str(mining_limit))
         assert_equal(gbtl['sizelimit'], next_block_size_limit)
         # Check sigop limit of the block
         expected_sigops = next_block_size_limit // BLOCK_MAXBYTES_MAXSIGCHECKS_RATIO
-        assert_equal(gbtl['sigoplimit'], expected_sigops)
+        assert_equal(gbtl['sigchecklimit'], expected_sigops)
 
         # Next, restart node, specifying -precentmaxblocksize=50. `getmininginfo` limits should reflect this
-        self.restart_node(0, extra_args=self.base_extra_args + [f'-upgrade10activationtime={mtp + 1}',
-                                                                '-percentblockmaxsize=50'])
+        self.restart_node(0, extra_args=['-upgrade10activationtime='+str(mtp+1)])
 
-        mining_limit = next_block_size_limit // 2
+        node.set("mining.unsafeGetBlockTemplate=true")
+        # mining_limit = next_block_size_limit // 2
+        mining_limit = next_block_size_limit * 0.95 # client is hardcoded to 95%
+        mining_limit = round(mining_limit, 1)
+        node.fillmempool(100)  # Put 100 MB unserialized data into mempool
         # Check that mempool > 1/2 the blocksize limit so below test works ...
         assert_greater_than_or_equal(node.getmempoolinfo()['bytes'], mining_limit)
-        gbtl = node.getblocktemplatelight({})
+        gbtl = node.getblocktemplate({})
         mi = node.getmininginfo()
         # GBT doesn't tell you the configured size limit, just the consensus limit :(
         assert_equal(gbtl['sizelimit'], next_block_size_limit)
         # Mining info is the one that tells you the blockmaxsize setting...
-        assert_equal(mi['miningblocksizelimit'], mining_limit)
+        assert_equal(str(mi['miningblocksizelimit']), str(mining_limit))
         assert_greater_than_or_equal(mining_limit, mi['currentblocksize'])
         reserved_space = 1000  # BlockAssembler reserves 1000 bytes for coinbase txn
         assert_greater_than_or_equal(mi['currentblocksize'] + reserved_space, mining_limit)
         # Finally, belt-and-suspenders check sigop limit of the block (should be unaffected by blockmaxsize)
         expected_sigops = next_block_size_limit // BLOCK_MAXBYTES_MAXSIGCHECKS_RATIO
-        assert_equal(gbtl['sigoplimit'], expected_sigops)
+        assert_equal(gbtl['sigchecklimit'], expected_sigops)
 
         # Mine beyond the initial 32 MB limit to test ABLA actually allowing for bigger blocks.
-        self.restart_node(0, extra_args=self.base_extra_args + [f'-upgrade10activationtime={mtp + 1}',
-                                                                '-percentblockmaxsize=100'])
+        self.restart_node(0, extra_args=['-upgrade10activationtime='+str(mtp+1)])
+        node.set("mining.unsafeGetBlockTemplate=true")
+
+        node.fillmempool(290)  # Put 290 MB unserialized =~ 70 MB serialized tx data into mempool
         assert_greater_than_or_equal(node.getmempoolinfo()['bytes'], DEFAULT_CONSENSUS_BLOCK_SIZE * 2)
+
         new_block_hash = node.generatetoaddress(2, addr)[1]  # Mine 2 full blocks to bump ABLA state >32MB
         assert_equal(new_block_hash, node.getbestblockhash())  # Ensure blocks actually accepted & connected
         new_block_size = node.getblock(new_block_hash, 1)['size']
         new_abla_state = new_abla_state.NextBlockState(new_block_size)  # Advance abla state
-        self.log.info(f"Mined block size: {new_block_size}")
+        logging.info("Mined block size: " + str(new_block_size))
         assert_greater_than(new_abla_state.GetBlockSizeLimit(), DEFAULT_CONSENSUS_BLOCK_SIZE)
         assert_greater_than(new_abla_state.GetNextBlockSizeLimit(), DEFAULT_CONSENSUS_BLOCK_SIZE)
         assert_greater_than(new_block_size, DEFAULT_CONSENSUS_BLOCK_SIZE)
 
         # "Abusing" the node by restarting it again with upgrade10 activation at the beginning of time should make the
         # node figure out how to recover and have the correct abla state for the activation block, which is now genesis.
-        self.restart_node(0, extra_args=self.base_extra_args + ['-upgrade10activationtime=0'])
+        self.restart_node(0, extra_args=['-upgrade10activationtime=0'])
+        node.set("mining.unsafeGetBlockTemplate=true")
 
         assert_equal(self.get_abla_activation_height(), 0)
         genesis_size = node.getblock(node.getblockhash(0), 1)['size']
