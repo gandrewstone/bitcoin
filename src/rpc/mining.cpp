@@ -256,6 +256,7 @@ UniValue getmininginfo(const UniValue &params, bool fHelp)
             "  \"currentblocktx\": nnn,     (numeric) The last block transaction\n"
             "  \"difficulty\": xxx.xxxxx    (numeric) The current difficulty\n"
             "  \"errors\": \"...\"          (string) Current errors\n"
+            "  \"miningblocksizelimit\": nnn  (numeric) The next mining block size limit for this node\n"
             "  \"pooledtx\": n              (numeric) The size of the mem pool\n"
             "  \"testnet\": true|false      (boolean) If using testnet or not\n"
             "  \"chain\": \"xxxx\",         (string) current network name as defined in BIP70 (main, test, regtest)\n"
@@ -272,6 +273,7 @@ UniValue getmininginfo(const UniValue &params, bool fHelp)
     obj.pushKV("currentblocktx", (uint64_t)nLastBlockTx);
     obj.pushKV("difficulty", (double)GetDifficulty());
     obj.pushKV("errors", GetWarnings("statusbar"));
+    obj.pushKV("miningblocksizelimit", (uint64_t)GetNextBlockSizeLimit(chainActive.Tip()) * 0.95);
     obj.pushKV("networkhashps", getnetworkhashps(params, false));
     obj.pushKV("pooledtx", (uint64_t)mempool.size());
     obj.pushKV("testnet", Params().TestnetToBeDeprecatedFieldRPC());
