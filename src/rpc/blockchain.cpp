@@ -2479,7 +2479,7 @@ static UniValue fillmempool(const UniValue &params, bool fHelp)
             LOCK(cs_main);
             const CBlockIndex *pindex = LookupBlockIndex(bh);
             ConstCBlockRef pblock = ReadBlockFromDisk(pindex, consensusParams);
-            if (!pindex || chainActive.Contains(pindex) || pblock == nullptr)
+            if (!pindex || !chainActive.Contains(pindex) || pblock == nullptr)
             {
                 throw JSONRPCError(RPC_INTERNAL_ERROR, strprintf("Unable to find mined block #%i", i));
             }
