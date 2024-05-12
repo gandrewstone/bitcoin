@@ -2390,7 +2390,7 @@ UniValue getchaintxstats(const UniValue &params, bool fHelp)
     return ret;
 }
 
-extern UniValue generateBlocks(boost::shared_ptr<CReserveScript> coinbaseScript,
+extern UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript,
     int nGenerate,
     uint64_t nMaxTries,
     bool keepScript);
@@ -2468,7 +2468,7 @@ static UniValue fillmempool(const UniValue &params, bool fHelp)
         const auto reward = GetBlockSubsidy(chainActive.Height() + 1, consensusParams);
         assert(reward > 0);
         const size_t nCB = std::max<size_t>(1, (50 * COIN) / reward); // scale nCB to block reward size
-        auto reserve_script = boost::shared_ptr<CReserveScript>();
+        auto reserve_script = std::make_shared<CReserveScript>();
         reserve_script->reserveScript = destination_spk;
         const auto nBlocks = COINBASE_MATURITY + nCB;
         LOG(MEMPOOL, "fillmempool: Generating %i blocks, of which %i coinbases will be used ...\n", nBlocks, nCB);

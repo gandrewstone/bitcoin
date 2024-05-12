@@ -39,7 +39,7 @@ extern CCriticalSection cs_rpcWarmup;
 static RPCTimerInterface *timerInterface = nullptr;
 /* Map of name to timer.
  * @note Can be changed to std::unique_ptr when C++11 */
-static std::map<std::string, boost::shared_ptr<RPCTimerBase> > deadlineTimers;
+static std::map<std::string, std::shared_ptr<RPCTimerBase> > deadlineTimers;
 
 static struct CRPCSignals
 {
@@ -683,7 +683,7 @@ void RPCRunLater(const std::string &name, boost::function<void(void)> func, int6
     deadlineTimers.erase(name);
     LOG(RPC, "queue run of timer %s in %i seconds (using %s)\n", name, nSeconds, timerInterface->Name());
     deadlineTimers.insert(
-        std::make_pair(name, boost::shared_ptr<RPCTimerBase>(timerInterface->NewTimer(func, nSeconds * 1000))));
+        std::make_pair(name, std::shared_ptr<RPCTimerBase>(timerInterface->NewTimer(func, nSeconds * 1000))));
 }
 
 CRPCTable tableRPC;

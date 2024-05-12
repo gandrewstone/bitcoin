@@ -104,7 +104,7 @@ UniValue getnetworkhashps(const UniValue &params, bool fHelp)
         params.size() > 0 ? params[0].get_int() : 120, params.size() > 1 ? params[1].get_int() : -1);
 }
 
-UniValue generateBlocks(boost::shared_ptr<CReserveScript> coinbaseScript,
+UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript,
     int nGenerate,
     uint64_t nMaxTries,
     bool keepScript)
@@ -195,7 +195,7 @@ UniValue generate(const UniValue &params, bool fHelp)
         nMaxTries = params[1].get_int();
     }
 
-    boost::shared_ptr<CReserveScript> coinbaseScript;
+    std::shared_ptr<CReserveScript> coinbaseScript;
     GetMainSignals().ScriptForMining(coinbaseScript);
 
     // If the keypool is exhausted, no script is returned at all.  Catch this.
@@ -237,7 +237,7 @@ UniValue generatetoaddress(const UniValue &params, bool fHelp)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Error: Invalid address");
     }
 
-    boost::shared_ptr<CReserveScript> coinbaseScript(new CReserveScript());
+    std::shared_ptr<CReserveScript> coinbaseScript(new CReserveScript());
     coinbaseScript->reserveScript = GetScriptForDestination(destination);
 
     return generateBlocks(coinbaseScript, nGenerate, nMaxTries, false);
@@ -728,7 +728,7 @@ UniValue mkblocktemplate(const UniValue &params,
         {
             // Note that we don't cache the exact script from this to the prevCoinbaseScript -- it's sufficient
             // to cache the fact that client code didn't specify a coinbase address (by caching the empty script).
-            boost::shared_ptr<CReserveScript> tmpScriptPtr;
+            std::shared_ptr<CReserveScript> tmpScriptPtr;
             GetMainSignals().ScriptForMining(tmpScriptPtr);
 
             // throw an error if shared_ptr is not valid -- this means no wallet support was compiled-in
