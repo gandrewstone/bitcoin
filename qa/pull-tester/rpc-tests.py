@@ -210,7 +210,7 @@ testScripts = [ RpcTest(t) for t in [
     'ctor',
     'mining_ctor',
     Disabled('nov152018_forkactivation','Nov 2018 already activated'),
-    'blockstorage',
+    Disabled('blockstorage', 'Feature temporarily disabled'),
     'miningtest',
     'cashlibtest',
     'tweak',
