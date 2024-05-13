@@ -255,7 +255,8 @@ class P2SH32Test(BitcoinTestFramework):
         # Next, activate the upgrade
 
         # Get the current block height
-        activation_height = node.getblockchaininfo()["blocks"]
+        activation_height = node.getblockchaininfo()["blocks"] - 1
+        print(activation_height);
         # Restart the node, enabling upgrade9
         self.restart_node(0, extra_args=[f"-upgrade9activationheight={activation_height}"] + self.base_extra_args)
         self.reconnect_p2p()

@@ -81,7 +81,7 @@ class WalletP2SH32Test(BitcoinTestFramework):
         logging.info("Activating Upgrade9 ...")
 
         # Get the current height
-        activation_height = self.nodes[0].getblockchaininfo()["blocks"]
+        activation_height = self.nodes[0].getblockchaininfo()["blocks"] - 1
         for node_num, args in enumerate(self.extra_args):
             args = args.copy()
             assert_equal(args[0], '-upgrade9activationheight=999999999')
