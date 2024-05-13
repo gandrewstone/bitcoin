@@ -162,7 +162,7 @@ bool IsMay2023Activated(const Consensus::Params &consensusparams, const CBlockIn
     {
         return false;
     }
-    // if node's launched with cusotm activation height use that, cause we are presumably
+    // if node's launched with custom activation height use that, cause we are presumably
     // running some functional/unit tests.
     int32_t height = GetArg("-upgrade9activationheight", consensusparams.may2023Height);
     return pindexTip->nHeight >= height;

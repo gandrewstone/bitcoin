@@ -812,7 +812,6 @@ void UnloadBlockIndex()
         pindexBestHeader = nullptr;
         pindexFinalized = nullptr;
         ResetASERTAnchorBlockCache();
-        g_upgrade9_block_tracker.ResetActivationBlockCache();
         mapBlocksUnlinked.clear();
         vinfoBlockFile.clear();
         mapBlockSource.clear();
@@ -2747,9 +2746,7 @@ bool ConnectBlockCanonicalOrdering(ConstCBlockRef pblock,
         if (flags & SCRIPT_ENABLE_TOKENS)
         {
             LOCK(cs_main);
-            firstTokenBlockHeight =
-                g_upgrade9_block_tracker.GetActivationBlock(pindex->pprev, chainparams.GetConsensus())->nHeight +
-                1LL; // First block to actually use token rules is 1 + GetActivationBlock()->nHeight
+            firstTokenBlockHeight = 1 + Params().GetConsensus().may2023Height;
         }
         else
         {
@@ -4309,70 +4306,4 @@ bool IsBlockPruned(const CBlockIndex *pblockindex)
 {
     READLOCK(cs_mapBlockIndex); // for nStatus
     return (fHavePruned && !(pblockindex->nStatus & BLOCK_HAVE_DATA) && pblockindex->nTx > 0);
-}
-
-ActivationBlockTracker g_upgrade9_block_tracker(&IsMay2023Activated);
-
-const CBlockIndex *ActivationBlockTracker::GetActivationBlock(const CBlockIndex *pindex,
-    const Consensus::Params &params) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
-{
-    assert(pindex);
-    AssertLockHeld(cs_main);
-
-    // - We check if we have a cached result, and if we do and it is really the
-    //   ancestor of pindex, then we return it.
-    //
-    // - If we do not or if the cached result is not the ancestor of pindex,
-    //   then we proceed with the more expensive walk back to find the activation block.
-    //
-    if (cachedActivationBlock)
-    {
-        // First, check ChainActive since ChainActive maintains a fast-to-access array of
-        // block indexes for the current chain.
-        if (chainActive.Contains(cachedActivationBlock) &&
-            (chainActive.Contains(pindex) || (pindex->pprev && chainActive.Contains(pindex->pprev))) &&
-            pindex->nHeight >= cachedActivationBlock->nHeight)
-        {
-            return cachedActivationBlock;
-        }
-
-        // CBlockIndex::GetAncestor() is reasonably efficient; it uses CBlockIndex::pskip
-        // Note that if pindex == cachedActivationBlock, GetAncestor() here will return
-        // cachedActivationBlock, which is what we want.
-        if (pindex->GetAncestor(cachedActivationBlock->nHeight) == cachedActivationBlock)
-        {
-            return cachedActivationBlock;
-        }
-    }
-
-    // Slow path: walk back until we find the first ancestor for which predicate() == true.
-    const CBlockIndex *pwalk = pindex;
-
-    while (pwalk->pprev)
-    {
-        // first, skip backwards testing predicate
-        // The below code leverages CBlockIndex::pskip to walk back efficiently.
-        if (predicate(params, pwalk->pskip))
-        {
-            // skip backward
-            pwalk = pwalk->pskip;
-            continue; // continue skipping
-        }
-        // cannot skip here, walk back by 1
-        if (!predicate(params, pwalk->pprev))
-        {
-            // found it -- highest block where the upgrade is not enabled is pwalk->pprev, and
-            // pwalk points to the first block for which predicate() == true
-            break;
-        }
-        pwalk = pwalk->pprev;
-    }
-
-    // Overwrite the cache with the block index we found. More likely than not, the next
-    // time we are called it will be part of same / similar chain, not some other unrelated
-    // chain with a totally different activation block.
-    cachedActivationBlock = pwalk;
-
-    assert(pwalk);
-    return pwalk;
 }

@@ -900,11 +900,8 @@ bool ParallelAcceptToMemoryPool(Snapshot &ss,
             if (flags & SCRIPT_ENABLE_TOKENS)
             { // Assumption: this can only be true if Upgrade9 activated
                 LOCK(cs_main);
-                firstTokenBlockHeight =
-                    g_upgrade9_block_tracker.GetActivationBlock(chainActive.Tip(),
-                                                Params().GetConsensus())
-                        ->nHeight +
-                    1LL; // First block to actually use token rules is 1 + activation block
+                // First block to actually use token rules is 1 + activation block
+                firstTokenBlockHeight = 1 + Params().GetConsensus().may2023Height;
             }
             else
             {
