@@ -188,5 +188,5 @@ bool IsMay2024Active(const Consensus::Params &params, const CBlockIndex *pindex)
     }
     assert(params.may2024ActivationTime);
     uint64_t activationTime = GetArg("-upgrade10activationtime", params.may2024ActivationTime);
-    return pindex->forkActivateNow(activationTime);
+    return pindex->forkActivated(activationTime);
 }

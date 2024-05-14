@@ -328,10 +328,10 @@ static void MaintainAblaState(const Consensus::Params &consensusParams,
     const char *debugPrefix = nullptr,
     uint64_t blockSize = 0) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
 {
-    if (IsMay2024Activated(consensusParams, pindex))
+    if (IsMay2024Active(consensusParams, pindex))
     {
         std::optional<abla::State> ablaStateOpt;
-        if (!IsMay2024Activated(consensusParams, pindex->pprev))
+        if (!IsMay2024Active(consensusParams, pindex->pprev))
         {
             // activation block, give default state
             blockSize = blockSize ? blockSize : ::GetSerializeSize(block, PROTOCOL_VERSION);
@@ -475,11 +475,16 @@ static bool VerifyAblaStateForChain(CChain &chain) EXCLUSIVE_LOCKS_REQUIRED(cs_m
     const auto &params = Params();
     const auto &consensus = params.GetConsensus();
     CBlockIndex *ptip = chain.Tip();
-    if (!IsMay2024Activated(consensus, ptip))
+    // If on the tip the upgrade is not activated no need to search for the activation block
+    if (!IsMay2024Active(consensus, ptip))
     {
         return true;
     }
     // this is not efficient at all, we should replace it with a constant height when one is available
+    // walk back until we find the activation block, IsMay2024Active is true only when we are past the activation
+    // block, ie the first block for which the predicate MTP >= Activation Time is true for its prev.
+    // Thus the following loop would bring us back to the activation block (last block before new rules will
+    // start to be enforced)
     CBlockIndex *pbase = ptip;
     while (IsMay2024Active(consensus, pbase))
     {

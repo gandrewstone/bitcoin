@@ -241,7 +241,7 @@ uint64_t GetNextBlockSizeLimit(const CBlockIndex *pindexPrev)
 {
     const auto &params = Params().GetConsensus();
     // const uint64_t confMaxBlockSize = config.GetConfiguredMaxBlockSize();
-    if (!IsMay2024Activated(params, pindexPrev))
+    if (!IsMay2024Active(params, pindexPrev))
     {
         return Params().DefaultConsensusBlockSize();
     }
