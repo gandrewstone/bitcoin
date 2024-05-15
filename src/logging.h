@@ -85,7 +85,8 @@ enum
     PRIORITYQ      = 0x400000000,
     DSPROOF        = 0x800000000,
 
-    TWEAKS         = 0x1000000000
+    TWEAKS         = 0x1000000000,
+    ACTIVATION     = 0x2000000000
     // clang-format on
 };
 
@@ -111,7 +112,7 @@ To add a new log category:
             {SELECTCOINS, "selectcoins"}, {ESTIMATEFEE, "estimatefee"}, {QT, "qt"}, {IBD, "ibd"},               \
             {GRAPHENE, "graphene"}, {RESPEND, "respend"}, {WB, "weakblocks"}, {CMPCT, "cmpctblock"},            \
             {ELECTRUM, "electrum"}, {MPOOLSYNC, "mempoolsync"}, {PRIORITYQ, "priorityq"}, {DSPROOF, "dsproof"}, \
-            {TWEAKS, "tweaks"},                                                                                 \
+            {TWEAKS, "tweaks"}, {ACTIVATION, "activation"},                                                     \
         {                                                                                                       \
             ZMQ, "zmq"                                                                                          \
         }                                                                                                       \
