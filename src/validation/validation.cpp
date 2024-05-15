@@ -496,7 +496,7 @@ static bool VerifyAblaStateForChain(CChain &chain) EXCLUSIVE_LOCKS_REQUIRED(cs_m
         pbase = pbase->pprev;
     }
     LOG(ACTIVATION, "%s: May 2024 upgrade active (MTP >= activation time) at height: %d", __func__, pbase->nHeight);
-    LOG(ACTIVATION, "%s: May 2024 upgrade first fork block  height: %d", __func__, pbase->nHeight + 1 );
+    LOG(ACTIVATION, "%s: May 2024 upgrade first fork block  height: %d", __func__, pbase->nHeight + 1);
     assert(pbase != nullptr);
     LOGA("%s: Verifying %i block headers have correct ABLA state ...\n", __func__, ptip->nHeight - pbase->nHeight + 1);
     const abla::Config &ablaConfig = consensus.ablaConfig;

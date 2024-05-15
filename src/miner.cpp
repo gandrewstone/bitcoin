@@ -206,7 +206,8 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript &sc
     CBlockIndex *pindexPrev = chainActive.Tip();
     assert(pindexPrev); // can't make a new block if we don't even have the genesis block
 
-    const uint64_t nMaxBlockSize = static_cast<uint64_t>(GetNextBlockSizeLimit(pindexPrev) * (nPercentBlockMaxSize / 100.0));
+    const uint64_t nMaxBlockSize =
+        static_cast<uint64_t>(GetNextBlockSizeLimit(pindexPrev) * (nPercentBlockMaxSize / 100.0));
 
     may2020Enabled = IsMay2020Activated(Params().GetConsensus(), pindexPrev);
     if (may2020Enabled)
