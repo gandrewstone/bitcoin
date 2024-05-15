@@ -375,6 +375,11 @@ void UnlimitedSetup(void)
     blockVersion = GetArg("-blockversion", blockVersion);
     LoadTweaks(); // The above options are deprecated so the same parameter defined as a tweak will override them
 
+    // If the user configures it to 1, assume this means default.
+    // Instead if activation time is set to 0 it means always active.
+    if (miningForkTime.Value() == 1)
+        miningForkTime.Set(Params().GetConsensus().may2024ActivationTime);
+
     settingsToUserAgentString();
     //  Init network shapers
     int64_t rb = GetArg("-receiveburst", DEFAULT_MAX_RECV_BURST);

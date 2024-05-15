@@ -33,9 +33,9 @@ BOOST_AUTO_TEST_CASE(fork_trigger)
 
     for (int i = 0; i < SZ; i++)
     {
-        BOOST_CHECK(bi[i].forkAtNextBlock(0) == false);
-        BOOST_CHECK(bi[i].forkActivated(0) == false);
-        BOOST_CHECK(bi[i].forkActivateNow(0) == false);
+        BOOST_CHECK(bi[i].forkAtNextBlock(0) == true);
+        BOOST_CHECK(bi[i].forkActivated(0) == true);
+        BOOST_CHECK(bi[i].forkActivateNow(0) == true);
     }
 
     BOOST_CHECK(bi[SZ - 1].forkActivated(1) == true);

@@ -155,8 +155,10 @@ void CBlockIndex::BuildSkip()
  * state: fork activated */
 bool CBlockIndex::forkActivated(int64_t time) const
 {
+    // since activation time equal to 0 means awlays active
+    // returns always true.
     if (time == 0)
-        return false;
+        return true;
 
     if (pprev && pprev->GetMedianTimePast() >= time)
     {
@@ -169,8 +171,10 @@ bool CBlockIndex::forkActivated(int64_t time) const
  * state: fork activated */
 bool CBlockIndex::forkActivateNow(int64_t time) const
 {
+    // since activation time equal to 0 means awlays active
+    // returns always true.
     if (time == 0)
-        return false;
+        return true;
     return (pprev && pprev->forkAtNextBlock(time));
 }
 
@@ -179,8 +183,13 @@ bool CBlockIndex::forkActivateNow(int64_t time) const
  * state fork: enabled or activated */
 bool CBlockIndex::IsforkActiveOnNextBlock(int64_t time) const
 {
+    // since activation time equal to 0 means awlays active
+    // returns always true.
+    // Technically this if is redundandt since there's
+    // the same check in forkActivated(), but better safe than
+    // sorry
     if (time == 0)
-        return false;
+        return true;
     // if the fork is already activated
     if (forkActivated(time))
         return true;
@@ -189,12 +198,14 @@ bool CBlockIndex::IsforkActiveOnNextBlock(int64_t time) const
     return false;
 }
 
-/* return true only if we current block is the activation blocl (i.e. [x-1,x-1])
+/* return true only if the current block is the activation block (i.e. [x-1,x-1])
  * state: fork enabled but not activated */
 bool CBlockIndex::forkAtNextBlock(int64_t time) const
 {
+    // since activation time equal to 0 means awlays active
+    // returns always true.
     if (time == 0)
-        return false;
+        return true;
 
     if (GetMedianTimePast() >= time && (pprev && pprev->GetMedianTimePast() < time))
         return true;
