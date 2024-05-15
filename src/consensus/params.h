@@ -179,6 +179,7 @@ struct Params
     int may2024ActivationTime;
     /** ABLA block size config (may 2024 HF) */
     abla::Config ablaConfig;
+    float nDefaultGeneratedBlockSizePercent;
     /** Nov 15, 2020 MTP activation time will be 12:00:00 UTC */
     uint64_t nov2020ActivationTime;
     /** Nov 15, 2020 actication height */

@@ -24,6 +24,7 @@
 #include "ui_interface.h"
 #include "util.h"
 #include "utilstrencodings.h"
+#include "unlimited.h"
 #include "validation/validation.h"
 #include "validationinterface.h"
 
@@ -273,7 +274,8 @@ UniValue getmininginfo(const UniValue &params, bool fHelp)
     obj.pushKV("currentblocktx", (uint64_t)nLastBlockTx);
     obj.pushKV("difficulty", (double)GetDifficulty());
     obj.pushKV("errors", GetWarnings("statusbar"));
-    obj.pushKV("miningblocksizelimit", (uint64_t)GetNextBlockSizeLimit(chainActive.Tip()) * 0.95);
+    obj.pushKV("miningblocksizelimit",
+        static_cast<uint64_t>(GetNextBlockSizeLimit(chainActive.Tip()) * (nPercentBlockMaxSize / 100.0)));
     obj.pushKV("networkhashps", getnetworkhashps(params, false));
     obj.pushKV("pooledtx", (uint64_t)mempool.size());
     obj.pushKV("testnet", Params().TestnetToBeDeprecatedFieldRPC());

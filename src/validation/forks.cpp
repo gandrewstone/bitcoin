@@ -175,7 +175,7 @@ bool IsMay2024Activated(const Consensus::Params &params, const CBlockIndex *pind
     {
         return false;
     }
-    uint64_t activationTime = GetArg("-upgrade10activationtime", params.may2024ActivationTime);
+    uint64_t activationTime = nMiningForkTime;
     LOG(ACTIVATION, "%s: Param activation time is: %llu - GetMedianTimePast %llu - actived: %d - height: %d",
         __func__, activationTime, pindexTip->GetMedianTimePast(), pindexTip->IsforkActiveOnNextBlock(activationTime),
         pindexTip->nHeight);
@@ -188,7 +188,7 @@ bool IsMay2024Active(const Consensus::Params &params, const CBlockIndex *pindex)
     {
         return false;
     }
-    uint64_t activationTime = GetArg("-upgrade10activationtime", params.may2024ActivationTime);
+    uint64_t activationTime = nMiningForkTime;
     LOG(ACTIVATION, "%s: Height %d - Param activation time: %llu - GetMedianTimePast %llu - active: %d",
         __func__, pindex->nHeight, activationTime,
         pindex->GetMedianTimePast(), pindex->forkActivated(activationTime));

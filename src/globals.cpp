@@ -295,6 +295,11 @@ CTweak<bool> doubleSpendProofs("net.doubleSpendProofs",
     "Process and forward double spend proofs (default: true)",
     true);
 
+CTweakRef<unsigned int> percentBlockMaxSize("percentblockmaxsize",
+    "Default for mining block size, in percent of max block size",
+    &nPercentBlockMaxSize,
+    &PercentBlockMaxSizeValidator);
+
 CTweak<uint64_t> coinbaseReserve("mining.coinbaseReserve",
     strprintf("How much space to reserve for the coinbase transaction, in bytes (default: %d)",
         DEFAULT_COINBASE_RESERVE_SIZE),
@@ -314,6 +319,12 @@ CTweakRef<unsigned int> maxDataCarrierTweak("mining.dataCarrierSize",
     strprintf("Maximum size of OP_RETURN data script in bytes (default: %d)", nMaxDatacarrierBytes),
     &nMaxDatacarrierBytes,
     &MaxDataCarrierValidator);
+
+CTweakRef<uint64_t> miningForkTime("upgrade10activationtime",
+    "Time in seconds since the epoch to initiate the Bitcoin Cash protocol upgraded scheduled on 15th May 2024.  A "
+    "setting of 1 will turn on the fork at the appropriate time.",
+    &nMiningForkTime,
+    &ForkTimeValidator); // Saturday May 15 12:00:00 UTC 2024
 
 CTweak<uint64_t> maxScriptOps("consensus.maxScriptOps",
     strprintf("Maximum number of script operations allowed.  Stack pushes are excepted (default: %ld)",

@@ -81,7 +81,8 @@ BlockAssembler::BlockAssembler(const CChainParams &_chainparams)
     // Largest block you're willing to create:
     // nBlockMaxSize = maxGeneratedBlock;
 
-    nBlockMaxSize = GetNextBlockSizeLimit(chainActive.Tip()) * 0.95;
+    // FIXME check if nPercentBlockMaxSize is actually working
+    nBlockMaxSize = static_cast<uint64_t>(GetNextBlockSizeLimit(chainActive.Tip()) * (nPercentBlockMaxSize / 100.0));
 
     // Core:
     // Limit to between 1K and MAX_BLOCK_SIZE-1K for sanity:
@@ -205,10 +206,9 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript &sc
     CBlockIndex *pindexPrev = chainActive.Tip();
     assert(pindexPrev); // can't make a new block if we don't even have the genesis block
 
-    may2020Enabled = IsMay2020Activated(Params().GetConsensus(), pindexPrev);
-    // Size check (both pre and post upgrade 10 are handled here, after CheckBlock above)
-    const uint64_t nMaxBlockSize = GetNextBlockSizeLimit(pindexPrev);
+    const uint64_t nMaxBlockSize = static_cast<uint64_t>(GetNextBlockSizeLimit(pindexPrev) * (nPercentBlockMaxSize / 100.0));
 
+    may2020Enabled = IsMay2020Activated(Params().GetConsensus(), pindexPrev);
     if (may2020Enabled)
     {
         // May 2024 activation is already takne care of bevause nMaxBlockSize

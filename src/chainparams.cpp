@@ -18,7 +18,9 @@
 
 #include "chainparamsseeds.h"
 
-uint64_t nMiningForkTime = MAY2022_ACTIVATION_TIME;
+
+uint64_t nMiningForkTime = MAY2024_ACTIVATION_TIME;
+unsigned int nPercentBlockMaxSize = 50;
 
 CBlock CreateGenesisBlock(CScript prefix,
     const std::string &comment,
@@ -173,6 +175,7 @@ public:
         nDefaultPort = DEFAULT_MAINNET_PORT;
         nPruneAfterHeight = 100000;
         nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
+        consensus.nDefaultGeneratedBlockSizePercent = 50;
 
         // ABLA config -- upgrade 10 adjustable block limit algorithm
         consensus.ablaConfig = abla::Config::MakeDefault(nDefaultConsensusBlockSize, /* fixedSize = */ false);
@@ -313,6 +316,7 @@ public:
         nDefaultPort = DEFAULT_NOLNET_PORT;
         nPruneAfterHeight = 100000;
         nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
+        consensus.nDefaultGeneratedBlockSizePercent = 50;
         // FIXME decide what to do with NOL, we should retere it imho.
         // nDefaultConsensusBlockSize = std::numeric_limits<uint64_t>::max();
 
@@ -444,6 +448,7 @@ public:
         nDefaultPort = DEFAULT_TESTNET_PORT;
         nPruneAfterHeight = 1000;
         nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
+        consensus.nDefaultGeneratedBlockSizePercent = 50;
 
         // ABLA config -- upgrade 10 adjustable block limit algorithm
         consensus.ablaConfig = abla::Config::MakeDefault(nDefaultConsensusBlockSize, /* fixedSize = */ true);
@@ -600,6 +605,7 @@ public:
         nDefaultPort = DEFAULT_REGTESTNET_PORT;
         nPruneAfterHeight = 1000;
         nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
+        consensus.nDefaultGeneratedBlockSizePercent = 50;
 
         // ABLA config -- upgrade 10 adjustable block limit algorithm
         consensus.ablaConfig = abla::Config::MakeDefault(nDefaultConsensusBlockSize, /* fixedSize = */ false);
@@ -716,6 +722,7 @@ public:
         nDefaultPort = DEFAULT_TESTNET4_PORT;
         nPruneAfterHeight = 1000;
         nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE_TESTNET4;
+        consensus.nDefaultGeneratedBlockSizePercent = 50;
 
         // ABLA config -- upgrade 10 adjustable block limit algorithm
         consensus.ablaConfig = abla::Config::MakeDefault(nDefaultConsensusBlockSize, /* fixedSize = */ true);
@@ -872,6 +879,7 @@ public:
         nDefaultPort = DEFAULT_SCALENET_PORT;
         nPruneAfterHeight = 10000;
         nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE_SCALENET;
+        consensus.nDefaultGeneratedBlockSizePercent = 6; // 6.25% of 256MB = 16MB // decide that int is enough for us
 
         // ABLA config -- upgrade 10 adjustable block limit algorithm
         consensus.ablaConfig = abla::Config::MakeDefault(nDefaultConsensusBlockSize, /* fixedSize = */ false);
@@ -1031,6 +1039,7 @@ public:
         nDefaultPort = 48333;
         nPruneAfterHeight = 1000;
         nDefaultConsensusBlockSize = 2 * ONE_MEGABYTE;
+        consensus.nDefaultGeneratedBlockSizePercent = 100;
 
         // ABLA config -- upgrade 10 adjustable block limit algorithm
         consensus.ablaConfig = abla::Config::MakeDefault(nDefaultConsensusBlockSize, /* fixedSize = */ false);

@@ -75,6 +75,24 @@ bool IsTrafficShapingEnabled();
 UniValue validateblocktemplate(const UniValue &params, bool fHelp);
 UniValue validatechainhistory(const UniValue &params, bool fHelp);
 
+std::string PercentBlockMaxSizeValidator(const unsigned int &value, unsigned int *item, bool validate)
+{
+    if (validate)
+    {
+        if ((value < 1) || (value > 100))
+        {
+            return "Invalid value, percent need an integer value between 1 and 100";
+        }
+        else
+        {
+            LOGA("XXXXXX - percentBlockMaxSize value is: %d", value);
+        }
+    }
+    else
+    {
+    }
+    return std::string();
+}
 
 std::string OutboundConnectionValidator(const int &value, int *item, bool validate)
 {
@@ -158,7 +176,7 @@ std::string ForkTimeValidator(const uint64_t &value, uint64_t *item, bool valida
     {
         if (*item == 1)
         {
-            *item = Params().GetConsensus().nov2020ActivationTime;
+            *item = Params().GetConsensus().may2024ActivationTime;
         }
         settingsToUserAgentString();
     }

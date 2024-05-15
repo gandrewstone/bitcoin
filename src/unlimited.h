@@ -74,12 +74,13 @@ extern std::atomic<uint64_t> consensusBlockSize;
 extern unsigned int maxMessageSizeMultiplier;
 extern bool fCanonicalTxsOrder;
 
-// Fork configuration
+/** BU Default maximum number of Outbound connections to simultaneously allow*/
+extern int nMaxOutConnections;
+
 /** This specifies the MTP time of the next fork */
 extern uint64_t nMiningForkTime;
 
-/** BU Default maximum number of Outbound connections to simultaneously allow*/
-extern int nMaxOutConnections;
+extern unsigned int nPercentBlockMaxSize;
 
 // BU005: Strings specific to the config of this client that should be communicated to other clients
 extern std::vector<std::string> BUComments;
@@ -230,6 +231,7 @@ extern CStatHistory<unsigned int> txAdded;
 extern CStatHistory<uint64_t, MinValMax<uint64_t> > poolSize;
 
 // Configuration variable validators
+std::string PercentBlockMaxSizeValidator(const unsigned int &value, unsigned int *item, bool validate);
 std::string OutboundConnectionValidator(const int &value, int *item, bool validate);
 std::string MaxDataCarrierValidator(const unsigned int &value, unsigned int *item, bool validate);
 std::string SubverValidator(const std::string &value, std::string *item, bool validate);
@@ -250,6 +252,11 @@ extern std::list<CStatBase *> mallocedStats;
 extern CCriticalSection cs_blockvalidationthread;
 void InterruptBlockValidationThreads();
 
+// Fork configuration
+/** This specifies the MTP time of the next fork */
+extern CTweakRef<uint64_t> miningForkTime;
+
+extern CTweakRef<unsigned int> percentBlockMaxSize;
 
 // Mining-Candidate start
 /** Return a Merkle root given a Coinbase hash and Merkle proof */
