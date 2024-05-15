@@ -490,6 +490,8 @@ static bool VerifyAblaStateForChain(CChain &chain) EXCLUSIVE_LOCKS_REQUIRED(cs_m
     {
         pbase = pbase->pprev;
     }
+    LOG(ACTIVATION, "%s: May 2024 upgrade active (MTP >= activation time) at height: %d", __func__, pbase->nHeight);
+    LOG(ACTIVATION, "%s: May 2024 upgrade first fork block  height: %d", __func__, pbase->nHeight + 1 );
     assert(pbase != nullptr);
     LOGA("%s: Verifying %i block headers have correct ABLA state ...\n", __func__, ptip->nHeight - pbase->nHeight + 1);
     const abla::Config &ablaConfig = consensus.ablaConfig;
@@ -504,6 +506,8 @@ static bool VerifyAblaStateForChain(CChain &chain) EXCLUSIVE_LOCKS_REQUIRED(cs_m
         {
             std::optional<uint64_t> optSize;
             const auto curAblaStateOpt = pcur->GetAblaStateOpt();
+            // FIXME: even thou we save abla state on CBlockIndex we always fail to retrieve it on
+            // startup. We need to look at it and fix after this reelase
             if (!curAblaStateOpt || !curAblaStateOpt->IsValid(ablaConfig, &err))
             {
                 err = err && *err ? err : "missing";
