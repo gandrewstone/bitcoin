@@ -488,6 +488,11 @@ static bool VerifyAblaStateForChain(CChain &chain) EXCLUSIVE_LOCKS_REQUIRED(cs_m
     CBlockIndex *pbase = ptip;
     while (IsMay2024Active(consensus, pbase))
     {
+        // we got back to the genisis block,and this could happen only
+        // in regtest or some particular testing scenario where we set
+        // as activation time 0.
+        if (!pbase->pprev)
+            break;
         pbase = pbase->pprev;
     }
     LOG(ACTIVATION, "%s: May 2024 upgrade active (MTP >= activation time) at height: %d", __func__, pbase->nHeight);
