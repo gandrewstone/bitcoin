@@ -78,15 +78,11 @@ BlockAssembler::BlockAssembler(const CChainParams &_chainparams)
     : chainparams(_chainparams), nBlockSize(0), nBlockTx(0), nBlockSigOps(0), nFees(0), nHeight(0), nLockTimeCutoff(0),
       lastFewTxs(0), blockFinished(false)
 {
-    // Largest block you're willing to create:
-    // nBlockMaxSize = maxGeneratedBlock;
-
     // FIXME check if nPercentBlockMaxSize is actually working
     nBlockMaxSize = static_cast<uint64_t>(GetNextBlockSizeLimit(chainActive.Tip()) * (nPercentBlockMaxSize / 100.0));
 
-    // Core:
-    // Limit to between 1K and MAX_BLOCK_SIZE-1K for sanity:
-    // nBlockMaxSize = std::max((unsigned int)1000, std::min((unsigned int)(MAX_BLOCK_SIZE-1000), nBlockMaxSize));
+    // Limit to between 1K and max block generated size for sanity:
+    nBlockMaxSize = std::max((uint64_t)1000, std::min(GetNextBlockSizeLimit(chainActive.Tip()) - 1000, nBlockMaxSize));
 
     // Minimum block size you want to create; block will be filled with free transactions
     // until there are no more or the block reaches this size:
@@ -206,16 +202,13 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript &sc
     CBlockIndex *pindexPrev = chainActive.Tip();
     assert(pindexPrev); // can't make a new block if we don't even have the genesis block
 
-    const uint64_t nMaxBlockSize =
-        static_cast<uint64_t>(GetNextBlockSizeLimit(pindexPrev) * (nPercentBlockMaxSize / 100.0));
-
     may2020Enabled = IsMay2020Activated(Params().GetConsensus(), pindexPrev);
     if (may2020Enabled)
     {
-        // May 2024 activation is already takne care of bevause nMaxBlockSize
+        // May 2024 activation is already takne care of bevause nBlockMaxSize
         // is computed by GetNextBlockSizeLimit() which before May 2024 activation
         // return 32MB, after a value determined by the ABLA algo
-        maxSigOpsAllowed = GetMaxBlockSigChecksCount(nMaxBlockSize);
+        maxSigOpsAllowed = GetMaxBlockSigChecksCount(nBlockMaxSize);
     }
 
 
