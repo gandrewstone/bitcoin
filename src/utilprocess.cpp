@@ -8,7 +8,7 @@
 #include <boost/predef/os.h>
 #include <sstream>
 
-#if BOOST_OS_LINUX
+#if BOOST_OS_LINUX || BOOST_OS_BSD_FREE
 #include <errno.h>
 #include <poll.h>
 #include <signal.h>
@@ -34,6 +34,8 @@ std::string this_process_path()
 #if BOOST_OS_LINUX
     // TODO: Replaced with std::read_symlink with C++17
     return boost::filesystem::read_symlink("/proc/self/exe").string();
+#elif BOOST_OS_BSD_FREE
+    return boost::filesystem::read_symlink("/proc/curproc/file").string();
 #elif BOOST_OS_MACOS
     char buff[PATH_MAX + 1];
     uint32_t buffsize = sizeof buff;
@@ -50,7 +52,7 @@ std::string this_process_path()
 #endif
 }
 
-#if BOOST_OS_LINUX || BOOST_OS_MACOS
+#if BOOST_OS_LINUX || BOOST_OS_MACOS || BOOST_OS_BSD_FREE
 class posix_error : public subprocess_error
 {
 public:
@@ -86,7 +88,7 @@ SubProcess::SubProcess(const std::string &path_,
     : path(path_), args(args_), stdout_callb(stdout_callb_), stderr_callb(stderr_callb_), pid(-1), is_running(false),
       run_started(false)
 {
-#if !(BOOST_OS_LINUX || BOOST_OS_MACOS)
+#if !(BOOST_OS_LINUX || BOOST_OS_MACOS || BOOST_OS_BSD_FREE)
     throw unsupported_platform_error(__func__);
 #endif
 }
@@ -127,7 +129,7 @@ void extract_line(std::string &buffer, getline_callb &callb)
     }
 }
 
-#if BOOST_OS_LINUX || BOOST_OS_MACOS
+#if BOOST_OS_LINUX || BOOST_OS_MACOS || BOOST_OS_BSD_FREE
 struct RunCleanupRAII
 {
     std::atomic<bool> &is_running;
@@ -157,7 +159,7 @@ struct SpawnAttrRAII
 void SubProcess::Run()
 {
     DbgAssert(!run_started, return);
-#if BOOST_OS_LINUX || BOOST_OS_MACOS
+#if BOOST_OS_LINUX || BOOST_OS_MACOS || BOOST_OS_BSD_FREE
     run_started.store(true);
     RunCleanupRAII cleanup{is_running, run_started, nullptr};
 
@@ -291,7 +293,7 @@ void SubProcess::Run()
 
 void SubProcess::SendSignal(int signal)
 {
-#if BOOST_OS_LINUX || BOOST_OS_MACOS
+#if BOOST_OS_LINUX || BOOST_OS_MACOS || BOOST_OS_BSD_FREE
     int curr_pid = pid; // copy to avoid a race
     if (curr_pid == -1)
     {
@@ -310,14 +312,14 @@ void SubProcess::SendSignal(int signal)
 
 void SubProcess::Interrupt()
 {
-#if BOOST_OS_LINUX || BOOST_OS_MACOS
+#if BOOST_OS_LINUX || BOOST_OS_MACOS || BOOST_OS_BSD_FREE
     SendSignal(SIGINT);
 #endif
 }
 
 void SubProcess::Terminate()
 {
-#if BOOST_OS_LINUX || BOOST_OS_MACOS
+#if BOOST_OS_LINUX || BOOST_OS_MACOS || BOOST_OS_BSD_FREE
     SendSignal(SIGKILL);
 #endif
 }

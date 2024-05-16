@@ -17,6 +17,14 @@ pkg install autoconf automake gmake git libevent libtool boost-libs pkgconf open
 
 See [dependencies.md](dependencies.md) for a complete overview.
 
+If you need to use rostrum it's necessary to enable
+[procfs](https://man.freebsd.org/cgi/man.cgi?query=procfs) in FreeBSD so it can
+find the binary. It isn't on by default but it's available.
+Just put in `/etc/fstab`:
+
+```
+proc	       /proc   procfs  rw 0 0
+```
 
 ## Building Bitcoin Unlimited
 
