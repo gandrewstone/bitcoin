@@ -14,9 +14,11 @@ from test_framework.util import (
     connect_nodes,
     disconnect_nodes,
 )
-from test_framework.loginit import logging
+import test_framework.loginit
 from test_framework.abla import *
+
 from decimal import Decimal
+import logging
 
 # The minimum number of max_block_size bytes required per executed signature
 # check operation in a block. I.e. maximum_block_sigchecks = maximum_block_size
@@ -136,16 +138,17 @@ class AblaTest(BitcoinTestFramework):
         # Check that mempool > 1/2 the blocksize limit so below test works ...
         assert_greater_than_or_equal(node.getmempoolinfo()['bytes'], mining_limit)
 
-        node.set("percentblockmaxsize=50");
+        node.set("percentblockmaxsize=50")
+        # FIXME: w/o this sleep it's like the gbtl call is not executed!?
+        time.sleep(30)
+
         gbtl = node.getblocktemplate({})
         mi = node.getmininginfo()
         # GBT doesn't tell you the configured size limit, just the consensus limit :(
         assert_equal(gbtl['sizelimit'], next_block_size_limit)
         # Mining info is the one that tells you the blockmaxsize setting...
         assert_equal(str(mi['miningblocksizelimit']), str(mining_limit))
-        # FIXME need to check why the following assert failed. Probably
-        # some issue with percentblockmaxsize tweak
-        #assert_greater_than_or_equal(mining_limit, mi['currentblocksize'])
+        assert_greater_than_or_equal(mining_limit, mi['currentblocksize'])
         reserved_space = 1000  # BlockAssembler reserves 1000 bytes for coinbase txn
         assert_greater_than_or_equal(mi['currentblocksize'] + reserved_space , mining_limit)
         # Finally, belt-and-suspenders check sigop limit of the block (should be unaffected by blockmaxsize)
