@@ -85,7 +85,6 @@ std::string PercentBlockMaxSizeValidator(const unsigned int &value, unsigned int
         }
         else
         {
-            LOGA("XXXXXX - percentBlockMaxSize value is: %d", value);
         }
     }
     else
