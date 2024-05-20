@@ -1008,7 +1008,10 @@ public:
         consensus.may2022Height = 95464;
 
         // November 15, 2022 12:00:00 UTC protocol upgrade
-        consensus.may2023Height = 148043;
+        consensus.may2023Height = 121956;
+
+        // November 15, 2023 12:00:00 UTC; protocol upgrade activates 6 months early
+        consensus.may2024ActivationTime = 1700049600;
 
         // Default limit for block size (in bytes) (chipnet is like testnet4 in that it is is smaller at 2MB)
         // consensus.nDefaultConsensusBlockSize = 2 * ONE_MEGABYTE;
@@ -1087,7 +1090,8 @@ public:
         checkpoints[115252] = uint256S("0x00000000040ba9641ba98a37b2e5ceead38e4e2930ac8f145c8094f94c708727");
         checkpoints[115510] = uint256S("0x000000006ad16ee5ee579bc3712b6f15cdf0a7f25a694e1979616794b73c5122");
         // Upgrade 9; May 15, 2023 (MTP time >= 1684152000), first upgrade block: 148044
-        checkpoints[148044] = uint256S("0x0000000008d96c4423ac92aa200af82819339435251736b08babde1ecaf8a5b6");
+        checkpoints[148000] = uint256S("0x000000009788ecce39b046caab3cf0f72e8c5409df23454679dbdcae2bd4dded");
+        checkpoints[178140] = uint256S("0x000000003c37cc0372a5b9ccacca921786bbfc699722fc41e9fdbb1de4146ef1");
 
         // clang-format on
 
