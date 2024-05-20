@@ -56,6 +56,7 @@ class BlockchainTest(BitcoinTestFramework):
         self._test_rollbackchain_and_reconsidermostworkchain()
         self._test_transaction_pools()
         self.nodes[0].verifychain(4, 0)
+        self._test_getblock_outside_active()
 
 
     def _forking_test(self):
@@ -234,6 +235,16 @@ class BlockchainTest(BitcoinTestFramework):
         block_by_height = node.getblock(200)
 
         assert_equal (block_by_height, block_by_hash)
+
+    def _test_getblock_outside_active(self):
+        """
+        If we have it, it should be possible to fetch a block that is no
+        longer in the active chain.
+        """
+        blockhash = self.nodes[0].generate(1)[0]
+        self.nodes[0].invalidateblock(blockhash)
+        b = self.nodes[0].getblock(blockhash)
+        assert_equal(blockhash, b['hash'])
 
     def _test_rollbackchain_and_reconsidermostworkchain(self):
         # Save the hash of the current chaintip and then mine 10 blocks
