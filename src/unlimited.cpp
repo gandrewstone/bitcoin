@@ -390,6 +390,8 @@ void UnlimitedSetup(void)
     MIN_TX_REQUEST_RETRY_INTERVAL = GetArg("-txretryinterval", DEFAULT_MIN_TX_REQUEST_RETRY_INTERVAL);
     MIN_BLK_REQUEST_RETRY_INTERVAL = GetArg("-blkretryinterval", DEFAULT_MIN_BLK_REQUEST_RETRY_INTERVAL);
     blockVersion = GetArg("-blockversion", blockVersion);
+    // Properly setup default activation time per chain
+    miningForkTime = GetArg("-upgrade10activationtime", Params().GetConsensus().may2024ActivationTime);
     LoadTweaks(); // The above options are deprecated so the same parameter defined as a tweak will override them
 
     // If the user configures it to 1, assume this means default.
