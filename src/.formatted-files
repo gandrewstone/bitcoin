@@ -337,7 +337,6 @@ test/DoS_tests.cpp
 test/rostrum_tests.cpp
 test/electrumrpcinfo_tests.cpp
 test/electrumserver_tests.cpp
-test/excessiveblock_test.cpp
 test/exploit_tests.cpp
 test/finalization_tests.cpp
 test/fork_tests.cpp
@@ -495,6 +494,8 @@ policy/fees.cpp
 policy/fees.h
 policy/policy.cpp
 policy/policy.h
+consensus/abla.cpp
+consensus/abla.h
 consensus/consensus.h
 consensus/merkle.cpp
 consensus/merkle.h

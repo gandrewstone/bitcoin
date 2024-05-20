@@ -31,9 +31,6 @@
 #include <QSettings>
 #include <QStringList>
 
-extern CTweakRef<uint64_t> miningBlockSize;
-extern CTweakRef<uint64_t> ebTweak;
-
 UnlimitedModel::UnlimitedModel(QObject *parent) : QAbstractListModel(parent) { Init(); }
 void UnlimitedModel::addOverriddenOption(const std::string &option)
 {
@@ -47,27 +44,6 @@ void UnlimitedModel::Init()
 
     // Ensure restart flag is unset on client startup
     setRestartRequired(false);
-
-    uint64_t tmpExcessiveBlockSize = excessiveBlockSize;
-    uint64_t tmpMaxGeneratedBlock = maxGeneratedBlock;
-
-    if (!settings.contains("maxGeneratedBlock"))
-        settings.setValue("maxGeneratedBlock", QString::number(maxGeneratedBlock));
-    else
-        tmpMaxGeneratedBlock = settings.value("maxGeneratedBlock").toInt();
-
-    if (!MiningAndExcessiveBlockValidatorRule(tmpExcessiveBlockSize, tmpMaxGeneratedBlock))
-    {
-        std::ostringstream emsg;
-        emsg << "Sorry, your configured maximum mined block (" << tmpMaxGeneratedBlock
-             << ") is larger than your configured excessive size (" << tmpExcessiveBlockSize
-             << ").  This would cause you to orphan your own blocks.";
-        LOGA(emsg.str().c_str());
-    }
-    else
-    {
-        miningBlockSize.Set(tmpMaxGeneratedBlock);
-    }
 
     bool inUse = settings.value("fUseReceiveShaping").toBool();
     int64_t burstKB = settings.value("nReceiveBurst").toLongLong();
@@ -115,8 +91,6 @@ QVariant UnlimitedModel::data(const QModelIndex &index, int role) const
         QSettings settings;
         switch (index.row())
         {
-        case MaxGeneratedBlock:
-            return QVariant((qulonglong)maxGeneratedBlock);
         case UseReceiveShaping:
             return settings.value("fUseReceiveShaping");
         case UseSendShaping:
@@ -147,16 +121,6 @@ bool UnlimitedModel::setData(const QModelIndex &index, const QVariant &value, in
         QSettings settings;
         switch (index.row())
         {
-        case MaxGeneratedBlock:
-        {
-            unsigned int mgb = value.toUInt(&successful);
-            if (successful && (settings.value("maxGeneratedBlock") != value))
-            {
-                settings.setValue("maxGeneratedBlock", value);
-                miningBlockSize.Set(mgb);
-            }
-        }
-        break;
         case UseReceiveShaping:
             if (settings.value("fUseReceiveShaping") != value)
             {
@@ -233,18 +197,6 @@ bool UnlimitedModel::setData(const QModelIndex &index, const QVariant &value, in
 
     return successful;
 }
-
-void UnlimitedModel::setMaxGeneratedBlock(const QVariant &value)
-{
-    if (!value.isNull())
-    {
-        QSettings settings;
-        maxGeneratedBlock = value.toInt();
-        settings.setValue("maxGeneratedBlock", static_cast<qlonglong>(maxGeneratedBlock));
-        // Q_EMIT your signal if you need one
-    }
-}
-
 
 void UnlimitedModel::setRestartRequired(bool fRequired)
 {

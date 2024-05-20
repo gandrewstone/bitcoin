@@ -188,7 +188,7 @@ void TestPackageSelection(const CChainParams &chainparams, CScript scriptPubKey,
     SetArg("-blockprioritysize", std::to_string(0));
     dMinLimiterTxFee.Set(1.0);
     dMaxLimiterTxFee.Set(1.0);
-    excessiveBlockSize = maxGeneratedBlock;
+    // consensusBlockSize = maxGeneratedBlock;
     fCanonicalTxsOrder = false;
 
     // Test that a medium fee transaction will be selected after a higher fee
@@ -337,19 +337,19 @@ void GenerateBlocks(const CChainParams &chainparams,
         nBlockCount++;
         nTotalExpectedBlockSize += i;
 
-        maxGeneratedBlock = i;
+        // maxGeneratedBlock = i;
         uint64_t nStartMine = GetStopwatchMicros();
         pblocktemplate = BlockAssembler(chainparams).CreateNewBlock(scriptPubKey);
         nTotalBlockSize += pblocktemplate->block->GetBlockSize();
         nTotalMine += GetStopwatchMicros() - nStartMine;
         BOOST_CHECK(pblocktemplate);
         BOOST_CHECK(pblocktemplate->block->fExcessive == false);
-        BOOST_CHECK(pblocktemplate->block->GetBlockSize() <= maxGeneratedBlock);
+        BOOST_CHECK(pblocktemplate->block->GetBlockSize() <= consensusBlockSize.load());
         unsigned int blockSize = ::GetSerializeSize(*pblocktemplate->block, SER_NETWORK, CBlock::CURRENT_VERSION);
-        BOOST_CHECK(blockSize <= maxGeneratedBlock);
+        BOOST_CHECK(blockSize <= consensusBlockSize.load());
         printf("%lu %lu:%lu <= %lu\n", (long unsigned int)blockSize,
             (long unsigned int)pblocktemplate->block->GetBlockSize(), pblocktemplate->block->vtx.size(),
-            (long unsigned int)maxGeneratedBlock);
+            (long unsigned int)consensusBlockSize.load());
     }
 
     printf("mempool size : %ld\n", mempool.size());
@@ -372,8 +372,8 @@ void PerformanceTest_PackageSelection(const CChainParams &chainparams,
     CScript scriptPubKey,
     std::vector<CTransactionRef> &txFirst)
 {
-    maxGeneratedBlock = 10000000;
-    excessiveBlockSize = maxGeneratedBlock;
+    // maxGeneratedBlock = 10000000;
+    consensusBlockSize = 10000000;
     dMinLimiterTxFee.Set(1.0);
     dMaxLimiterTxFee.Set(1.0);
 
@@ -484,8 +484,8 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     entry.nFee = 11;
     entry.dPriority = 111.0;
     entry.nHeight = 11;
-    maxGeneratedBlock = 100000;
-    excessiveBlockSize = maxGeneratedBlock;
+    uint64_t maxGeneratedBlock = 100000;
+    consensusBlockSize = maxGeneratedBlock;
     LOCK(cs_main);
     fCheckpointsEnabled = false;
 
@@ -603,6 +603,11 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     }
     BOOST_CHECK(pblocktemplate = BlockAssembler(chainparams).CreateNewBlock(scriptPubKey));
 
+    // Removing the following tests that were aimed at verifying that BCHU never create a block template with a bigger
+    // size that the one set by `maxGeneratedBlock` tweak. The latter configuration is not available any more and it has
+    // been temporarily(?) decided to hard-coded such a value to 95% of the mac block size as determined by ABLA.
+
+    /********
     // Now generate lots of full size blocks and verify that none exceed the maxGeneratedBlock value, the mempool has
     // 65k bytes of tx in it so this code will test both saturated and unsaturated blocks.
     for (unsigned int i = 2000; i <= 80000; i += 2000)
@@ -630,6 +635,7 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
     for (unsigned int i = 2000; i <= 30000; i += 67)
     {
         maxGeneratedBlock = i;
+        consensusBlockSize = maxGeneratedBlock;
 
         pblocktemplate = BlockAssembler(chainparams).CreateNewBlock(scriptPubKey);
         BOOST_CHECK(pblocktemplate);
@@ -667,16 +673,15 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity)
         BOOST_CHECK(blockSize <= maxGeneratedBlock - 2);
         minRoom = std::min(minRoom, maxGeneratedBlock - blockSize);
         // printf("%lu %lu (miner comment is %d) <= %lu\n", (long unsigned int) blockSize, (long unsigned int)
-        // pblocktemplate->block.GetBlockSize(), i%100, (long unsigned int) maxGeneratedBlock);
+        // pblocktemplate->block->GetBlockSize(), i%100, (long unsigned int) maxGeneratedBlock);
     }
-
-
     // Assert we went right up to the limit.  We reserved 4 bytes for height but only use 2 as height is 110.
     // However those 2 bytes are instead used by the long miner comment.
     // We also reserved 5 bytes for tx count but only use 3 as we don't have > 65535 txs in a block
     BOOST_CHECK(minRoom == 2);
-    mempool.clear();
+    *********/
 
+    mempool.clear();
     // block size > limit
     tx.vin[0].scriptSig = CScript();
     // 18 * (520char + DROP) + OP_1 = 9433 bytes

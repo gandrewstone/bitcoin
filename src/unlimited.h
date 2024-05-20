@@ -28,13 +28,11 @@
 enum
 {
     TYPICAL_BLOCK_SIZE = 200000, // used for initial buffer size
-    DEFAULT_EXCESSIVE_ACCEPT_DEPTH = 12, // Default is 12 to make it very expensive for a minority hash power to get
     // lucky, and potentially drive a block that the rest of the network sees as
     // "excessive" onto the blockchain.
 
     DEFAULT_COINBASE_RESERVE_SIZE = 1000,
     MAX_COINBASE_SCRIPTSIG_SIZE = 100,
-    EXCESSIVE_BLOCK_CHAIN_RESET = 6 * 24, // After 1 day of non-excessive blocks, reset the checker
     DEFAULT_CHECKPOINT_DAYS =
         30, // Default for the number of days in the past we check scripts during initial block download
 
@@ -72,18 +70,17 @@ extern CStatusString statusStrings;
 
 extern std::set<CBlockIndex *> setDirtyBlockIndex;
 extern uint32_t blockVersion; // Overrides the mined block version if non-zero
-extern uint64_t maxGeneratedBlock;
-extern uint64_t excessiveBlockSize;
-extern unsigned int excessiveAcceptDepth;
+extern std::atomic<uint64_t> consensusBlockSize;
 extern unsigned int maxMessageSizeMultiplier;
 extern bool fCanonicalTxsOrder;
 
-// Fork configuration
+/** BU Default maximum number of Outbound connections to simultaneously allow*/
+extern int nMaxOutConnections;
+
 /** This specifies the MTP time of the next fork */
 extern uint64_t nMiningForkTime;
 
-/** BU Default maximum number of Outbound connections to simultaneously allow*/
-extern int nMaxOutConnections;
+extern unsigned int nPercentBlockMaxSize;
 
 // BU005: Strings specific to the config of this client that should be communicated to other clients
 extern std::vector<std::string> BUComments;
@@ -100,9 +97,6 @@ extern CTweak<uint32_t> netMagic;
 
 // The maximum number of allowed script operations (consensus param)
 extern CTweak<uint64_t> maxScriptOps;
-
-// The maximum number of allowed sigcheck operations (consensus param)
-extern CTweak<uint64_t> maxSigChecks;
 
 // print out a configuration warning during initialization
 // bool InitWarning(const std::string &str);
@@ -136,15 +130,6 @@ extern void UnlimitedAcceptBlock(const CBlock &block,
 
 extern void UnlimitedLogBlock(const CBlock &block, const std::string &hash, uint64_t receiptTime);
 
-// Check whether this block is bigger in some metric than we really want to accept
-extern bool CheckExcessive(const ConstCBlockRef pblock, uint64_t blockSize, uint64_t nTx, uint64_t largestTx);
-
-// Check whether this chain qualifies as excessive.
-extern int isChainExcessive(const CBlockIndex *blk, unsigned int checkDepth = excessiveAcceptDepth);
-
-// Check whether any block N back in this chain is an excessive block
-extern int chainContainsExcessive(const CBlockIndex *blk, unsigned int goBack = 0);
-
 // Given an invalid block, find all chains containing this block and mark all children invalid
 void MarkAllContainingChainsInvalid(CBlockIndex *invalidBlock);
 
@@ -159,11 +144,7 @@ extern UniValue settrafficshaping(const UniValue &params, bool fHelp);
 extern UniValue gettrafficshaping(const UniValue &params, bool fHelp);
 extern UniValue pushtx(const UniValue &params, bool fHelp);
 
-extern UniValue getminingmaxblock(const UniValue &params, bool fHelp);
-extern UniValue setminingmaxblock(const UniValue &params, bool fHelp);
-
 extern UniValue getexcessiveblock(const UniValue &params, bool fHelp);
-extern UniValue setexcessiveblock(const UniValue &params, bool fHelp);
 
 // Get and set the custom string that miners can place into the coinbase transaction
 extern UniValue getminercomment(const UniValue &params, bool fHelp);
@@ -250,13 +231,10 @@ extern CStatHistory<unsigned int> txAdded;
 extern CStatHistory<uint64_t, MinValMax<uint64_t> > poolSize;
 
 // Configuration variable validators
-bool MiningAndExcessiveBlockValidatorRule(const uint64_t newExcessiveBlockSize, const uint64_t newMiningBlockSize);
-std::string AcceptDepthValidator(const unsigned int &value, unsigned int *item, bool validate);
-std::string ExcessiveBlockValidator(const uint64_t &value, uint64_t *item, bool validate);
+std::string PercentBlockMaxSizeValidator(const unsigned int &value, unsigned int *item, bool validate);
 std::string OutboundConnectionValidator(const int &value, int *item, bool validate);
 std::string MaxDataCarrierValidator(const unsigned int &value, unsigned int *item, bool validate);
 std::string SubverValidator(const std::string &value, std::string *item, bool validate);
-std::string MiningBlockSizeValidator(const uint64_t &value, uint64_t *item, bool validate);
 // validator for the voting tweak
 std::string Bip135VoteValidator(const std::string &value, std::string *item, bool validate);
 // ensure that only 1 fork is active
@@ -264,8 +242,6 @@ std::string ForkTimeValidator(const uint64_t &value, uint64_t *item, bool valida
 
 extern CTweak<unsigned int> maxTxSize;
 extern CTweak<uint64_t> coinbaseReserve;
-extern CTweakRef<uint64_t> miningBlockSize;
-extern CTweakRef<uint64_t> ebTweak;
 extern CTweak<uint64_t> maxMiningCandidates;
 extern CTweak<uint64_t> minMiningCandidateInterval;
 
@@ -276,6 +252,11 @@ extern std::list<CStatBase *> mallocedStats;
 extern CCriticalSection cs_blockvalidationthread;
 void InterruptBlockValidationThreads();
 
+// Fork configuration
+/** This specifies the MTP time of the next fork */
+extern CTweakRef<uint64_t> miningForkTime;
+
+extern CTweakRef<unsigned int> percentBlockMaxSize;
 
 // Mining-Candidate start
 /** Return a Merkle root given a Coinbase hash and Merkle proof */

@@ -540,6 +540,7 @@ public:
      */
     void check(const CCoinsViewCache *pcoins) const;
     void setSanityCheck(double dFrequency = 1.0) { nCheckFrequency = dFrequency * 4294967295.0; }
+    uint32_t getSanityCheck() { return nCheckFrequency; }
     // addUnchecked must updated state for all ancestors of a given transaction,
     // to track size/count of descendant transactions
     bool addUnchecked(const uint256 &hash, const CTxMemPoolEntry &entry, bool fCurrentEstimate = true);

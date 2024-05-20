@@ -125,10 +125,6 @@ void UnlimitedDialog::setMapper()
     mapper.addMapping(ui.recvBurstEdit, UnlimitedModel::ReceiveBurst);
     mapper.addMapping(ui.recvAveEdit, UnlimitedModel::ReceiveAve);
 
-    /* blocksize */
-    mapper.addMapping(ui.miningMaxBlock, UnlimitedModel::MaxGeneratedBlock);
-    connect(ui.miningMaxBlock, SIGNAL(textChanged(const QString &)), this, SLOT(validateBlockSize()));
-
     mapper.toFirst();
 }
 
@@ -179,27 +175,6 @@ void UnlimitedDialog::on_cancelButton_clicked()
 {
     mapper.revert();
     reject();
-}
-
-void UnlimitedDialog::validateBlockSize()
-{
-    ui.statusLabel->setStyleSheet("QLabel { color: red; }");
-
-    uint64_t mmb = ui.miningMaxBlock->text().toInt();
-    uint64_t ebs = excessiveBlockSize;
-
-    if (!MiningAndExcessiveBlockValidatorRule(ebs, mmb))
-    {
-        ui.statusLabel->setText(tr("Mined block size cannot be larger then excessive block size!"));
-        ui.miningMaxBlock->setStyleSheet("QLineEdit {  background-color: red; }");
-        ui.okButton->setEnabled(false);
-    }
-    else
-    {
-        ui.statusLabel->clear();
-        ui.miningMaxBlock->setStyleSheet("");
-        ui.okButton->setEnabled(true);
-    }
 }
 
 bool UnlimitedDialog::shapingAveEditFinished(void)

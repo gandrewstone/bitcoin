@@ -1095,14 +1095,15 @@ static CBlockRef MakeBlock(const CChainParams &params, bool replaceCoinbase = tr
 /// Activates or deactivates upgrade 9 by setting the activation time in the past or future respectively
 [[nodiscard]]
 static Defer<std::function<void()>> SetUpgrade9Active(bool active) {
-    const auto currentMTP = []{
-        return chainActive.Tip()->GetMedianTimePast();
+    const auto currentHeight = []{
+        LOCK(cs_main);
+        return chainActive.Tip()->nHeight;
     }();
-    const auto activationMtp = active ? currentMTP - 1 : currentMTP + 1;
-    SetArg("-upgrade9activationtime", strprintf("%d", activationMtp));
+    const auto activationHeight = active ? currentHeight - 1 : currentHeight + 1;
+    SetArg("-upgrade9activationheight", strprintf("%d", activationHeight));
     return Defer(std::function<void()>{
         [] {
-            UnsetArg("-upgrade9activationtime");
+            UnsetArg("-upgrade9activationheight");
         }
     });
 }
@@ -1624,8 +1625,6 @@ BOOST_FIXTURE_TEST_CASE(sighash_utxos_test, TestChain100Setup) {
     CScript const p2pk_scriptPubKey = CScript() << ToByteVector(coinbaseKey.GetPubKey()) << OP_CHECKSIG;
 
     for (const bool isUpgrade9Active : {false, true}) {
-        auto d1 = SetUpgrade9Active(isUpgrade9Active);
-
         // Paranoia: mine 2 blocks to ensure maturity of up to 2 coinbase txns
         CreateAndProcessBlock({}, p2pk_scriptPubKey);
         CreateAndProcessBlock({}, p2pk_scriptPubKey);
@@ -1670,7 +1669,7 @@ BOOST_FIXTURE_TEST_CASE(sighash_utxos_test, TestChain100Setup) {
             const auto sigHashType = SIGHASH_ALL | SIGHASH_FORKID | SIGHASH_UTXOS;
             const auto inputAmount = coinbaseTxns[coinbase_txn_idx - 2u + inp].vout[0].nValue;
             // Check that a limited context doesn't work for SIGHASH_UTXOS (it throws due to missing input data)
-           BOOST_CHECK_THROW(SignatureHash(p2pk_scriptPubKey, spend_tx, inp, sigHashType, inputAmount, nullptr, &limited_context), std::exception);
+            BOOST_CHECK_THROW(SignatureHash(p2pk_scriptPubKey, spend_tx, inp, sigHashType, inputAmount, nullptr, &limited_context), std::exception);
 
 
             ScriptImportedState full_context(
@@ -1707,17 +1706,23 @@ BOOST_FIXTURE_TEST_CASE(sighash_utxos_test, TestChain100Setup) {
             spend_tx = CTransaction(spend_tx_mut);
         }
 
-        // Attempt to mine the above in a block
-        CBlock const block = CreateAndProcessBlock({spend_tx}, p2pk_scriptPubKey);
-
         // CreateAndProcessBlock() doesn't actually tell us if the block was accepted, so check the chain
-        LOCK(cs_main);
+        // if Upgrade9/May2023 upgrade is active the block should have been succesfully connected at chainTip()
+        // if upgrade9 is not active the block should have been rejected and then block hash shouid be different
+        // from the hash of the current chain tip.
         if (isUpgrade9Active) {
-            // Upgrade9 active: Mining success
+            auto d1 = SetUpgrade9Active(true);
+            // Attempt to mine the above in a block
+            CBlock const block = CreateAndProcessBlock({spend_tx}, p2pk_scriptPubKey);
+            LOCK(cs_main);
             BOOST_CHECK(chainActive.Tip()->GetBlockHash() == block.GetHash());
             BOOST_CHECK(pcoinsTip->GetBestBlock() == block.GetHash());
         } else {
             // Upgrade9 inactive: Mining failure (SIGHASH_UTXOS not enabled yet so signature is invalid/unknown/etc)
+            auto d2 = SetUpgrade9Active(false);
+            // Attempt to mine the above in a block
+            CBlock const block = CreateAndProcessBlock({spend_tx}, p2pk_scriptPubKey);
+            LOCK(cs_main);
             BOOST_CHECK(chainActive.Tip()->GetBlockHash() != block.GetHash());
             BOOST_CHECK(pcoinsTip->GetBestBlock() != block.GetHash());
         }

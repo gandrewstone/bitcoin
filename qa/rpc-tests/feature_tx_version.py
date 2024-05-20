@@ -47,7 +47,7 @@ class TxVersionTest(BitcoinTestFramework):
         self.num_nodes = 1
         self.setup_clean_chain = True
         self.base_extra_args = ['-acceptnonstdtxn=0', '-whitelist=127.0.0.1', '-whitelistforcerelay=0', '-debug=mempool']
-        self.extra_args = [['-upgrade9activationtime=999999999999'] + self.base_extra_args]
+        self.extra_args = [['-upgrade9activationheight=999999999'] + self.base_extra_args]
 
     def run_test(self):
 
@@ -150,17 +150,17 @@ class TxVersionTest(BitcoinTestFramework):
             missing.discard(txn.hash)
         assert not missing, "Txs not found in block as expected!"
 
-        activation_time = blocks[-1].nTime
+        activation_height = node.getblockheader(node.getbestblockhash(), True)["height"] + 1
         # Restart the node, enabling upgrade9
-        self.restart_node(0, extra_args=[f"-upgrade9activationtime={activation_time}"] + self.base_extra_args)
+        self.restart_node(0, extra_args=[f"-upgrade9activationheight={activation_height}"] + self.base_extra_args)
         self.reconnect_p2p()
 
         logging.info("Advance blockchain forward to enable upgrade9")
         iters = 0
-        est_median_time = node.getblockchaininfo()["mediantime"]
-        while est_median_time < activation_time:
+        n_blocks = node.getblockchaininfo()["blocks"]
+        while n_blocks < activation_height:
             iters += 1
-            est_median_time += 1  # create_block below just advances mediantime by 1 second each time
+            n_blocks += 1
             blocks.append(self.create_block(blocks[-1], spend=blocks[spend_index].vtx[0],
                                             script_pub_key=anyonecanspend, redeem_script=redeem_script))
             spend_index += 1
@@ -169,10 +169,8 @@ class TxVersionTest(BitcoinTestFramework):
         # Paranoia: Ensure node accepted above chain
         assert_equal(node.getbestblockhash(), blocks[-1].sha256.to_bytes(length=32, byteorder="big").hex())
         # Ensure upgrade9 activated
-        assert_greater_than_or_equal(node.getblockchaininfo()["mediantime"], activation_time)
-        logging.info(f"Iterated {iters} times to bring mediantime ({node.getblockchaininfo()['mediantime']}) up to "
-                      f"activation_time ({activation_time}) -- Upgrade9 is now activated for the next block!")
-
+        assert_greater_than_or_equal(node.getblockchaininfo()["blocks"], activation_height)
+        logging.info(f"Upgrade9 is now activated for the next block!")
         # Post-Upgrade9 Test: The below function call creates 2 txns that have nVersion=1 and nVersion=2, sends them to
         # the mempool -- they should be accepted ok and mined ok.  It also creates 3 txns that have nVersion out of
         # range, sends them to mempool -- they should be still be rejected non-standard (can removed from standardness after upgrade9).

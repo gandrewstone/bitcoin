@@ -22,6 +22,7 @@
 #include "txadmission.h"
 #include "txmempool.h"
 #include "ui_interface.h"
+#include "unlimited.h"
 #include "util.h"
 #include "utilstrencodings.h"
 #include "validation/validation.h"
@@ -104,7 +105,7 @@ UniValue getnetworkhashps(const UniValue &params, bool fHelp)
         params.size() > 0 ? params[0].get_int() : 120, params.size() > 1 ? params[1].get_int() : -1);
 }
 
-UniValue generateBlocks(boost::shared_ptr<CReserveScript> coinbaseScript,
+UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript,
     int nGenerate,
     uint64_t nMaxTries,
     bool keepScript)
@@ -195,7 +196,7 @@ UniValue generate(const UniValue &params, bool fHelp)
         nMaxTries = params[1].get_int();
     }
 
-    boost::shared_ptr<CReserveScript> coinbaseScript;
+    std::shared_ptr<CReserveScript> coinbaseScript;
     GetMainSignals().ScriptForMining(coinbaseScript);
 
     // If the keypool is exhausted, no script is returned at all.  Catch this.
@@ -237,7 +238,7 @@ UniValue generatetoaddress(const UniValue &params, bool fHelp)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Error: Invalid address");
     }
 
-    boost::shared_ptr<CReserveScript> coinbaseScript(new CReserveScript());
+    std::shared_ptr<CReserveScript> coinbaseScript(new CReserveScript());
     coinbaseScript->reserveScript = GetScriptForDestination(destination);
 
     return generateBlocks(coinbaseScript, nGenerate, nMaxTries, false);
@@ -256,6 +257,7 @@ UniValue getmininginfo(const UniValue &params, bool fHelp)
             "  \"currentblocktx\": nnn,     (numeric) The last block transaction\n"
             "  \"difficulty\": xxx.xxxxx    (numeric) The current difficulty\n"
             "  \"errors\": \"...\"          (string) Current errors\n"
+            "  \"miningblocksizelimit\": nnn  (numeric) The next mining block size limit for this node\n"
             "  \"pooledtx\": n              (numeric) The size of the mem pool\n"
             "  \"testnet\": true|false      (boolean) If using testnet or not\n"
             "  \"chain\": \"xxxx\",         (string) current network name as defined in BIP70 (main, test, regtest)\n"
@@ -272,6 +274,8 @@ UniValue getmininginfo(const UniValue &params, bool fHelp)
     obj.pushKV("currentblocktx", (uint64_t)nLastBlockTx);
     obj.pushKV("difficulty", (double)GetDifficulty());
     obj.pushKV("errors", GetWarnings("statusbar"));
+    obj.pushKV("miningblocksizelimit",
+        static_cast<uint64_t>(GetNextBlockSizeLimit(chainActive.Tip()) * (nPercentBlockMaxSize / 100.0)));
     obj.pushKV("networkhashps", getnetworkhashps(params, false));
     obj.pushKV("pooledtx", (uint64_t)mempool.size());
     obj.pushKV("testnet", Params().TestnetToBeDeprecatedFieldRPC());
@@ -514,13 +518,14 @@ static UniValue MkFullMiningCandidateJson(const std::set<std::string> &setClient
 
     // Deprecated after may 2020 but leave it in in case miners are using it in their code.
     result.pushKV("sigoplimit", (int64_t)MAX_BLOCK_SIGOPS_PER_MB);
+    uint64_t next_block_size_limit = GetNextBlockSizeLimit(chainActive.Tip());
+    result.pushKV("sigchecklimit", (uint64_t)GetMaxBlockSigChecksCount(next_block_size_limit));
     if (may2020Enabled)
     {
-        result.pushKV("sigchecklimit", maxSigChecks.Value());
         result.pushKV("sigchecktotal", sigcheckTotal);
     }
 
-    result.pushKV("sizelimit", (int64_t)maxGeneratedBlock);
+    result.pushKV("sizelimit", (int64_t)next_block_size_limit);
     result.pushKV("curtime", pblock->GetBlockTime());
     result.pushKV("bits", strprintf("%08x", pblock->nBits));
     // BU get the height directly from the block because pindexPrev could change if another block has come in.
@@ -729,7 +734,7 @@ UniValue mkblocktemplate(const UniValue &params,
         {
             // Note that we don't cache the exact script from this to the prevCoinbaseScript -- it's sufficient
             // to cache the fact that client code didn't specify a coinbase address (by caching the empty script).
-            boost::shared_ptr<CReserveScript> tmpScriptPtr;
+            std::shared_ptr<CReserveScript> tmpScriptPtr;
             GetMainSignals().ScriptForMining(tmpScriptPtr);
 
             // throw an error if shared_ptr is not valid -- this means no wallet support was compiled-in

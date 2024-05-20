@@ -20,6 +20,7 @@ import tempfile
 # A set of versions known to produce the same output
 tested_versions = ['15.0.7',
                    '15.0.3', #osx homebrew version
+                   '17.0.6',
                   ]
 accepted_file_extensions = ('.h', '.cpp') # Files to format
 trailing_comment_exe = "trailing-comment.py"

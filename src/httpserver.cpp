@@ -455,7 +455,7 @@ bool InitHTTPServer()
 
     evhttp_set_timeout(http, GetArg("-rpcservertimeout", DEFAULT_HTTP_SERVER_TIMEOUT));
     evhttp_set_max_headers_size(http, MAX_HEADERS_SIZE);
-    evhttp_set_max_body_size(http, BASELINE_BODY_SIZE + (excessiveBlockSize * 2));
+    evhttp_set_max_body_size(http, BASELINE_BODY_SIZE + (consensusBlockSize.load() * 2));
     evhttp_set_gencb(http, http_request_cb, nullptr);
 
     if (!HTTPBindAddresses(http))

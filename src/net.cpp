@@ -616,7 +616,7 @@ void CNode::copyStats(CNodeStats &stats)
 static bool IsMessageOversized(CNetMessage &msg)
 {
     if (maxMessageSizeMultiplier && msg.in_data && (msg.hdr.nMessageSize > BLOCKSTREAM_CORE_MAX_BLOCK_SIZE) &&
-        (msg.hdr.nMessageSize > (maxMessageSizeMultiplier * excessiveBlockSize)))
+        (msg.hdr.nMessageSize > (maxMessageSizeMultiplier * consensusBlockSize.load())))
     {
         // TODO: warn if too many nodes are doing this
         return true;
@@ -3021,7 +3021,7 @@ void CNode::RecordBytesSent(uint64_t bytes)
 
 void CNode::SetMaxOutboundTarget(uint64_t limit)
 {
-    uint64_t nRecommendedMinimum = (nMaxOutboundTimeframe * excessiveBlockSize) / 600;
+    uint64_t nRecommendedMinimum = (nMaxOutboundTimeframe * consensusBlockSize.load()) / 600;
     nMaxOutboundLimit = limit;
 
     if (limit > 0 && limit < nRecommendedMinimum)
@@ -3064,7 +3064,7 @@ bool CNode::OutboundTargetReached(bool fHistoricalBlockServingLimit)
     {
         // keep a large enough buffer to at least relay each block once
         uint64_t timeLeftInCycle = GetMaxOutboundTimeLeftInCycle();
-        uint64_t buffer = (timeLeftInCycle * excessiveBlockSize) / 600;
+        uint64_t buffer = (timeLeftInCycle * consensusBlockSize.load()) / 600;
         if (buffer >= nMaxOutboundLimit || nMaxOutboundTotalBytesSentInCycle >= nMaxOutboundLimit - buffer)
             return true;
     }

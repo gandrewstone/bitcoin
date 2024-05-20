@@ -186,9 +186,6 @@ vector<std::string> vUseDNSSeeds;
 vector<std::string> vAddedNodes;
 set<CNetAddr> setservAddNodeAddresses;
 
-uint64_t maxGeneratedBlock = DEFAULT_BLOCK_MAX_SIZE;
-uint64_t excessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
-unsigned int excessiveAcceptDepth = DEFAULT_EXCESSIVE_ACCEPT_DEPTH;
 unsigned int maxMessageSizeMultiplier = DEFAULT_MAX_MESSAGE_SIZE_MULTIPLIER;
 int nMaxOutConnections = DEFAULT_MAX_OUTBOUND_CONNECTIONS;
 bool fCanonicalTxsOrder = true;
@@ -286,10 +283,6 @@ CTweak<uint32_t> randomlyDontInv("net.randomlyDontInv",
     "Skip sending an INV for some percent of transactions (default: 0)",
     0);
 
-CTweakRef<uint64_t> ebTweak("net.excessiveBlock",
-    strprintf("Excessive block size in bytes (default: %d)", excessiveBlockSize),
-    &excessiveBlockSize,
-    &ExcessiveBlockValidator);
 CTweak<bool> ignoreNetTimeouts("net.ignoreTimeouts",
     "ignore inactivity timeouts, used during debugging (default: false)",
     false);
@@ -301,6 +294,11 @@ CTweakRef<bool> displayArchInSubver("net.displayArchInSubver",
 CTweak<bool> doubleSpendProofs("net.doubleSpendProofs",
     "Process and forward double spend proofs (default: true)",
     true);
+
+CTweakRef<unsigned int> percentBlockMaxSize("percentblockmaxsize",
+    "Default for mining block size, in percent of max block size",
+    &nPercentBlockMaxSize,
+    &PercentBlockMaxSizeValidator);
 
 CTweak<uint64_t> coinbaseReserve("mining.coinbaseReserve",
     strprintf("How much space to reserve for the coinbase transaction, in bytes (default: %d)",
@@ -317,27 +315,21 @@ CTweak<uint64_t> minMiningCandidateInterval("mining.minCandidateInterval",
 
 CTweakRef<std::string> miningCommentTweak("mining.comment", "Include this text in a block's coinbase.", &minerComment);
 
-CTweakRef<uint64_t> miningBlockSize("mining.blockSize",
-    strprintf("Maximum block size in bytes.  The maximum block size returned from 'getblocktemplate' will be this "
-              "value minus mining.coinbaseReserve (default: %d)",
-        maxGeneratedBlock),
-    &maxGeneratedBlock,
-    &MiningBlockSizeValidator);
 CTweakRef<unsigned int> maxDataCarrierTweak("mining.dataCarrierSize",
     strprintf("Maximum size of OP_RETURN data script in bytes (default: %d)", nMaxDatacarrierBytes),
     &nMaxDatacarrierBytes,
     &MaxDataCarrierValidator);
 
+CTweakRef<uint64_t> miningForkTime("upgrade10activationtime",
+    "Time in seconds since the epoch to initiate the Bitcoin Cash protocol upgraded scheduled on 15th May 2024.  A "
+    "setting of 1 will turn on the fork at the appropriate time.",
+    &nMiningForkTime,
+    &ForkTimeValidator); // Saturday May 15 12:00:00 UTC 2024
+
 CTweak<uint64_t> maxScriptOps("consensus.maxScriptOps",
     strprintf("Maximum number of script operations allowed.  Stack pushes are excepted (default: %ld)",
         MAX_OPS_PER_SCRIPT),
     MAX_OPS_PER_SCRIPT);
-
-CTweak<uint64_t> maxSigChecks("consensus.maxBlockSigChecks",
-    strprintf("Consensus parameter specifying the maximum sigchecks in a block.  Use for testing only! (default for "
-              "mainnet: %ld)",
-        MAY2020_MAX_BLOCK_SIGCHECK_COUNT),
-    MAY2020_MAX_BLOCK_SIGCHECK_COUNT);
 
 CTweak<bool> unsafeGetBlockTemplate("mining.unsafeGetBlockTemplate",
     "Allow getblocktemplate to succeed even if the chain tip is old or this node is not connected to other nodes "
@@ -351,10 +343,7 @@ CTweak<bool> xvalTweak("mining.xval",
 CTweak<unsigned int> maxTxSize("net.excessiveTx",
     strprintf("Largest transaction size in bytes (default: %ld)", DEFAULT_LARGEST_TRANSACTION),
     DEFAULT_LARGEST_TRANSACTION);
-CTweakRef<unsigned int> eadTweak("net.excessiveAcceptDepth",
-    "Excessive block chain acceptance depth in blocks",
-    &excessiveAcceptDepth,
-    &AcceptDepthValidator);
+
 CTweakRef<int> maxOutConnectionsTweak("net.maxOutboundConnections",
     "Maximum number of outbound connections",
     &nMaxOutConnections,

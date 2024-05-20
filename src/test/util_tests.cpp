@@ -593,13 +593,12 @@ BOOST_AUTO_TEST_CASE(test_FormatSubVersion)
     BOOST_CHECK_EQUAL(FormatSubVersion("Test", 99900, comments2),
         std::string("/Test:0.9.99(comment1; Comment2; .,_?@-; ; " + arch + ")/"));
 
-    excessiveBlockSize = 1000000;
-    excessiveAcceptDepth = 40;
+    consensusBlockSize = 1000000;
     settingsToUserAgentString();
     const char *argv_test[] = {"bitcoind", "-uacomment=comment1", "-uacomment=Comment2", "-uacomment=Comment3"};
     ParseParameters(4, (char **)argv_test, AllowedArgs::Bitcoind());
     BOOST_CHECK_EQUAL(FormatSubVersion("Test", 99900, BUComments),
-        std::string("/Test:0.9.99(EB1; AD40; " + arch + "; comment1; Comment2; Comment3)/"));
+        std::string("/Test:0.9.99(EB1; " + arch + "; comment1; Comment2; Comment3)/"));
 
     const char *argv_test2[] = {"bitcoind", "-uacomment=Commenttttttttttttttttttttttttttttttttttttttttt1",
         "-uacomment=Commenttttttttttttttttttttttttttttttttttttttttttttttttttttt2",
@@ -607,11 +606,11 @@ BOOST_AUTO_TEST_CASE(test_FormatSubVersion)
         "-uacomment=Commenttttttttttttttttttttttttttttttttttttttttttttttttttttt4"};
     ParseParameters(5, (char **)argv_test2, AllowedArgs::Bitcoind());
     BOOST_CHECK_EQUAL(FormatSubVersion("Test", 99900, BUComments),
-        std::string("/Test:0.9.99(EB1; AD40; " + arch +
+        std::string("/Test:0.9.99(EB1; " + arch +
                     "; Commenttttttttttttttttttttttttttttttttttttttttt1; "
                     "Commenttttttttttttttttttttttttttttttttttttttttttttttttttttt2; "
                     "Commenttttttttttttttttttttttttttttttttttttttttttttttttttttt3; "
-                    "Commenttttttttttttttttttttttttttttttttttttttttttt)/"));
+                    "Commenttttttttttttttttttttttttttttttttttttttttttttttttt)/"));
 
     std::string subver = FormatSubVersion("Test", 99900, BUComments);
     BOOST_CHECK_EQUAL(subver.size(), MAX_SUBVERSION_LENGTH);
@@ -621,12 +620,11 @@ BOOST_AUTO_TEST_CASE(test_FormatSubVersion)
     settingsToUserAgentString();
     const char *argv_test3[] = {"bitcoind", "-uacomment=comment1", "-uacomment=Comment2", "-uacomment=Comment3"};
     ParseParameters(4, (char **)argv_test3, AllowedArgs::Bitcoind());
-    BOOST_CHECK_EQUAL(FormatSubVersion("Test", 99900, BUComments),
-        std::string("/Test:0.9.99(EB1; AD40; comment1; Comment2; Comment3)/"));
+    BOOST_CHECK_EQUAL(
+        FormatSubVersion("Test", 99900, BUComments), std::string("/Test:0.9.99(EB1; comment1; Comment2; Comment3)/"));
 
     // set EB/AD back to default value
-    excessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
-    excessiveAcceptDepth = DEFAULT_EXCESSIVE_ACCEPT_DEPTH;
+    consensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
     fDisplayArchInSubver = true;
 }
 

@@ -154,14 +154,42 @@ bool IsMay2022Activated(const Consensus::Params &consensusparams, const CBlockIn
     return pindexTip->IsforkActiveOnNextBlock(MAY2022_ACTIVATION_TIME);
 }
 
-// Check if May 15th 2023 fork has activated using MTP
-bool IsMay2023Activated(const Consensus::Params &params, const CBlockIndex *pindexTip)
+
+// Check if May 15th 2023 fork (9 upgrade) has activated using block height
+bool IsMay2023Activated(const Consensus::Params &consensusparams, const CBlockIndex *pindexTip)
 {
     if (pindexTip == nullptr)
     {
         return false;
     }
-    assert(params.may2023ActivationTime);
-    uint64_t activationTime = GetArg("-upgrade9activationtime", params.may2023ActivationTime);
+    // if node's launched with custom activation height use that, cause we are presumably
+    // running some functional/unit tests.
+    int32_t height = GetArg("-upgrade9activationheight", consensusparams.may2023Height);
+    return pindexTip->nHeight >= height;
+}
+
+// Check if May 15th 2024 fork has activated using MTP
+bool IsMay2024Activated(const Consensus::Params &params, const CBlockIndex *pindexTip)
+{
+    if (pindexTip == nullptr)
+    {
+        return false;
+    }
+    uint64_t activationTime = nMiningForkTime;
+    LOG(ACTIVATION, "%s: Param activation time is: %llu - GetMedianTimePast %llu - actived: %d - height: %d", __func__,
+        activationTime, pindexTip->GetMedianTimePast(), pindexTip->IsforkActiveOnNextBlock(activationTime),
+        pindexTip->nHeight);
     return pindexTip->IsforkActiveOnNextBlock(activationTime);
+}
+
+bool IsMay2024Active(const Consensus::Params &params, const CBlockIndex *pindex)
+{
+    if (pindex == nullptr)
+    {
+        return false;
+    }
+    uint64_t activationTime = nMiningForkTime;
+    LOG(ACTIVATION, "%s: Height %d - Param activation time: %llu - GetMedianTimePast %llu - active: %d", __func__,
+        pindex->nHeight, activationTime, pindex->GetMedianTimePast(), pindex->forkActivated(activationTime));
+    return pindex->forkActivated(activationTime);
 }

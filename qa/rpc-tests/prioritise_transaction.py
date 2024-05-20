@@ -12,7 +12,8 @@ from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import *
 from test_framework.mininode import COIN
 
-MAX_BLOCK_SIZE = 3000000
+PERCENT_BLOCK_MAX_SIZE = 9
+MAX_BLOCK_SIZE = 2880000
 
 class PrioritiseTransactionTest(BitcoinTestFramework):
 
@@ -27,7 +28,7 @@ class PrioritiseTransactionTest(BitcoinTestFramework):
         self.nodes = []
         self.is_network_split = False
 
-        self.nodes.append(start_node(0, self.options.tmpdir, ["-mining.blockSize=" + str(MAX_BLOCK_SIZE),"-minlimitertxfee=1", "-printpriority=1", "-limitfreerelay=15", "-debug=mempool"]))
+        self.nodes.append(start_node(0, self.options.tmpdir, ["-percentblockmaxsize=" + str(PERCENT_BLOCK_MAX_SIZE),"-minlimitertxfee=1", "-printpriority=1", "-limitfreerelay=15", "-debug=mempool"]))
         self.relayfee = self.nodes[0].getnetworkinfo()['relayfee']
 
     def run_test(self):
@@ -53,6 +54,7 @@ class PrioritiseTransactionTest(BitcoinTestFramework):
             for j in txids[i]:
                 assert(j in mempool)
                 sizes[i] += mempool[j]['size']
+        logging.info(self.nodes[0].getmempoolinfo()["bytes"])
         assert(self.nodes[0].getmempoolinfo()["bytes"] > MAX_BLOCK_SIZE) # Fail => raise utxo_count
 
         # add a fee delta to something in the cheapest bucket and make sure it gets mined

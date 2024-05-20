@@ -7,6 +7,7 @@
 #ifndef BITCOIN_CONSENSUS_PARAMS_H
 #define BITCOIN_CONSENSUS_PARAMS_H
 
+#include "abla.h"
 #include "amount.h"
 #include "clientversion.h"
 #include "uint256.h"
@@ -172,12 +173,17 @@ struct Params
     int may2020Height;
     /** May 15, 2022 activation height */
     int may2022Height;
+    /** May 15, 2023 activation height */
+    int may2023Height;
+    /** May 15, 2024 activation time */
+    int may2024ActivationTime;
+    /** ABLA block size config (may 2024 HF) */
+    abla::Config ablaConfig;
+    float nDefaultGeneratedBlockSizePercent;
     /** Nov 15, 2020 MTP activation time will be 12:00:00 UTC */
     uint64_t nov2020ActivationTime;
     /** Nov 15, 2020 actication height */
     boost::optional<int> nov2020Height;
-    /** May 15, 2023 MTP activation time will be 12:00:00 UTC */
-    uint64_t may2023ActivationTime;
 };
 } // namespace Consensus
 

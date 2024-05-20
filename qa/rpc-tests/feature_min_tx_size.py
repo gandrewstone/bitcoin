@@ -44,7 +44,7 @@ class MinTxSizeTest(BitcoinTestFramework):
         self.base_extra_args = ['-acceptnonstdtxn=1',
         # '-expire=0',
         '-whitelist=127.0.0.1']
-        self.extra_args = [['-upgrade9activationtime=999999999999'] + self.base_extra_args]
+        self.extra_args = [['-upgrade9activationheight=999999999'] + self.base_extra_args]
 
     def bootstrap_p2p(self):
         """Add a P2P connection to the node."""
@@ -107,17 +107,18 @@ class MinTxSizeTest(BitcoinTestFramework):
         logging.info("This block should fail to be accepted with bad-txns-undersize")
         self.send_blocks([undersized], success=False, reject_reason="bad-txns-undersize")
 
-        activation_time = blocks[-1].nTime
+        activation_height = node.getblockchaininfo()["blocks"] + 1
         # Restart the node, enabling upgrade9
-        self.restart_node(0, extra_args=[f"-upgrade9activationtime={activation_time}"] + self.base_extra_args)
+        self.restart_node(0, extra_args=[f"-upgrade9activationheight={activation_height}"] + self.base_extra_args)
         self.reconnect_p2p()
 
         logging.info("Advance blockchain forward to enable upgrade9")
         iters = 0
+        n_blocks = node.getblockchaininfo()["blocks"]
         est_median_time = node.getblockchaininfo()["mediantime"]
-        while est_median_time < activation_time:
+        while n_blocks < activation_height:
             iters += 1
-            est_median_time += 1  # create_block below just advances mediantime by 1 second each time
+            n_blocks += 1  # create_block below just advances mediantime by 1 second each time
             blocks.append(self.create_block(blocks[-1], spend=blocks[spend_index].vtx[0],
                                             min_tx_size_coinbase=MIN_TX_SIZE_MAGNETIC_ANOMALY,
                                             min_tx_size=MIN_TX_SIZE_MAGNETIC_ANOMALY))
@@ -129,9 +130,8 @@ class MinTxSizeTest(BitcoinTestFramework):
         # Paranoia: Ensure node accepted above chain
         assert_equal(node.getbestblockhash(), blocks[-1].sha256.to_bytes(length=32, byteorder="big").hex())
         # Ensure upgrade9 activated
-        assert_greater_than_or_equal(node.getblockchaininfo()["mediantime"], activation_time)
-        logging.info(f"Iterated {iters} times to bring mediantime ({node.getblockchaininfo()['mediantime']}) up to "
-                      f"activation_time ({activation_time}) -- Upgrade9 is now activated for the next block!")
+        assert_greater_than_or_equal(node.getblockchaininfo()["blocks"], activation_height)
+        logging.info(f"Upgrade9 is now activated for the next block!")
 
         logging.info("Ensure smaller tx size (65 bytes) works ok")
         b2 = self.create_block(blocks[-1], spend=blocks[spend_index].vtx[0],

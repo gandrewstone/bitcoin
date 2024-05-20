@@ -13,10 +13,12 @@
 #include "checkpoints.h"
 #include "coins.h"
 #include "consensus/validation.h"
+#include "dstencode.h"
 #include "hashwrapper.h"
 #include "main.h"
 #include "policy/policy.h"
 #include "primitives/transaction.h"
+#include "pubkey.h"
 #include "rpc/server.h"
 #include "streams.h"
 #include "sync.h"
@@ -28,6 +30,7 @@
 #include "ui_interface.h"
 #include "undo.h"
 #include "util.h"
+#include "util/defer.h"
 #include "utilstrencodings.h"
 #include "validation/validation.h"
 #include "validation/verifydb.h"
@@ -76,14 +79,46 @@ double GetDifficulty(const CBlockIndex *blockindex)
     return dDiff;
 }
 
+UniValue ablaStateToJSON(const abla::State &state)
+{
+    UniValue ret(UniValue::VOBJ);
+    ret.pushKV("epsilon", state.GetControlBlockSize());
+    ret.pushKV("beta", state.GetElasticBufferSize());
+    ret.pushKV("blocksize", state.GetBlockSize());
+    // Note that consensus rules are that the max block size is always at least the configured max block size,
+    // or what ABLA says, whichever is greater.
+    // const auto cmbs = config.GetConfiguredMaxBlockSize();
+    ret.pushKV("blocksizelimit", state.GetBlockSizeLimit()); // std::max(cmbs, state.GetBlockSizeLimit()));
+    // std::max(cmbs, state.GetNextBlockSizeLimit(Params().GetConsensus().ablaConfig)));
+    ret.pushKV("nextblocksizelimit", state.GetNextBlockSizeLimit(Params().GetConsensus().ablaConfig));
+    return ret;
+}
+
+
+static std::string ablaStateHelpCommon(bool trailingComma)
+{
+    return strprintf("  \"ablastate\" : {        (json object, optional) The block's ABLA state\n"
+                     "    \"epsilon\" : n,       (numeric) ABLA state epsilon value\n"
+                     "    \"beta\" : n,          (numeric) ABLA state beta value\n"
+                     "    \"blocksize\" : n,     (numeric) The size of this block\n"
+                     "    \"blocksizelimit\" : n,        (numeric) The size limit for this block\n"
+                     "    \"nextblocksizelimit\" : n,    (numeric) The size limit for the next block\n"
+                     "  }%s\n",
+        trailingComma ? "," : "");
+}
+
+
 UniValue blockheaderToJSON(const CBlockIndex *blockindex)
 {
     UniValue result(UniValue::VOBJ);
     result.pushKV("hash", blockindex->GetBlockHash().GetHex());
     int confirmations = -1;
+    const auto ablaStateOpt = blockindex->GetAblaStateOpt();
     // Only report confirmations if the block is on the main chain
     if (chainActive.Contains(blockindex))
+    {
         confirmations = chainActive.Height() - blockindex->nHeight + 1;
+    }
     result.pushKV("confirmations", confirmations);
     result.pushKV("height", blockindex->nHeight);
     result.pushKV("version", blockindex->nVersion);
@@ -95,12 +130,19 @@ UniValue blockheaderToJSON(const CBlockIndex *blockindex)
     result.pushKV("bits", strprintf("%08x", blockindex->nBits));
     result.pushKV("difficulty", GetDifficulty(blockindex));
     result.pushKV("chainwork", blockindex->nChainWork.GetHex());
-
     if (blockindex->pprev)
+    {
         result.pushKV("previousblockhash", blockindex->pprev->GetBlockHash().GetHex());
+    }
     CBlockIndex *pnext = chainActive.Next(blockindex);
     if (pnext)
+    {
         result.pushKV("nextblockhash", pnext->GetBlockHash().GetHex());
+    }
+    if (ablaStateOpt)
+    {
+        result.pushKV("ablastate", ablaStateToJSON(*ablaStateOpt));
+    }
     return result;
 }
 
@@ -112,9 +154,12 @@ UniValue blockToJSON(const CBlock &block,
     UniValue result(UniValue::VOBJ);
     result.pushKV("hash", blockindex->GetBlockHash().GetHex());
     int confirmations = -1;
+    const auto ablaStateOpt = blockindex->GetAblaStateOpt();
     // Only report confirmations if the block is on the main chain
     if (chainActive.Contains(blockindex))
+    {
         confirmations = chainActive.Height() - blockindex->nHeight + 1;
+    }
     result.pushKV("confirmations", confirmations);
     result.pushKV("size", (int)::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION));
     result.pushKV("height", blockindex->nHeight);
@@ -150,12 +195,19 @@ UniValue blockToJSON(const CBlock &block,
     result.pushKV("bits", strprintf("%08x", block.nBits));
     result.pushKV("difficulty", GetDifficulty(blockindex));
     result.pushKV("chainwork", blockindex->nChainWork.GetHex());
-
     if (blockindex->pprev)
+    {
         result.pushKV("previousblockhash", blockindex->pprev->GetBlockHash().GetHex());
+    }
     CBlockIndex *pnext = chainActive.Next(blockindex);
     if (pnext)
+    {
         result.pushKV("nextblockhash", pnext->GetBlockHash().GetHex());
+    }
+    if (ablaStateOpt)
+    {
+        result.pushKV("ablastate", ablaStateToJSON(*ablaStateOpt));
+    }
     return result;
 }
 
@@ -594,7 +646,8 @@ UniValue getblockheader(const UniValue &params, bool fHelp)
             "  \"bits\" : \"1d00ffff\", (string) The bits\n"
             "  \"difficulty\" : x.xxx,  (numeric) The difficulty\n"
             "  \"previousblockhash\" : \"hash\",  (string) The hash of the previous block\n"
-            "  \"nextblockhash\" : \"hash\",      (string) The hash of the next block\n"
+            "  \"nextblockhash\" : \"hash\",      (string) The hash of the next block\n" +
+            ablaStateHelpCommon(false) +
             "  \"chainwork\" : \"0000...1f3\"     (string) Expected number of hashes required to produce the current "
             "chain (in hex)\n"
             "}\n"
@@ -765,7 +818,8 @@ static UniValue getblock(const UniValue &params, bool fHelp)
             "  \"chainwork\" : \"xxxx\",  (string) Expected number of hashes required to produce the chain up to this "
             "block (in hex)\n"
             "  \"previousblockhash\" : \"hash\",  (string) The hash of the previous block\n"
-            "  \"nextblockhash\" : \"hash\"       (string) The hash of the next block\n"
+            "  \"nextblockhash\" : \"hash\"       (string) The hash of the next block\n" +
+            ablaStateHelpCommon(false) +
             "}\n"
             "\nResult (for verbosity = 2, tx_count = false):\n"
             "{\n"
@@ -2331,6 +2385,216 @@ UniValue getchaintxstats(const UniValue &params, bool fHelp)
     return ret;
 }
 
+extern UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript,
+    int nGenerate,
+    uint64_t nMaxTries,
+    bool keepScript);
+
+static UniValue fillmempool(const UniValue &params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+    {
+        throw std::runtime_error(
+            "fillmempool (megabytes)\n"
+            "\nFills the mempool with the specified number of megabytes worth of anyone-can-spend txns.\n"
+            "\nArguments:\n"
+            "1. megabytes (numeric, required) The number of megabytes worth of txns to fill the mempool with.\n"
+            "\nResult:\n"
+            "{\n"
+            "  \"txns_generated\" : xxxxx, (numeric) The number of transactions generated.\n"
+            "  \"mempool_txns\" : xxxxx, (numeric) The number of transactions in the mempool.\n"
+            "  \"mempool_bytes\" : xxxxx, (numeric) The number of bytes used by transactions in the mempool.\n"
+            "  \"mempool_dynamic_usage\" : xxxxx, (numeric) The amount of memory now used by the mempool (bytes).\n"
+            "  \"address\" : \"...\", (string) The destination address for the transactions.\n"
+            "  \"redeemscript_hex\" : \"...\", (string) The hex string of the redeem script for the transactions.\n"
+            "}\n"
+            "\nExamples:\n" +
+            HelpExampleCli("fillmempool", "10") + HelpExampleRpc("fillmempool", "320"));
+    }
+
+    // Ensure we are on regtest
+    const auto &consensusParams = Params().GetConsensus();
+    if (!consensusParams.fPowNoRetargeting)
+    {
+        throw JSONRPCError(
+            RPC_INVALID_REQUEST, "fillmempool is not supported on this chain. Switch to regtest to use fillmempool.");
+    }
+
+    // Check not already running in another thread
+    static std::mutex one_at_a_time_mut;
+    std::unique_lock one_at_a_time_guard(one_at_a_time_mut, std::try_to_lock);
+    if (!one_at_a_time_guard.owns_lock())
+    {
+        throw JSONRPCError(RPC_INVALID_REQUEST, "fillmempool is already running in another RPC thread");
+    }
+
+    // Temporarily disable the regtest mempool sanity checking since it will slow the below operation down
+    const auto orig_check_freq = mempool.getSanityCheck();
+    Defer restore_sanity_check(
+        [&orig_check_freq]
+        {
+            // restore the original setting on scope end
+            mempool.setSanityCheck(orig_check_freq);
+        });
+    mempool.setSanityCheck(0.0);
+
+    // Tic t0;
+    const int arg = params[0].get_int();
+    if (arg <= 0)
+    {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "megabytes argument must be greater than 0");
+    }
+    const size_t target_size = ONE_MEGABYTE * arg;
+    const size_t nMaxMempoolSize = GetArg("-maxmempool", DEFAULT_MAX_MEMPOOL_SIZE) * 1000000;
+    if (target_size > nMaxMempoolSize)
+    {
+        throw JSONRPCError(RPC_INVALID_PARAMETER,
+            strprintf("Max mempool size is %i which is less than the requested %i", nMaxMempoolSize, target_size));
+    }
+    const CScript redeem_script = CScript() << OP_DROP << OP_TRUE;
+    const CTxDestination destination = ScriptID{redeem_script, /* is32 = */ false};
+    const auto destination_spk = GetScriptForDestination(destination);
+    using UTXO = std::pair<COutPoint, CAmount>;
+    using UTXOList = std::list<UTXO>;
+    UTXOList utxos;
+
+    // Mine over 100 blocks to get `nCB` valid coinbases we can spend using our "anyone can spend" p2sh
+    {
+        const auto reward = GetBlockSubsidy(chainActive.Height() + 1, consensusParams);
+        assert(reward > 0);
+        const size_t nCB = std::max<size_t>(1, (50 * COIN) / reward); // scale nCB to block reward size
+        auto reserve_script = std::make_shared<CReserveScript>();
+        reserve_script->reserveScript = destination_spk;
+        const auto nBlocks = COINBASE_MATURITY + nCB;
+        LOG(MEMPOOL, "fillmempool: Generating %i blocks, of which %i coinbases will be used ...\n", nBlocks, nCB);
+        const auto blockhashes = generateBlocks(reserve_script, nBlocks, ~uint64_t{}, false);
+        for (size_t i = 0; i < nCB; ++i)
+        {
+            const uint256 bh = ParseHashV(blockhashes[i], "blockhash");
+            LOCK(cs_main);
+            const CBlockIndex *pindex = LookupBlockIndex(bh);
+            ConstCBlockRef pblock = ReadBlockFromDisk(pindex, consensusParams);
+            if (!pindex || !chainActive.Contains(pindex) || pblock == nullptr)
+            {
+                throw JSONRPCError(RPC_INTERNAL_ERROR, strprintf("Unable to find mined block #%i", i));
+            }
+            const auto &ptx = pblock->vtx.at(0);
+            const auto &txid = ptx->GetHash();
+            const auto &out = ptx->vout.at(0);
+            utxos.emplace_back(COutPoint(txid, 0), out.nValue);
+        }
+    }
+
+    const size_t op_return_size = std::max<size_t>(3u, ::nMaxDatacarrierBytes) - 3;
+    const CTxOut op_return(0, CScript() << OP_RETURN << std::vector<uint8_t>(op_return_size));
+
+    CFeeRate last_fee_rate;
+    size_t max_size_seen = 0u, min_size_seen = 0xffffffffu;
+
+    auto SpendToMempool = [&](const size_t tx_num, const UTXO &txoIn, const size_t fanoutSize) -> UTXOList
+    {
+        UTXOList ret;
+        assert(fanoutSize > 0);
+        CMutableTransaction tx;
+        const CScript script_sig = CScript() << std::vector<uint8_t>(GetRandInt(MAX_SCRIPT_ELEMENT_SIZE)) // pad txn
+                                             << std::vector<uint8_t>(redeem_script.begin(), redeem_script.end());
+        tx.vin.emplace_back(txoIn.first, script_sig);
+        const auto &amt_in = txoIn.second;
+        while (tx.vout.size() < fanoutSize)
+        {
+            tx.vout.emplace_back(int64_t((amt_in) / fanoutSize), destination_spk);
+        }
+        // Now, add a full OP_RETURN to pad the txn
+        const size_t n_op_returns = 1;
+        tx.vout.push_back(op_return);
+
+        tx.SortBip69();
+
+        auto IsUnspendable = [](const CTxOut &out) { return out.nValue == 0 || out.scriptPubKey.IsUnspendable(); };
+
+        // Adjust for fees
+        const auto tx_size = ::GetSerializeSize(tx, PROTOCOL_VERSION);
+        const auto fee_rate = ::minRelayTxFee;
+        const auto fee = fee_rate.GetFee(tx_size);
+        const CAmount fee_per_output = int64_t(std::ceil(fee / double(tx.vout.size() - n_op_returns)));
+        for (auto &out : tx.vout)
+        {
+            if (IsUnspendable(out))
+            {
+                // skip op_return
+                continue;
+            }
+            out.nValue -= fee_per_output;
+            if (!MoneyRange(out.nValue) || out.IsDust())
+            {
+                throw JSONRPCError(RPC_INTERNAL_ERROR, strprintf("Bad amount for txout: %li", out.nValue));
+            }
+        }
+
+        // Submit the txn
+        const CTransactionRef rtx = MakeTransactionRef(tx);
+        const CAmount tx_fee = amt_in - rtx->GetValueOut();
+        if (0 == tx_num % 1000 || last_fee_rate != fee_rate || tx_size > max_size_seen || tx_size < min_size_seen)
+        {
+            // log what's happening every 1000th time, or if the fee rate changes, or if we hit a new hi/low tx size
+            last_fee_rate = fee_rate;
+            max_size_seen = std::max(tx_size, max_size_seen);
+            min_size_seen = std::min(tx_size, min_size_seen);
+            LOG(MEMPOOL, "fillmempool: tx_num: %i, size: %i, fee: %i, fee_rate: %s\n", tx_num, tx_size, tx_fee,
+                ::minRelayTxFee.ToString());
+        }
+        const auto &txId = rtx->GetHash();
+        unsigned outN = 0;
+        {
+            LOCK(cs_main);
+            CValidationState vstate;
+            bool missingInputs{};
+            const bool ok = AcceptToMemoryPool(mempool, vstate, rtx, false, &missingInputs, 0);
+            if (!ok || !vstate.IsValid())
+            {
+                throw JSONRPCError(
+                    RPC_INTERNAL_ERROR, strprintf("Unable to accept txn to mempool: %s",
+                                            missingInputs ? "missing inputs" : vstate.GetRejectReason()));
+            }
+        }
+
+        // Remember utxos
+        for (const auto &out : rtx->vout)
+        {
+            if (!IsUnspendable(out))
+            {
+                ret.emplace_back(COutPoint(txId, outN), out.nValue);
+            }
+            ++outN;
+        }
+        return ret;
+    };
+
+    // Generate txns to fill the mempool to the required size.
+    // Note that this is a bit fuzzy in that it may be +/- by as
+    // much as ~1.5KB dynamic size (or +/- ~500 B serialized size).
+    size_t ngen = 0, mp_dynusage = 0;
+    while ((mp_dynusage = mempool.DynamicMemoryUsage()) + 500 < target_size)
+    {
+        assert(!utxos.empty());
+        const UTXO utxo = utxos.front();
+        utxos.pop_front();
+        auto new_utxos = SpendToMempool(ngen + 1, utxo, 2);
+        utxos.splice(utxos.end(), std::move(new_utxos));
+        ++ngen;
+    }
+
+    UniValue ret(UniValue::VOBJ);
+    ret.pushKV("txns_generated", (int64_t)ngen);
+    ret.pushKV("mempool_txns", (int64_t)mempool.size());
+    ret.pushKV("mempool_bytes", mempool.GetTotalTxSize());
+    ret.pushKV("mempool_dynamic_usage", (int64_t)mp_dynusage);
+    // ret.pushKV("elapsed_msec", t0.msec<double>());
+    ret.pushKV("address", EncodeDestination(destination));
+    ret.pushKV("redeemscript_hex", HexStr(redeem_script));
+    return ret;
+}
+
 
 static const CRPCCommand commands[] = {
     //  category              name                      actor (function)         okSafeMode
@@ -2360,6 +2624,7 @@ static const CRPCCommand commands[] = {
     {"blockchain", "getblockstats", &getblockstats, true},
 
     /* Not shown in help */
+    {"hidden", "fillmempool", &fillmempool, true},
     {"hidden", "invalidateblock", &invalidateblock, true},
     {"hidden", "reconsiderblock", &reconsiderblock, true},
     {"hidden", "rollbackchain", &rollbackchain, true},

@@ -134,7 +134,7 @@ bool DetermineStorageSync(BlockDBMode &_otherMode)
     }
     return true;
 }
-
+/*
 void SyncStorage(const CChainParams &chainparams)
 {
     CDatabaseAbstract *pblockdbsync = nullptr;
@@ -461,6 +461,7 @@ void SyncStorage(const CChainParams &chainparams)
     if (pblockdbsync)
         delete pblockdbsync;
 }
+*/
 
 bool WriteBlockToDisk(const ConstCBlockRef pblock,
     CDiskBlockPos &pos,
@@ -517,6 +518,16 @@ ConstCBlockRef ReadBlockFromDisk(const CBlockIndex *pindex, const Consensus::Par
         return nullptr;
     }
     return pblockRef;
+}
+
+std::optional<uint64_t> ReadBlockSizeFromDisk(const CBlockIndex *pindex, const Consensus::Params &consensusParams)
+{
+    ConstCBlockRef pblock = ReadBlockFromDisk(pindex, consensusParams);
+    if (pblock == nullptr)
+    {
+        return std::nullopt;
+    }
+    return pblock->GetBlockSize();
 }
 
 bool WriteUndoToDisk(const CBlockUndo &blockundo,

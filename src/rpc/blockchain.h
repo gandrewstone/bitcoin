@@ -14,6 +14,10 @@
 class CBlock;
 class CBlockIndex;
 class UniValue;
+namespace abla
+{
+class State;
+}
 
 static constexpr int NUM_GETBLOCKSTATS_PERCENTILES = 5;
 
@@ -48,5 +52,8 @@ std::set<CBlockIndex *, CompareBlocksByHeight> GetChainTips();
 
 UniValue mempoolToJSON(bool fVerbose = false);
 UniValue blockToJSON(const CBlock &block, const CBlockIndex *blockindex, bool txDetails = false, bool listTxns = true);
+
+/** ABLA state to JSON */
+UniValue ablaStateToJSON(const abla::State &ablaState);
 
 #endif

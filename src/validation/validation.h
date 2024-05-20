@@ -1,4 +1,3 @@
-
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2015 The Bitcoin Core developers
 // Copyright (c) 2015-2020 The Bitcoin Unlimited developers
@@ -246,8 +245,14 @@ private:
     const Predicate predicate;
 };
 
-/// Global object to track the exact height when Upgrade9 activated (needed by Token consensus rules).
-extern ActivationBlockTracker g_upgrade9_block_tracker;
-
+/**
+ * Checks that the block's size doesn't exceed nMaxBlockSize.
+ * @param pBlockSize optional out param to report the calculated size. This is only set on true return.
+ * @return true if the check passes, false otherwise
+ */
+bool CheckBlockSize(ConstCBlockRef pblock,
+    CValidationState &state,
+    uint64_t nMaxBlockSize,
+    uint64_t *pBlockSize = nullptr);
 
 #endif

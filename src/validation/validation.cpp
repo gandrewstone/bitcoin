@@ -35,6 +35,8 @@
 #include <mutex>
 #include <unordered_set>
 
+#define MIN_TRANSACTION_SIZE (::GetSerializeSize(CTransaction(), SER_NETWORK, PROTOCOL_VERSION))
+
 extern CTweak<int> maxReorgDepth;
 void ProcessOrphans(std::vector<uint256> &vWorkQueue);
 static bool FinalizeBlockInternal(CValidationState &state, const CBlockIndex *pindex);
@@ -314,6 +316,54 @@ bool AcceptBlockHeader(const CBlockHeader &block,
 // Blockindex
 //
 
+
+/// Maintain invariants, update ABLA state (if possible).
+/// Called from: LoadGenesisBlock, AcceptBlock, and ConnectBlock.
+/// @pre `pindex` must be the index for `block` and must already be added to `mapBlockIndex`. `pindex` need not
+///      be on any active chain (it may even be ahead of ::ChainActive().Tip()).
+/// @param blockSize - Pass non-zero if the blockSize is known, otherwise it will be calculated on-the-fly.
+static void MaintainAblaState(const Consensus::Params &consensusParams,
+    ConstCBlockRef block,
+    CBlockIndex *pindex,
+    const char *debugPrefix = nullptr,
+    uint64_t blockSize = 0) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
+{
+    if (IsMay2024Active(consensusParams, pindex))
+    {
+        std::optional<abla::State> ablaStateOpt;
+        if (!IsMay2024Active(consensusParams, pindex->pprev))
+        {
+            // activation block, give default state
+            blockSize = blockSize ? blockSize : ::GetSerializeSize(block, PROTOCOL_VERSION);
+            ablaStateOpt.emplace(consensusParams.ablaConfig, blockSize);
+        }
+        else if ((ablaStateOpt = pindex->pprev->GetAblaStateOpt()))
+        {
+            // non-activation block, advance state from previous, based on this block's size
+            blockSize = blockSize ? blockSize : ::GetSerializeSize(block, PROTOCOL_VERSION);
+            ablaStateOpt = ablaStateOpt->NextBlockState(consensusParams.ablaConfig, blockSize);
+        }
+        debugPrefix = debugPrefix ? debugPrefix : __func__;
+        LOG(BLK, "[ABLA] %s: ABLA state for block %d: ", debugPrefix, pindex->nHeight);
+        if (ablaStateOpt)
+        {
+            const char *newstr = " (existing)";
+            if (pindex->GetAblaStateOpt() != ablaStateOpt)
+            {
+                pindex->SetAblaStateOpt(ablaStateOpt);
+                newstr = " ** NEW **";
+                setDirtyBlockIndex.insert(pindex);
+            }
+            LOG(BLK, "[ABLA] %s, nextBlockSizeLimit: %i%s\n", ablaStateOpt->ToString(),
+                ablaStateOpt->GetNextBlockSizeLimit(consensusParams.ablaConfig), newstr);
+        }
+        else
+        {
+            LOG(BLK, "[ABLA] ??? NOT YET DEFINED ???\n");
+        }
+    }
+}
+
 /** Delete all entries in setBlockIndexCandidates that are worse than the current tip. */
 void PruneBlockIndexCandidates()
 {
@@ -415,6 +465,116 @@ CBlockIndex *InsertBlockIndex(const uint256 &hash)
     return pindexNew;
 }
 
+// Verifies that the ABLA state for the active chain `chain` is valid, and if not, attempts to rebuild it.
+// An ABLA state can become invalid as a corner-case if the user switched to an older BCHN version for the same
+// data dir, then switched back. Note that in the case of pruning nodes, it may not always be possible to rebuild the
+// state if ABLA activated long ago and the lost state info included some pruned blocks.  In that case the user
+// will get an error message at startup telling them to -reindex.
+static bool VerifyAblaStateForChain(CChain &chain) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
+{
+    const auto &params = Params();
+    const auto &consensus = params.GetConsensus();
+    CBlockIndex *ptip = chain.Tip();
+    // If on the tip the upgrade is not activated no need to search for the activation block
+    if (!IsMay2024Active(consensus, ptip))
+    {
+        return true;
+    }
+    // this is not efficient at all, we should replace it with a constant height when one is available
+    // walk back until we find the activation block, IsMay2024Active is true only when we are past the activation
+    // block, ie the first block for which the predicate MTP >= Activation Time is true for its prev.
+    // Thus the following loop would bring us back to the activation block (last block before new rules will
+    // start to be enforced)
+    CBlockIndex *pbase = ptip;
+    while (IsMay2024Active(consensus, pbase))
+    {
+        // we got back to the genisis block,and this could happen only
+        // in regtest or some particular testing scenario where we set
+        // as activation time 0.
+        if (!pbase->pprev)
+            break;
+        pbase = pbase->pprev;
+    }
+    LOG(ACTIVATION, "%s: May 2024 upgrade active (MTP >= activation time) at height: %d", __func__, pbase->nHeight);
+    LOG(ACTIVATION, "%s: May 2024 upgrade first fork block  height: %d", __func__, pbase->nHeight + 1);
+    assert(pbase != nullptr);
+    LOGA("%s: Verifying %i block headers have correct ABLA state ...\n", __func__, ptip->nHeight - pbase->nHeight + 1);
+    const abla::Config &ablaConfig = consensus.ablaConfig;
+    std::optional<abla::State> prevState;
+    bool rebuilding = false;
+    for (int ht = pbase->nHeight; ht <= ptip->nHeight; ++ht)
+    {
+        CBlockIndex *pcur = chain[ht];
+        assert(pcur);
+        const char *err{};
+        if (!rebuilding)
+        {
+            std::optional<uint64_t> optSize;
+            const auto curAblaStateOpt = pcur->GetAblaStateOpt();
+            // FIXME: even thou we save abla state on CBlockIndex we always fail to retrieve it on
+            // startup. We need to look at it and fix after this reelase
+            if (!curAblaStateOpt || !curAblaStateOpt->IsValid(ablaConfig, &err))
+            {
+                err = err && *err ? err : "missing";
+                rebuilding = true;
+            }
+            else if ((optSize = ReadBlockSizeFromDisk(pcur, consensus)).value_or(curAblaStateOpt->GetBlockSize()) !=
+                     curAblaStateOpt->GetBlockSize())
+            {
+                err = "bad block size";
+                rebuilding = true;
+            }
+            else if (optSize && prevState && prevState->NextBlockState(ablaConfig, *optSize) != *curAblaStateOpt)
+            {
+                err = "bad state";
+                rebuilding = true;
+            }
+            if (!rebuilding)
+            {
+                prevState = curAblaStateOpt;
+            }
+            else
+            {
+                LOGA("%s: Bad ABLA data starting at height=%d (%s), will rebuild ABLA state for %d blocks ...\n",
+                    __func__, ht, err, ptip->nHeight - pcur->nHeight + 1);
+            }
+        }
+        if (rebuilding)
+        {
+            const auto optBlockSize = ReadBlockSizeFromDisk(pcur, consensus);
+            if (!optBlockSize)
+            {
+                return error("%s: Unable to restore ABLA state, unable to read block file for block %d\n", __func__,
+                    pcur->nHeight);
+            }
+            abla::State state;
+            if (pcur == pbase)
+            {
+                // Activation block, give it base state
+                state = abla::State(ablaConfig, *optBlockSize);
+            }
+            else
+            {
+                // Else, this block's state is based on its size + the previous block's state
+                assert(pcur->pprev);
+                prevState = pcur->pprev->GetAblaStateOpt();
+                assert(prevState);
+                state = prevState->NextBlockState(ablaConfig, *optBlockSize);
+            }
+            assert(state.IsValid(ablaConfig));
+            pcur->SetAblaStateOpt(state);
+            setDirtyBlockIndex.insert(pcur); // mark for re-save to disk
+        }
+    }
+    if (!setDirtyBlockIndex.empty())
+    {
+        // Save changes to block indices to the DB
+        FlushStateToDisk();
+    }
+    LOGA("%s: Verified ABLA state for chain \n", __func__);
+    return true;
+}
+
 bool LoadBlockIndexDB()
 {
     // Open and read all ldb index files so that they are in the Operating System file cache before we iterate
@@ -462,6 +622,7 @@ bool LoadBlockIndexDB()
     /** This sync method will break on pruned nodes so we cant use if pruned*/
     // Check whether we have ever pruned block & undo files
     pblocktree->ReadFlag("prunedblockfiles", fHavePruned);
+    /*
     if (!fHavePruned)
     {
         // by default we want to sync from disk instead of network if possible
@@ -469,7 +630,7 @@ bool LoadBlockIndexDB()
         // may increase startup time significantly but is faster than network sync
         SyncStorage(chainparams);
     }
-
+    */
     delete pblocktreeother;
     pblocktreeother = nullptr;
     // lock cs_mapBlockIndex after running SyncStorage to avoid an issue with
@@ -621,6 +782,12 @@ bool LoadBlockIndexDB()
     }
     chainActive.SetTip(it->second);
 
+    // Verify that the ABLA state is valid for this chain
+    if (!VerifyAblaStateForChain(chainActive))
+    {
+        return false;
+    }
+
     PruneBlockIndexCandidates();
 
     LOGA("%s: hashBestChain=%s height=%d date=%s progress=%f\n", __func__, chainActive.Tip()->GetBlockHash().ToString(),
@@ -659,7 +826,6 @@ void UnloadBlockIndex()
         pindexBestHeader = nullptr;
         pindexFinalized = nullptr;
         ResetASERTAnchorBlockCache();
-        g_upgrade9_block_tracker.ResetActivationBlockCache();
         mapBlocksUnlinked.clear();
         vinfoBlockFile.clear();
         mapBlockSource.clear();
@@ -727,6 +893,7 @@ bool InitBlockIndex(const CChainParams &chainparams)
         {
             return error("LoadBlockIndex(): genesis block not accepted");
         }
+        MaintainAblaState(chainparams.GetConsensus(), pblock, pindex, __func__);
         if (!ActivateBestChain(state, chainparams, pblock, false))
         {
             return error("LoadBlockIndex(): genesis block cannot be activated");
@@ -921,7 +1088,7 @@ void CheckBlockIndex(const Consensus::Params &consensusParams)
         if (!(pindex->nStatus & BLOCK_HAVE_DATA))
             assert(!foundInUnlinked);
         // BU: blocks that are excessive are placed in the unlinked map
-        if ((pindexFirstMissing == nullptr) && (!chainContainsExcessive(pindex)))
+        if (pindexFirstMissing == nullptr)
         {
             assert(!foundInUnlinked); // We aren't missing data for any parent -- cannot be in mapBlocksUnlinked.
         }
@@ -1391,10 +1558,6 @@ CBlockIndex *FindMostWorkChain()
         uint64_t depth = 0;
         bool fFailedChain = false;
         bool fMissingData = false;
-        bool fRecentExcessive = false; // Has there been a excessive block within our accept depth?
-        // Was there an excessive block prior to our accept depth (if so we ignore the accept depth -- this chain has
-        // already been accepted as valid)
-        bool fOldExcessive = false;
         // follow the chain all the way back to where it joins the current active chain.
         while (pindexTest && !chainActive.Contains(pindexTest))
         {
@@ -1406,57 +1569,20 @@ CBlockIndex *FindMostWorkChain()
             // to a chain unless we have all the non-active-chain parent blocks.
             fFailedChain = pindexTest->nStatus & BLOCK_FAILED_MASK;
             fMissingData = !(pindexTest->nStatus & BLOCK_HAVE_DATA);
-            if (depth < excessiveAcceptDepth)
-            {
-                // Unlimited: deny this candidate chain if there's a recent excessive block
-                fRecentExcessive |= ((pindexTest->nStatus & BLOCK_EXCESSIVE) != 0);
-            }
-            else
-            {
-                // Unlimited: unless there is an even older excessive block
-                fOldExcessive |= ((pindexTest->nStatus & BLOCK_EXCESSIVE) != 0);
-            }
-
-            if (fFailedChain | fMissingData | fRecentExcessive)
+            if (fFailedChain | fMissingData)
                 break;
             pindexTest = pindexTest->pprev;
             depth++;
         }
-
-        // If there was a recent excessive block, check a certain distance beyond the acceptdepth to see if this chain
-        // has already seen an excessive block... if it has then allow the chain.
-        // This stops the client from always tracking excessiveDepth blocks behind the chain tip in a situation where
-        // lots of excessive blocks are being created.
-        // But after a while with no excessive blocks, we reset and our reluctance to accept an excessive block resumes
-        // on this chain.
-        // An alternate algorithm would be to move the excessive block size up to match the size of the accepted block,
-        // but this changes a user-defined field and is awkward to code because
-        // block sizes are not saved.
-        if ((fRecentExcessive && !fOldExcessive) && (depth < excessiveAcceptDepth + EXCESSIVE_BLOCK_CHAIN_RESET))
-        {
-            CBlockIndex *chain = pindexTest;
-            // skip accept depth blocks, we are looking for an older excessive
-            while (chain && (depth < excessiveAcceptDepth))
-            {
-                chain = chain->pprev;
-                depth++;
-            }
-
-            while (chain && (depth < excessiveAcceptDepth + EXCESSIVE_BLOCK_CHAIN_RESET))
-            {
-                fOldExcessive |= ((chain->nStatus & BLOCK_EXCESSIVE) != 0);
-                chain = chain->pprev;
-                depth++;
-            }
-        }
-
         // Conditions where we want to reject the chain
-        if (fFailedChain || fMissingData || (fRecentExcessive && !fOldExcessive))
+        if (fFailedChain || fMissingData)
         {
             // Candidate chain is not usable (either invalid or missing data)
             CBlockIndex *pBestInvalid = pindexBestInvalid.load();
             if (fFailedChain && (pBestInvalid == nullptr || pindexNew->nChainWork > pBestInvalid->nChainWork))
+            {
                 pindexBestInvalid = pindexNew;
+            }
             CBlockIndex *pindexFailed = pindexNew;
             // Remove the entire chain from the set.
             while (pindexTest != pindexFailed)
@@ -1465,7 +1591,7 @@ CBlockIndex *FindMostWorkChain()
                 {
                     pindexFailed->nStatus |= BLOCK_FAILED_CHILD;
                 }
-                else if (fMissingData || (fRecentExcessive && !fOldExcessive))
+                else if (fMissingData)
                 {
                     // If we're missing data, then add back to mapBlocksUnlinked,
                     // so that if the block arrives in the future we can try adding
@@ -1478,9 +1604,10 @@ CBlockIndex *FindMostWorkChain()
             setBlockIndexCandidates.erase(pindexTest);
             fInvalidAncestor = true;
         }
-
         if (!fInvalidAncestor)
+        {
             return pindexNew;
+        }
     } while (true);
     DbgAssert(0, return nullptr); // should never get here
 }
@@ -1682,7 +1809,26 @@ bool ContextualCheckBlock(ConstCBlockRef pblock, CValidationState &state, CBlock
     indexDummy.nHeight = pindexPrev == nullptr ? 1 : pindexPrev->nHeight + 1;
 
     // Check whether this block exceeds what we want to relay.
-    pblock->fExcessive = CheckExcessive(pblock, pblock->GetBlockSize(), nTx, nLargestTx);
+    pblock->fExcessive = false;
+    return true;
+}
+
+bool CheckBlockSize(ConstCBlockRef pblock, CValidationState &state, uint64_t nMaxBlockSize, uint64_t *pBlockSize)
+{
+    // Bail early if there is no way this block is of reasonable size.
+    if ((pblock->vtx.size() * MIN_TRANSACTION_SIZE) > nMaxBlockSize)
+    {
+        return state.DoS(100, false, REJECT_INVALID, "bad-blk-length", false, "size limits failed");
+    }
+    const auto currentBlockSize = ::GetSerializeSize(pblock, PROTOCOL_VERSION);
+    if (currentBlockSize > nMaxBlockSize)
+    {
+        return state.DoS(100, false, REJECT_INVALID, "bad-blk-length", false, "size limits failed");
+    }
+    if (pBlockSize)
+    {
+        *pBlockSize = currentBlockSize;
+    }
     return true;
 }
 
@@ -1727,6 +1873,12 @@ bool CheckBlock(ConstCBlockRef pblock, CValidationState &state, bool fCheckPOW, 
     if (pblock->vtx.empty())
     {
         return state.DoS(100, error("CheckBlock(): size limits failed"), REJECT_INVALID, "bad-blk-length");
+    }
+
+    // Size limits (context-less, so we check against the consensus 2GB limit).
+    if (!CheckBlockSize(pblock, state, MAX_CONSENSUS_BLOCK_SIZE))
+    {
+        return false; // state set by CheckBlockSize()
     }
 
     // First transaction must be coinbase, the rest must not be
@@ -1917,6 +2069,7 @@ bool AcceptBlock(ConstCBlockRef pblock,
         {
             return error("AcceptBlock(): ReceivedBlockTransactions failed");
         }
+        MaintainAblaState(chainparams.GetConsensus(), pblock, pindex, __func__);
     }
     catch (const std::runtime_error &e)
     {
@@ -2510,6 +2663,9 @@ bool ConnectBlockCanonicalOrdering(ConstCBlockRef pblock,
     int64_t nTime2 = GetStopwatchMicros();
     LOG(BLK, "Canonical ordering for %s MTP: %d\n", pblock->GetHash().ToString(), pindex->GetMedianTimePast());
 
+    // Size check (both pre and post upgrade 10 are handled here, after CheckBlock above)
+    const uint64_t nMaxBlockSize = GetNextBlockSizeLimit(pindex->pprev);
+
     // Start enforcing BIP68 (sequence locks) and BIP112 (CHECKSEQUENCEVERIFY)
     int nLockTimeFlags = 0;
     if (pindex->nHeight >= chainparams.GetConsensus().BIP68Height)
@@ -2604,9 +2760,7 @@ bool ConnectBlockCanonicalOrdering(ConstCBlockRef pblock,
         if (flags & SCRIPT_ENABLE_TOKENS)
         {
             LOCK(cs_main);
-            firstTokenBlockHeight =
-                g_upgrade9_block_tracker.GetActivationBlock(pindex->pprev, chainparams.GetConsensus())->nHeight +
-                1LL; // First block to actually use token rules is 1 + GetActivationBlock()->nHeight
+            firstTokenBlockHeight = 1 + Params().GetConsensus().may2023Height;
         }
         else
         {
@@ -2763,9 +2917,10 @@ bool ConnectBlockCanonicalOrdering(ConstCBlockRef pblock,
 
             LOG(BENCH, "Number of SigChecks performed: %d\n", blockSigChecks);
 
-            // May 2020 block consensus rule
-            uint64_t maxSigChecksAllowed = maxSigChecks.Value();
-            if (blockSigChecks > maxSigChecksAllowed)
+            // May 2024 activation is already takne care of bevause nMaxBlockSize
+            // is computed by GetNextBlockSizeLimit() which before May 2024 activation
+            // return 32MB, after a value determined by the ABLA algo
+            if (blockSigChecks > GetMaxBlockSigChecksCount(nMaxBlockSize))
             {
                 return state.DoS(
                     100, false, REJECT_INVALID, "bad-blk-sigchecks", false, "block sigcheck limit exceeded");
@@ -2805,6 +2960,16 @@ bool ConnectBlock(ConstCBlockRef pblock,
     // same.
     assert(pindex->nNonce == pblock->nNonce);
 
+    // Size check (both pre and post upgrade 10 are handled here, after CheckBlock above)
+    const uint64_t nMaxBlockSize = GetNextBlockSizeLimit(pindex->pprev);
+    uint64_t nThisBlockSize = 0;
+    if (!CheckBlockSize(pblock, state, nMaxBlockSize, &nThisBlockSize))
+    {
+        return error("%s: CheckBlockSize: %s", __func__, FormatStateMessage(state));
+    }
+    assert(nThisBlockSize != 0);
+
+
     // Special case for the genesis block, skipping connection of its transactions
     // (its coinbase is unspendable)
     if (pblock->GetHash() == chainparams.GetConsensus().hashGenesisBlock)
@@ -2812,6 +2977,7 @@ bool ConnectBlock(ConstCBlockRef pblock,
         if (!fJustCheck)
         {
             view.SetBestBlock(pindex->GetBlockHash());
+            MaintainAblaState(chainparams.GetConsensus(), pblock, pindex, __func__, nThisBlockSize);
         }
         return true;
     }
@@ -2917,10 +3083,17 @@ bool ConnectBlock(ConstCBlockRef pblock,
                 CDiskBlockPos _pos;
                 if (!FindUndoPos(
                         state, pindex->nFile, _pos, ::GetSerializeSize(blockundo, SER_DISK, CLIENT_VERSION) + 40))
+                {
                     return error("ConnectBlock(): FindUndoPos failed");
+                }
+
+                // Upgrade10: Update ABLA state upon connection
+                MaintainAblaState(chainparams.GetConsensus(), pblock, pindex, __func__, nThisBlockSize);
 
                 if (!WriteUndoToDisk(blockundo, _pos, pindex->pprev, chainparams.MessageStart()))
+                {
                     return AbortNode(state, "Failed to write undo data");
+                }
 
                 // update nUndoPos in block index
                 //
@@ -4147,70 +4320,4 @@ bool IsBlockPruned(const CBlockIndex *pblockindex)
 {
     READLOCK(cs_mapBlockIndex); // for nStatus
     return (fHavePruned && !(pblockindex->nStatus & BLOCK_HAVE_DATA) && pblockindex->nTx > 0);
-}
-
-ActivationBlockTracker g_upgrade9_block_tracker(&IsMay2023Activated);
-
-const CBlockIndex *ActivationBlockTracker::GetActivationBlock(const CBlockIndex *pindex,
-    const Consensus::Params &params) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
-{
-    assert(pindex);
-    AssertLockHeld(cs_main);
-
-    // - We check if we have a cached result, and if we do and it is really the
-    //   ancestor of pindex, then we return it.
-    //
-    // - If we do not or if the cached result is not the ancestor of pindex,
-    //   then we proceed with the more expensive walk back to find the activation block.
-    //
-    if (cachedActivationBlock)
-    {
-        // First, check ChainActive since ChainActive maintains a fast-to-access array of
-        // block indexes for the current chain.
-        if (chainActive.Contains(cachedActivationBlock) &&
-            (chainActive.Contains(pindex) || (pindex->pprev && chainActive.Contains(pindex->pprev))) &&
-            pindex->nHeight >= cachedActivationBlock->nHeight)
-        {
-            return cachedActivationBlock;
-        }
-
-        // CBlockIndex::GetAncestor() is reasonably efficient; it uses CBlockIndex::pskip
-        // Note that if pindex == cachedActivationBlock, GetAncestor() here will return
-        // cachedActivationBlock, which is what we want.
-        if (pindex->GetAncestor(cachedActivationBlock->nHeight) == cachedActivationBlock)
-        {
-            return cachedActivationBlock;
-        }
-    }
-
-    // Slow path: walk back until we find the first ancestor for which predicate() == true.
-    const CBlockIndex *pwalk = pindex;
-
-    while (pwalk->pprev)
-    {
-        // first, skip backwards testing predicate
-        // The below code leverages CBlockIndex::pskip to walk back efficiently.
-        if (predicate(params, pwalk->pskip))
-        {
-            // skip backward
-            pwalk = pwalk->pskip;
-            continue; // continue skipping
-        }
-        // cannot skip here, walk back by 1
-        if (!predicate(params, pwalk->pprev))
-        {
-            // found it -- highest block where the upgrade is not enabled is pwalk->pprev, and
-            // pwalk points to the first block for which predicate() == true
-            break;
-        }
-        pwalk = pwalk->pprev;
-    }
-
-    // Overwrite the cache with the block index we found. More likely than not, the next
-    // time we are called it will be part of same / similar chain, not some other unrelated
-    // chain with a totally different activation block.
-    cachedActivationBlock = pwalk;
-
-    assert(pwalk);
-    return pwalk;
 }

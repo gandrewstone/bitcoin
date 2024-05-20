@@ -13,6 +13,7 @@ EXTRA_DIST += \
 	test/bitcoin-util-test.py \
 	test/data/bitcoin-util-test.json \
 	test/data/blanktx.hex \
+    test/data/abla_test_vectors.json.h \
 	test/data/chip_test_vectors.json.h \
 	test/data/tt-delin1-out.hex \
 	test/data/tt-delout1-out.hex \
@@ -61,8 +62,9 @@ BITCOIN_TESTS =\
   respend/test/respenddetector_tests.cpp \
   test/uahf_test.cpp \
   test/fork_tests.cpp \
-  test/excessiveblock_test.cpp \
   test/stat_tests.cpp \
+  test/abla_basic_tests.cpp \
+  test/abla_test_vectors.cpp \
   test/activation_tests.cpp \
   test/arith_uint256_tests.cpp \
   test/addrman_tests.cpp \

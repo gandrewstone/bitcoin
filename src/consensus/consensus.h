@@ -7,6 +7,8 @@
 #ifndef BITCOIN_CONSENSUS_CONSENSUS_H
 #define BITCOIN_CONSENSUS_CONSENSUS_H
 
+#include <limits>
+
 #include "uint256.h"
 
 /** The maximum allowed size for a serialized block, in bytes (network rule) */
@@ -42,22 +44,29 @@ static const int COINBASE_MATURITY = 100;
  * (github.com/bitcoincashorg/bitcoincash.org/blob/master/spec/may-2018-hardfork.md#summary)
  */
 // defaults for each chain are set in chainparams but defined here
-static const unsigned int DEFAULT_EXCESSIVE_BLOCK_SIZE = 32 * ONE_MEGABYTE;
-static const unsigned int DEFAULT_EXCESSIVE_BLOCK_SIZE_TESTNET4 = 2 * ONE_MEGABYTE;
-static const unsigned int DEFAULT_EXCESSIVE_BLOCK_SIZE_SCALENET = 256 * ONE_MEGABYTE;
+static const unsigned int DEFAULT_CONSENSUS_BLOCK_SIZE = 32 * ONE_MEGABYTE;
+static const unsigned int DEFAULT_CONSENSUS_BLOCK_SIZE_TESTNET4 = 2 * ONE_MEGABYTE;
+static const unsigned int DEFAULT_CONSENSUS_BLOCK_SIZE_SCALENET = 256 * ONE_MEGABYTE;
 
 static const unsigned int MIN_EXCESSIVE_BLOCK_SIZE = 32000000;
 static const unsigned int MIN_EXCESSIVE_BLOCK_SIZE_REGTEST = 1000;
+
+/**
+ *  Maximum consensus blocks size: 2GB. This is a temporary limit
+ *  to prevent consensus failure between 32-bit and 64-bit platforms,
+ *  until we drop 32-bit platform support altogether, at which point
+ *  this constant should be raised well beyond 32-bit addressing limits.
+ */
+inline constexpr uint64_t MAX_CONSENSUS_BLOCK_SIZE = uint64_t(2000) * ONE_MEGABYTE;
+static_assert(MAX_CONSENSUS_BLOCK_SIZE <= std::numeric_limits<unsigned int>::max(),
+    "MAX_CONSENSUS_BLOCK_SIZE must fit within an unsigned int due to current block file data format");
+
 
 /**
  * The ratio between the maximum allowable block size and the maximum allowable
  * SigChecks (executed signature check operations) in the block. (network rule).
  */
 static const int BLOCK_MAXBYTES_MAXSIGCHECKS_RATIO = 141;
-
-static const unsigned int MAY2020_MAX_BLOCK_SIGCHECK_COUNT =
-    DEFAULT_EXCESSIVE_BLOCK_SIZE / BLOCK_MAXBYTES_MAXSIGCHECKS_RATIO;
-static_assert(MAY2020_MAX_BLOCK_SIGCHECK_COUNT == 226950, "Max block sigcheck value differs from specification");
 
 /** Allowed messages lengths will be this * the excessive block size */
 static const unsigned int DEFAULT_MAX_MESSAGE_SIZE_MULTIPLIER = 2;

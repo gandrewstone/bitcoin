@@ -451,6 +451,7 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
                 pindexNew->nNonce = diskindex.nNonce;
                 pindexNew->nStatus = diskindex.nStatus;
                 pindexNew->nTx = diskindex.nTx;
+                pindexNew->SetAblaStateOpt(diskindex.GetAblaStateOpt());
 
                 if (!CheckProofOfWork(pindexNew->GetBlockHash(), pindexNew->nBits, Params().GetConsensus()))
                     return error("LoadBlockIndex(): CheckProofOfWork failed: %s", pindexNew->ToString());
@@ -469,7 +470,7 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
     }
     return true;
 }
-
+/*
 bool CBlockTreeDB::GetSortedHashIndex(std::vector<std::pair<int, CDiskBlockIndex> > &hashesByHeight)
 {
     std::unique_ptr<CDBIterator> pcursor(NewIterator());
@@ -504,7 +505,7 @@ bool CBlockTreeDB::GetSortedHashIndex(std::vector<std::pair<int, CDiskBlockIndex
     std::sort(hashesByHeight.begin(), hashesByHeight.end());
     return true;
 }
-
+*/
 namespace
 {
 //! Legacy class to deserialize pre-pertxout database entries without reindex.

@@ -148,6 +148,7 @@ BITCOIN_CORE_H = \
   compressor.h \
   config.h \
   connmgr.h \
+  consensus/abla.h \
   consensus/coinaccessorimpl.h \
   consensus/consensus.h \
   consensus/tx_verify.h \
@@ -292,6 +293,7 @@ libbitcoin_server_a_SOURCES = \
   chain.cpp \
   checkpoints.cpp \
   connmgr.cpp \
+  consensus/abla.cpp \
   consensus/tx_verify.cpp \
   DoubleSpendProof.cpp \
   DoubleSpendProofStorage.cpp \
@@ -532,6 +534,7 @@ libbitcoin_common_a_SOURCES = \
   cashaddrenc.cpp \
   chainparams.cpp \
   coins.cpp \
+  consensus/abla.cpp \
   compressor.cpp \
   config.cpp \
   core_read.cpp \
@@ -546,6 +549,7 @@ libbitcoin_common_a_SOURCES = \
   script/standard.cpp \
   versionbits.cpp \
   chain.cpp \
+  validation/forks.cpp \
   $(BITCOIN_CORE_H)
 
 

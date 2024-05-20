@@ -65,6 +65,11 @@ public:
     friend bool operator==(const CFeeRate &a, const CFeeRate &b) { return a.nSatoshisPerK == b.nSatoshisPerK; }
     friend bool operator<=(const CFeeRate &a, const CFeeRate &b) { return a.nSatoshisPerK <= b.nSatoshisPerK; }
     friend bool operator>=(const CFeeRate &a, const CFeeRate &b) { return a.nSatoshisPerK >= b.nSatoshisPerK; }
+    bool operator!=(const CFeeRate &a)
+    {
+        // to compare a const and non const fee rate
+        return a.nSatoshisPerK != nSatoshisPerK;
+    }
     CFeeRate &operator+=(const CFeeRate &a)
     {
         nSatoshisPerK += a.nSatoshisPerK;

@@ -605,7 +605,7 @@ static void addDebuggingOptions(AllowedArgs &allowedArgs, HelpMessageMode mode)
             strprintf(_("Maximum time since the last block was mined in seconds before we consider ourselves still in "
                         "IBD <n> (default: %u)"),
                 DEFAULT_MAX_TIP_AGE))
-        .addDebugArg("upgrade9activationtime", optionalInt, "Override May 2023 hard fork activation time");
+        .addDebugArg("upgrade9activationheight", optionalInt, "Override May 2023 hard fork activation height");
 }
 
 static void addNodeRelayOptions(AllowedArgs &allowedArgs)
@@ -625,12 +625,9 @@ static void addNodeRelayOptions(AllowedArgs &allowedArgs)
             strprintf(_("Dust Threshold (in satoshis) defines the minimum quantity an output may contain for the "
                         "transaction to be considered standard, and therefore relayable. (default: %s)"),
                 DEFAULT_DUST_THRESHOLD))
-        .addArg("excessiveacceptdepth=<n>", requiredInt,
-            strprintf(_("Excessive blocks are accepted if this many blocks are mined on top of them (default: %u)"),
-                DEFAULT_EXCESSIVE_ACCEPT_DEPTH))
         .addArg("excessiveblocksize=<n>", requiredInt,
             strprintf(_("Blocks above this size in bytes are considered excessive.  (default: %u)"),
-                DEFAULT_EXCESSIVE_BLOCK_SIZE))
+                DEFAULT_CONSENSUS_BLOCK_SIZE))
         .addArg("expeditedblock=<host>", requiredStr,
             _("Request expedited blocks from this host whenever we are connected to it"))
         .addArg("maxexpeditedblockrecipients=<n>", requiredInt,
@@ -676,8 +673,6 @@ static void addNodeRelayOptions(AllowedArgs &allowedArgs)
 static void addBlockCreationOptions(AllowedArgs &allowedArgs)
 {
     allowedArgs.addHeader(_("Block creation options:"))
-        .addArg("blockmaxsize=<n>", requiredInt,
-            strprintf("Set maximum block size in bytes (default: %d)", DEFAULT_BLOCK_MAX_SIZE))
         .addArg("blockprioritysize=<n>", requiredInt,
             strprintf(_("Set maximum size of high-priority/low-fee transactions in bytes (default: %d)"),
                 DEFAULT_BLOCK_PRIORITY_SIZE))

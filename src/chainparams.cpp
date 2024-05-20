@@ -18,7 +18,9 @@
 
 #include "chainparamsseeds.h"
 
-uint64_t nMiningForkTime = MAY2022_ACTIVATION_TIME;
+
+uint64_t nMiningForkTime = MAY2024_ACTIVATION_TIME;
+unsigned int nPercentBlockMaxSize = 50;
 
 CBlock CreateGenesisBlock(CScript prefix,
     const std::string &comment,
@@ -146,10 +148,16 @@ public:
         consensus.nov2020ActivationTime = NOV2020_ACTIVATION_TIME;
         // Nov 15, 2020 hard fork
         consensus.nov2020Height = 661647;
+
+        // May 15, 2021 12:00:00 UTC protocol upgrade was 1621080000, but since this upgrade was for relay rules only,
+        // we do not track this time (since it does not apply at all to the blockchain itself).
+
         // May 15, 2022 hard fork
         consensus.may2022Height = 740237;
-        // May 15, 2023 hard fork
-        consensus.may2023ActivationTime = MAY2023_ACTIVATION_TIME;
+        // May 15, 2023 12:00:00 UTC protocol upgrade (this is one less than the upgrade block itself)
+        consensus.may2023Height = 792772;
+        // May 15, 2024 12:00:00 UTC protocol upgrade
+        consensus.may2024ActivationTime = MAY2024_ACTIVATION_TIME;
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -166,9 +174,15 @@ public:
         pchCashMessageStart[3] = 0xe8;
         nDefaultPort = DEFAULT_MAINNET_PORT;
         nPruneAfterHeight = 100000;
-        nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
-        nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE;
-        nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE;
+        nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
+        consensus.nDefaultGeneratedBlockSizePercent = 50;
+
+        // ABLA config -- upgrade 10 adjustable block limit algorithm
+        consensus.ablaConfig = abla::Config::MakeDefault(nDefaultConsensusBlockSize, /* fixedSize = */ false);
+        // Ensure base ABLA state yields same limit as pre-activation.
+        assert(abla::State(consensus.ablaConfig, 0).GetBlockSizeLimit() == nDefaultConsensusBlockSize);
+        // Ensure ABLA is *not* "fixed size" for mainnet
+        assert(!consensus.ablaConfig.IsFixedSize());
 
         genesis = CreateGenesisBlock(1231006505, 2083236893, 0x1d00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
@@ -241,14 +255,19 @@ public:
         checkpoints[688095] = uint256S("0x000000000000000001e7abe99792ab89ed6758167997f115a0cb8001a551c91d");
         // May 15th 2002, (MTP time >= 1652616000) bigger script integers, native introspection op_codes
         checkpoints[740238] = uint256S("0x000000000000000002afc6fbd302f01f8cf4533f4b45207abc61d9f4297bf969");
+        // Upgrade 9; May 15, 2023 (MTP time >= 1684152000), first upgrade block: 792773
+        checkpoints[792773] = uint256S("0x000000000000000002fc0cdadaef1857bbd2936d37ea94f80ba3db4a5e8353e8");
 
         // clang-format on
-        // * UNIX timestamp of last checkpoint block
-        checkpointData.nTimeLastCheckpoint = 1652623301;
-        // * total number of transactions between genesis and last checkpoint
-        checkpointData.nTransactionsLastCheckpoint = 358286852;
-        // * estimated number of transactions per day after checkpoint (~3.5 TPS)
-        checkpointData.fTransactionsPerDay = 280000.0;
+        // Data as of block
+        // 000000000000000002fbeddc14bb8b87eb68a1dd4e5a569cb8938b65ea3cc5a3
+        // (height 768454).
+        // * UNIX timestamp of block 768454
+        checkpointData.nTimeLastCheckpoint = 1669511231;
+        // * total number of transactions between genesis and block 768454
+        checkpointData.nTransactionsLastCheckpoint = 364218597;
+        // * estimated number of transactions per day after checkpoint (~.34 TPS)
+        checkpointData.fTransactionsPerDay = 29376.0;
     }
 };
 
@@ -296,9 +315,10 @@ public:
         pchMessageStart[3] = 0xe9;
         nDefaultPort = DEFAULT_NOLNET_PORT;
         nPruneAfterHeight = 100000;
-        nDefaultExcessiveBlockSize = std::numeric_limits<uint64_t>::max();
-        nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE_REGTEST;
-        nDefaultMaxBlockMiningSize = std::numeric_limits<uint64_t>::max();
+        nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
+        consensus.nDefaultGeneratedBlockSizePercent = 50;
+        // FIXME decide what to do with NOL, we should retere it imho.
+        // nDefaultConsensusBlockSize = std::numeric_limits<uint64_t>::max();
 
         // Aug, 1 2017 hard fork
         consensus.uahfHeight = 0;
@@ -319,7 +339,16 @@ public:
         // May 15, 2022 hard fork
         consensus.may2022Height = 0;
         // May 15, 2023 hard fork
-        consensus.may2023ActivationTime = MAY2023_ACTIVATION_TIME;
+        consensus.may2023Height = 0;
+        // May 15, 2024 hard fork
+        consensus.may2024ActivationTime = MAY2024_ACTIVATION_TIME;
+
+        // ABLA config -- upgrade 10 adjustable block limit algorithm
+        consensus.ablaConfig = abla::Config::MakeDefault(nDefaultConsensusBlockSize, /* fixedSize = */ false);
+        // Ensure base ABLA state yields same limit as pre-activation.
+        assert(abla::State(consensus.ablaConfig, 0).GetBlockSizeLimit() == nDefaultConsensusBlockSize);
+        // Ensure ABLA is *not* "fixed size" for mainnet
+        assert(!consensus.ablaConfig.IsFixedSize());
 
 
         vFixedSeeds.clear();
@@ -403,7 +432,9 @@ public:
         // May 15 2022 hard fork
         consensus.may2022Height = 1500205;
         // May 15, 2023 hard fork
-        consensus.may2023ActivationTime = MAY2023_ACTIVATION_TIME;
+        consensus.may2023Height = 1552787;
+        // May 15, 2024 hard fork
+        consensus.may2024ActivationTime = MAY2024_ACTIVATION_TIME;
 
 
         pchMessageStart[0] = 0x0b;
@@ -416,9 +447,15 @@ public:
         pchCashMessageStart[3] = 0xf4;
         nDefaultPort = DEFAULT_TESTNET_PORT;
         nPruneAfterHeight = 1000;
-        nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
-        nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE;
-        nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE;
+        nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
+        consensus.nDefaultGeneratedBlockSizePercent = 50;
+
+        // ABLA config -- upgrade 10 adjustable block limit algorithm
+        consensus.ablaConfig = abla::Config::MakeDefault(nDefaultConsensusBlockSize, /* fixedSize = */ true);
+        // Ensure base abla state yields same limit as pre-activation.
+        assert(abla::State(consensus.ablaConfig, 0).GetBlockSizeLimit() == nDefaultConsensusBlockSize);
+        // Ensure ABLA *is* "fixed size" for testnet3
+        assert(consensus.ablaConfig.IsFixedSize());
 
         genesis = CreateGenesisBlock(1296688602, 414098458, 0x1d00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
@@ -483,14 +520,16 @@ public:
         checkpoints[1447365] = uint256S("0x0000000017c3df83326845a5fc349dc50f6b53c2b05a10319a55258dbec95cdc");
         // May 15th 2022 upgrade
         checkpoints[1500206] = uint256S("0x000000000000360769353e933530c40d3f00565a4e7731ff56027e23fa74a8ef");
+        // May 15th, 2023 upgrade
+        checkpoints[1552788] = uint256S("0x000000007bc92323648b95ea8401a2247e977b653b13adb9e40748ce06b30a5e");
 
         // clang-format on
         // Data as of block
-        checkpointData.nTimeLastCheckpoint = 1652619773;
-        // * total number of transactions between genesis and last checkpoint
-        checkpointData.nTransactionsLastCheckpoint = 63920415;
-        // * estimated number of transactions per day after checkpoint (~1.6 TPS)
-        checkpointData.fTransactionsPerDay = 140000;
+        checkpointData.nTimeLastCheckpoint = 1669510532;
+        // * total number of transactions between genesis and block 1528372
+        checkpointData.nTransactionsLastCheckpoint = 63972968;
+        // * estimated number of transactions per day after block 1528372 (~0.0031 TPS)
+        checkpointData.fTransactionsPerDay = 267;
     }
 };
 static CTestNetParams testNetParams;
@@ -551,7 +590,9 @@ public:
         // May, 15 2022 hard fork
         consensus.may2022Height = 0;
         // May 15, 2023 hard fork
-        consensus.may2023ActivationTime = MAY2023_ACTIVATION_TIME;
+        consensus.may2023Height = 0;
+        // May 15, 2024 hard fork
+        consensus.may2024ActivationTime = MAY2024_ACTIVATION_TIME;
 
         pchMessageStart[0] = 0xfa;
         pchMessageStart[1] = 0xbf;
@@ -563,9 +604,15 @@ public:
         pchCashMessageStart[3] = 0xfa;
         nDefaultPort = DEFAULT_REGTESTNET_PORT;
         nPruneAfterHeight = 1000;
-        nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
-        nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE_REGTEST;
-        nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE;
+        nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE;
+        consensus.nDefaultGeneratedBlockSizePercent = 50;
+
+        // ABLA config -- upgrade 10 adjustable block limit algorithm
+        consensus.ablaConfig = abla::Config::MakeDefault(nDefaultConsensusBlockSize, /* fixedSize = */ false);
+        // Ensure base abla state yields same limit as pre-activation.
+        assert(abla::State(consensus.ablaConfig, 0).GetBlockSizeLimit() == nDefaultConsensusBlockSize);
+        // Ensure ABLA is *not* "fixed size" for regtest
+        assert(!consensus.ablaConfig.IsFixedSize());
 
         genesis = CreateGenesisBlock(1296688602, 2, 0x207fffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
@@ -659,7 +706,10 @@ public:
         consensus.may2022Height = 95464;
 
         // May 15, 2023 hard fork
-        consensus.may2023ActivationTime = MAY2023_ACTIVATION_TIME;
+        consensus.may2023Height = 148043;
+
+        // May 15, 2024 hard fork
+        consensus.may2024ActivationTime = MAY2024_ACTIVATION_TIME;
 
         pchMessageStart[0] = 0xcd;
         pchMessageStart[1] = 0x22;
@@ -671,9 +721,15 @@ public:
         pchCashMessageStart[3] = 0xaf;
         nDefaultPort = DEFAULT_TESTNET4_PORT;
         nPruneAfterHeight = 1000;
-        nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE_TESTNET4;
-        nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE_REGTEST;
-        nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE_TESTNET4;
+        nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE_TESTNET4;
+        consensus.nDefaultGeneratedBlockSizePercent = 50;
+
+        // ABLA config -- upgrade 10 adjustable block limit algorithm
+        consensus.ablaConfig = abla::Config::MakeDefault(nDefaultConsensusBlockSize, /* fixedSize = */ true);
+        // Ensure base abla state yields same limit as pre-activation.
+        assert(abla::State(consensus.ablaConfig, 0).GetBlockSizeLimit() == nDefaultConsensusBlockSize);
+        // Ensure ABLA *is* "fixed size" for testnet4
+        assert(consensus.ablaConfig.IsFixedSize());
 
         genesis = CreateGenesisBlock(1597811185, 114152193, 0x1d00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
@@ -717,6 +773,8 @@ public:
         checkpoints[115252] = uint256S("0x00000000ae25e85d9e22cd6c8d72c2f5d4b0222289d801b7f633aeae3f8c6367");
         checkpoints[121428] = uint256S("0x00000000002cf277337c504f7ce708cce851d5d20cad2936fedf3be95a9ca5eb");
         checkpoints[128070] = uint256S("0x00000000044f34642fa3d91e34678737cc10a821a4696f50c187091c3df480c2");
+        // May 15th 2023 upgrade
+        checkpoints[148044] = uint256S("0x0000000008d96c4423ac92aa200af82819339435251736b08babde1ecaf8a5b6");
         // clang-format on
 
         // Data as of block
@@ -806,7 +864,9 @@ public:
         // May 15, 2022 hard fork
         consensus.may2022Height = 10006;
         // May 15, 2023 hard fork
-        consensus.may2023ActivationTime = MAY2023_ACTIVATION_TIME;
+        consensus.may2023Height = 10006;
+        // May 15, 2024 hard fork
+        consensus.may2024ActivationTime = MAY2024_ACTIVATION_TIME;
 
         pchMessageStart[0] = 0xba;
         pchMessageStart[1] = 0xc2;
@@ -818,9 +878,15 @@ public:
         pchCashMessageStart[3] = 0xa2;
         nDefaultPort = DEFAULT_SCALENET_PORT;
         nPruneAfterHeight = 10000;
-        nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE_SCALENET;
-        nMinMaxBlockSize = MIN_EXCESSIVE_BLOCK_SIZE;
-        nDefaultMaxBlockMiningSize = DEFAULT_BLOCK_MAX_SIZE_SCALENET;
+        nDefaultConsensusBlockSize = DEFAULT_CONSENSUS_BLOCK_SIZE_SCALENET;
+        consensus.nDefaultGeneratedBlockSizePercent = 6; // 6.25% of 256MB = 16MB // decide that int is enough for us
+
+        // ABLA config -- upgrade 10 adjustable block limit algorithm
+        consensus.ablaConfig = abla::Config::MakeDefault(nDefaultConsensusBlockSize, /* fixedSize = */ false);
+        // Ensure base abla state yields same limit as pre-activation.
+        assert(abla::State(consensus.ablaConfig, 0).GetBlockSizeLimit() == nDefaultConsensusBlockSize);
+        // Ensure ABLA is *not* "fixed size" for scalenet
+        assert(!consensus.ablaConfig.IsFixedSize());
 
         genesis = CreateGenesisBlock(1598282438, -1567304284, 0x1d00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
@@ -860,10 +926,11 @@ public:
         // clang-format on
 
         // Data as of block
-        // REVISIT: Is below data correct? This is based on what BCHN merged
-        checkpointData.nTimeLastCheckpoint = 0;
-        checkpointData.nTransactionsLastCheckpoint = 0;
-        checkpointData.fTransactionsPerDay = 0;
+        // 00000000a6791274f38bca28465236c4c02873037ec187d61c99b7eaa498033f
+        // (height 36141)
+        checkpointData.nTimeLastCheckpoint = 1660124250;
+        checkpointData.nTransactionsLastCheckpoint = 489847053;
+        checkpointData.fTransactionsPerDay = 144;
     }
 };
 
@@ -940,17 +1007,19 @@ public:
         // May 15, 2022 12:00:00 UTC protocol upgrade
         consensus.may2022Height = 95464;
 
-        // November 15, 2022 12:00:00 UTC; protocol upgrade activates 6 months early
-        // On mainnet this is set to MAY2023_ACTIVATION_TIME
-        consensus.may2023ActivationTime = 1668513600;
+        // November 15, 2022 12:00:00 UTC protocol upgrade
+        consensus.may2023Height = 121956;
+
+        // November 15, 2023 12:00:00 UTC; protocol upgrade activates 6 months early
+        consensus.may2024ActivationTime = 1700049600;
 
         // Default limit for block size (in bytes) (chipnet is like testnet4 in that it is is smaller at 2MB)
-        // consensus.nDefaultExcessiveBlockSize = 2 * ONE_MEGABYTE;
+        // consensus.nDefaultConsensusBlockSize = 2 * ONE_MEGABYTE;
 
         // Chain-specific default for mining block size (in bytes) (configurable with -blockmaxsize)
         // consensus.nDefaultGeneratedBlockSize = 2 * ONE_MEGABYTE;
 
-        // assert(consensus.nDefaultGeneratedBlockSize <= consensus.nDefaultExcessiveBlockSize);
+        // assert(consensus.nDefaultGeneratedBlockSize <= consensus.nDefaultConsensusBlockSize);
 
         // Anchor params: Note that the block after this height *must* also be checkpointed below.
         // we don't have implementd the adding of achor block data in bchu, *GetASERTAnchorBlock()
@@ -972,9 +1041,15 @@ public:
         pchCashMessageStart[3] = 0xaf;
         nDefaultPort = 48333;
         nPruneAfterHeight = 1000;
-        nDefaultExcessiveBlockSize = 2 * ONE_MEGABYTE;
-        nMinMaxBlockSize = 2 * ONE_MEGABYTE;
-        nDefaultMaxBlockMiningSize = 2 * ONE_MEGABYTE;
+        nDefaultConsensusBlockSize = 2 * ONE_MEGABYTE;
+        consensus.nDefaultGeneratedBlockSizePercent = 100;
+
+        // ABLA config -- upgrade 10 adjustable block limit algorithm
+        consensus.ablaConfig = abla::Config::MakeDefault(nDefaultConsensusBlockSize, /* fixedSize = */ false);
+        // Ensure base abla state yields same limit as pre-activation.
+        assert(abla::State(consensus.ablaConfig, 0).GetBlockSizeLimit() == nDefaultConsensusBlockSize);
+        // Ensure ABLA is *not* "fixed size" for chipnet
+        assert(!consensus.ablaConfig.IsFixedSize());
 
         genesis = CreateGenesisBlock(1597811185, 114152193, 0x1d00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
@@ -1014,14 +1089,18 @@ public:
         // Fork block for chipnet
         checkpoints[115252] = uint256S("0x00000000040ba9641ba98a37b2e5ceead38e4e2930ac8f145c8094f94c708727");
         checkpoints[115510] = uint256S("0x000000006ad16ee5ee579bc3712b6f15cdf0a7f25a694e1979616794b73c5122");
+        // Upgrade 9; May 15, 2023 (MTP time >= 1684152000), first upgrade block: 148044
+        checkpoints[148000] = uint256S("0x000000009788ecce39b046caab3cf0f72e8c5409df23454679dbdcae2bd4dded");
+        checkpoints[178140] = uint256S("0x000000003c37cc0372a5b9ccacca921786bbfc699722fc41e9fdbb1de4146ef1");
+
         // clang-format on
 
         // Data as of block
-        // 00000000c74929a8b9cb64581b1b9d8294c71ef172a6ce5d27988fc6026ad3d4
-        // (height 115527)
-        checkpointData.nTimeLastCheckpoint = 1664921612;
-        checkpointData.nTransactionsLastCheckpoint = 118258;
-        checkpointData.fTransactionsPerDay = 0.002;
+        // 00000000010532578431caaad666e01ef7f744a90140192c661b285d2eeacfc8
+        // (height 123647)
+        checkpointData.nTimeLastCheckpoint = 1669510845;
+        checkpointData.nTransactionsLastCheckpoint = 126464;
+        checkpointData.fTransactionsPerDay = 144;
     }
 };
 

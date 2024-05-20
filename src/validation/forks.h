@@ -58,7 +58,12 @@ bool IsNov2020Activated(const Consensus::Params &consensusparams, const CBlockIn
 /** Check if May 15th 2022 fork has activated using block height */
 bool IsMay2022Activated(const Consensus::Params &consensusparams, const CBlockIndex *pindexTip);
 
-// Check if May 15th 2023 fork has activated using MTP
+// Check if May 15th 2023 fork has activated using block height
 bool IsMay2023Activated(const Consensus::Params &, const CBlockIndex *pindexTip);
 
+// Check if May 15th 2024 fork has activated using MTP
+bool IsMay2024Activated(const Consensus::Params &, const CBlockIndex *pindexTip);
+
+// check if it is active on this block
+bool IsMay2024Active(const Consensus::Params &params, const CBlockIndex *pindex);
 #endif

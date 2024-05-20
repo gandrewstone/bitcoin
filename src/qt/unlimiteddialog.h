@@ -60,7 +60,6 @@ private Q_SLOTS:
     void on_resetButton_clicked();
     void on_okButton_clicked();
     void on_cancelButton_clicked();
-    void validateBlockSize();
     // Pushes the traffic shaping slider changes into the traffic shaping edit boxes
     void shapingSliderChanged();
     // auto-corrects cases where max is lower then average and force the input for those
