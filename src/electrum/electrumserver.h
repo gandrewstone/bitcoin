@@ -20,7 +20,7 @@ struct Process;
 class ElectrumServer {
 public:
     static ElectrumServer& Instance();
-    bool Start(int rpcport, const std::string& network);
+    bool Start(int rpcport, int p2pport, const std::string& network);
 
     // for allow overriding path/args for unit testing
     bool Start(const std::string& path, const std::vector<std::string>& args);
