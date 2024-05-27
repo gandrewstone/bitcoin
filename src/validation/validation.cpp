@@ -328,10 +328,10 @@ static void MaintainAblaState(const Consensus::Params &consensusParams,
     const char *debugPrefix = nullptr,
     uint64_t blockSize = 0) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
 {
-    if (IsMay2024Active(consensusParams, pindex))
+    if (IsMay2024Activated(consensusParams, pindex))
     {
         std::optional<abla::State> ablaStateOpt;
-        if (!IsMay2024Active(consensusParams, pindex->pprev))
+        if (!IsMay2024Activated(consensusParams, pindex->pprev))
         {
             // activation block, give default state
             blockSize = blockSize ? blockSize : ::GetSerializeSize(block, PROTOCOL_VERSION);
