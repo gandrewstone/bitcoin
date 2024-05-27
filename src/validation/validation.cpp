@@ -486,7 +486,7 @@ static bool VerifyAblaStateForChain(CChain &chain) EXCLUSIVE_LOCKS_REQUIRED(cs_m
     // Thus the following loop would bring us back to the activation block (last block before new rules will
     // start to be enforced)
     CBlockIndex *pbase = ptip;
-    while (IsMay2024Active(consensus, pbase))
+    do
     {
         // we got back to the genisis block,and this could happen only
         // in regtest or some particular testing scenario where we set
@@ -494,7 +494,8 @@ static bool VerifyAblaStateForChain(CChain &chain) EXCLUSIVE_LOCKS_REQUIRED(cs_m
         if (!pbase->pprev)
             break;
         pbase = pbase->pprev;
-    }
+    } while (IsMay2024Active(consensus, pbase));
+
     LOG(ACTIVATION, "%s: May 2024 upgrade active (MTP >= activation time) at height: %d", __func__, pbase->nHeight);
     LOG(ACTIVATION, "%s: May 2024 upgrade first fork block  height: %d", __func__, pbase->nHeight + 1);
     assert(pbase != nullptr);
