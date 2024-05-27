@@ -480,7 +480,7 @@ public:
                 _ablaStateOpt = GetAblaStateOpt();
                 try
                 {
-                    READWRITE(*_ablaStateOpt);
+                    READWRITE(_ablaStateOpt);
                 }
                 catch (const std::ios_base::failure &e)
                 {
@@ -494,7 +494,7 @@ public:
                 // reset state
                 try
                 {
-                    READWRITE(*_ablaStateOpt);
+                    READWRITE(_ablaStateOpt);
                 }
                 catch (const std::ios_base::failure &e)
                 {
