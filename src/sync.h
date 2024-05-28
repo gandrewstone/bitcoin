@@ -279,8 +279,7 @@ private:
         file = pszFile;
         line = nLine;
         EnterCritical(pszName, pszFile, nLine, (void *)(lock.mutex()), type, OwnershipType::EXCLUSIVE, true);
-        lock.try_lock();
-        if (!lock.owns_lock())
+        if (!lock.try_lock())
         {
 #ifdef DEBUG_LOCKTIME
             lockedTime = 0;

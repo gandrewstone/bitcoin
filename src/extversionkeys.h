@@ -6,6 +6,7 @@
 #ifndef BITCOIN_EXTVERSIONKEYS_H
 #define BITCOIN_EXTVERSIONKEYS_H
 
+#include <cstdint>
 #include <unordered_map>
 #include <unordered_set>
 
