@@ -47,8 +47,13 @@ The new consensus rules in the aforementioned CHIPs will take effect once the me
 
 Commit details
 --------------
-
-- `c6d8dae7e0` Add release notes for BCHU 2.1.0.0 (Andrea Suisani)
+- `9f4e72ab25` Fix ubuntu 24.04 (noble) compilation issues (Griffith)
+- `a052993122` ABLA state need to retrieved from activation block not the block before (Andrea Suisani)
+- `5c7b740393` ABLA state need to be stored into CBlockIndex since activation. (Andrea Suisani)
+- `bbe0d3d3d6` Fix std::optional objects serialization (Griffith)
+- `1a5331e323` Add missing code to write abla block size to disk (Calin Culianu)
+- `c752f7d0a2` Add a needed symbol to cashlib (token.cpp) and fix the HF effects in mempool_accept (Andrew Stone)
+- `bbef0563b8` Add release notes for BCHU 2.1.0.0 (Andrea Suisani)
 - `24257db684` Pass P2P port to rostrum (Dagur Valberg Johannsson)
 - `389287eede` Fix chipnet configuration parameters (Andrea Suisani)
 - `6aaf88c20c` Properly setup default activation time per chain during bootstrap (Andrea Suisani)
