@@ -15,6 +15,7 @@
 #include <limits>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <stdint.h>
 #include <string.h>
@@ -390,6 +391,39 @@ template <typename Stream>
 inline void Unserialize(Stream &s, Span<uint8_t> &span)
 {
     s.read(CharCast(span.data()), span.size());
+}
+
+template <typename Stream, typename Obj>
+inline void Serialize(Stream &s, const std::optional<Obj> &optObj)
+{
+    const uint8_t has_value = optObj.has_value() ? 1u : 0u;
+    Serialize(s, has_value);
+    if (has_value)
+    {
+        Serialize(s, *optObj);
+    }
+}
+template <typename Stream, typename Obj>
+inline void Unserialize(Stream &s, std::optional<Obj> &optObj)
+{
+    const uint8_t has_value = ser_readdata8(s);
+    if (has_value > 1u)
+    {
+        // we only support 0 or 1 in this position, throw on anything else
+        throw std::ios_base::failure("Non-canonical optional encoding");
+    }
+    if (!has_value)
+    {
+        optObj.reset();
+    }
+    else
+    {
+        if (!optObj)
+        {
+            optObj.emplace();
+        }
+        Unserialize(s, *optObj);
+    }
 }
 
 

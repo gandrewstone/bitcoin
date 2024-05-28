@@ -64,6 +64,16 @@ extern bool fDisplayArchInSubver;
 std::string FormatFullVersion();
 std::string FormatSubVersion(const std::string &name, int nClientVersion, const std::vector<std::string> &comments);
 
+// clang-format off
+
+static constexpr int CLIENT_VERSION_ABLA_BLOCKINDEX_DATA =
+    1000000 * 2  // CLIENT_VERSION_MAJOR    2
+    + 10000 * 1  // CLIENT_VERSION_MINOR    1
+    +   100 * 0  // CLIENT_VERSION_REVISION 0
+    +     1 * 0; // CLIENT_VERSION_BUILD    0
+
+// clang-format on
+
 #endif // WINDRES_PREPROC
 
 #endif // BITCOIN_CLIENTVERSION_H

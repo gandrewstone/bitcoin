@@ -467,6 +467,53 @@ public:
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
+
+        // blocksize AA state data -- may be missing if older serialized data before CLIENT_VERSION_ABLA_BLOCKINDEX_DATA
+        if (_nVersion >= CLIENT_VERSION_ABLA_BLOCKINDEX_DATA)
+        {
+            std::optional<abla::State> _ablaStateOpt;
+
+            // writing
+            if (!ser_action.ForRead())
+            {
+                // write the abla state, throw on failure
+                _ablaStateOpt = GetAblaStateOpt();
+                try
+                {
+                    READWRITE(_ablaStateOpt);
+                }
+                catch (const std::ios_base::failure &e)
+                {
+                    throw;
+                }
+            }
+            // reading
+            else
+            {
+                // read the abla state, throw if failure is something other than end of data otherwise
+                // reset state
+                try
+                {
+                    READWRITE(_ablaStateOpt);
+                }
+                catch (const std::ios_base::failure &e)
+                {
+                    if (std::string_view{e.what()}.find("end of data") == std::string_view::npos)
+                    {
+                        // if not end-of-data, bubble error out
+                        throw;
+                    }
+                    // otherwise, tolerate end-of-data on reading; reset the optional
+                    _ablaStateOpt.reset();
+                }
+                SetAblaStateOpt(_ablaStateOpt);
+            }
+        }
+        else
+        {
+            // old serialized data, indicate missing data.
+            SetAblaStateOpt(std::nullopt);
+        }
     }
 
     uint256 GetBlockHash() const
