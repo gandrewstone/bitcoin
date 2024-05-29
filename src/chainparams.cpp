@@ -945,7 +945,7 @@ class CChipNetParams : public CChainParams
 public:
     CChipNetParams()
     {
-        strNetworkID = CBaseChainParams::CHIPNET;
+        strNetworkID = "chipnet";
         consensus.nSubsidyHalvingInterval = 210000;
         consensus.BIP16Height = 1;
         // Note: Because BIP34Height is less than 17, clients will face an unusual corner case with BIP34 encoding.
