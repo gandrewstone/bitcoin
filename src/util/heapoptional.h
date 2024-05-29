@@ -30,7 +30,7 @@ public:
 
     constexpr HeapOptional() noexcept = default;
     explicit HeapOptional(const T & t) { *this = t; }
-    explicit HeapOptional(T && t) noexcept { *this = t; }
+    explicit HeapOptional(T && t) noexcept { *this = std::move(t); }
 
     /// Construct the HeapOptional in-place using argument forwarding
     template <typename ...Args>
