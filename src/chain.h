@@ -512,7 +512,7 @@ public:
         else
         {
             // old serialized data, indicate missing data.
-            SetAblaStateOpt(std::nullopt);
+            SER_READ(SetAblaStateOpt(std::nullopt));
         }
     }
 
