@@ -3,6 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <regex>
 #include <set>
 
 #include "allowed_args.h"
@@ -524,12 +525,9 @@ static void addZmqOptions(AllowedArgs &allowedArgs)
 
 static void addDebuggingOptions(AllowedArgs &allowedArgs, HelpMessageMode mode)
 {
-    std::string debugCategories = "addrman, bench, blk, bloom, coindb, db, estimatefee, evict, http, lck, "
-                                  "libevent, mempool, mempoolrej, miner, net, parallel, partitioncheck, "
-                                  "proxy, prune, rand, reindex, req, rpc, selectcoins, thin, tor, wallet, zmq, "
-                                  "graphene, respend, weakblocks";
-    if (mode == HMM_BITCOIN_QT)
-        debugCategories += ", qt";
+    std::string debugCategories = std::regex_replace(Logging::LogGetAllString(), std::regex("   "), "");
+    debugCategories = std::regex_replace(debugCategories, std::regex("\n"), ", ");
+    debugCategories.erase(debugCategories.size() - 2);
 
     allowedArgs.addHeader(_("Debugging/Testing options:"))
         .addArg("uacomment=<cmt>", requiredStr, _("Append comment to the user agent string"))
